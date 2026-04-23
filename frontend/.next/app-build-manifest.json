@@ -112,6 +112,18 @@
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/app/careers/page-1807604dd4de8482.js"
     ],
+    "/contact-us/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/4689-053100ec46bdfd61.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/app/contact-us/page-8f2402dd3201284c.js"
+    ],
     "/credit-cards/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
@@ -127,18 +139,6 @@
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/credit-cards/page-2a74a4eb5e675b4f.js"
-    ],
-    "/contact-us/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/4689-053100ec46bdfd61.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/app/contact-us/page-8f2402dd3201284c.js"
     ],
     "/credit-score/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
@@ -179,19 +179,6 @@
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/education-loan/page-140b9f50b1fd7b29.js"
     ],
-    "/loan-against-property/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/2341-8354f52fb18f8673.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/61-59881a401af8ca3c.js",
-      "static/chunks/app/loan-against-property/page-764e4dc0f01185fd.js"
-    ],
     "/gold-loan/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
@@ -223,6 +210,19 @@
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/home-loan/page-6620afd4a606386d.js"
+    ],
+    "/loan-against-property/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/2341-8354f52fb18f8673.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/61-59881a401af8ca3c.js",
+      "static/chunks/app/loan-against-property/page-764e4dc0f01185fd.js"
     ],
     "/login/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
@@ -520,17 +520,6 @@
       "static/chunks/3312-e8798a01f03eca03.js",
       "static/chunks/app/study-in-india/mumbai/page-02e686d5e8cd0e6b.js"
     ],
-    "/terms-and-conditions/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/app/terms-and-conditions/page-28a85efa7d223f6f.js"
-    ],
     "/study-in-india/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
@@ -545,6 +534,30 @@
       "static/chunks/7736-a9c0ad5bf2efb757.js",
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/app/study-in-india/page-d2446552ce1abcf6.js"
+    ],
+    "/terms-and-conditions/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/app/terms-and-conditions/page-28a85efa7d223f6f.js"
+    ],
+    "/two-wheeler-loan/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/1321-38949c4bed3e6e71.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/61-59881a401af8ca3c.js",
+      "static/chunks/app/two-wheeler-loan/page-bfc2845b463ead55.js"
     ],
     "/used-car-loan/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
@@ -561,19 +574,6 @@
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/used-car-loan/page-ba2e8c10793229b1.js"
-    ],
-    "/two-wheeler-loan/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/1321-38949c4bed3e6e71.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/61-59881a401af8ca3c.js",
-      "static/chunks/app/two-wheeler-loan/page-bfc2845b463ead55.js"
     ]
   }
 }

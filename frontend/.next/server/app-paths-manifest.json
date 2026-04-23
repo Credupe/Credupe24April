@@ -6,14 +6,14 @@
   "/calculators/page": "app/calculators/page.js",
   "/car-loan/page": "app/car-loan/page.js",
   "/careers/page": "app/careers/page.js",
-  "/credit-cards/page": "app/credit-cards/page.js",
   "/contact-us/page": "app/contact-us/page.js",
+  "/credit-cards/page": "app/credit-cards/page.js",
   "/credit-score/page": "app/credit-score/page.js",
   "/customer-dashboard/page": "app/customer-dashboard/page.js",
   "/education-loan/page": "app/education-loan/page.js",
-  "/loan-against-property/page": "app/loan-against-property/page.js",
   "/gold-loan/page": "app/gold-loan/page.js",
   "/home-loan/page": "app/home-loan/page.js",
+  "/loan-against-property/page": "app/loan-against-property/page.js",
   "/login/page": "app/login/page.js",
   "/micro-loan/page": "app/micro-loan/page.js",
   "/page": "app/page.js",
@@ -36,8 +36,8 @@
   "/study-in-india/hyderabad/page": "app/study-in-india/hyderabad/page.js",
   "/study-in-india/kolkata/page": "app/study-in-india/kolkata/page.js",
   "/study-in-india/mumbai/page": "app/study-in-india/mumbai/page.js",
-  "/terms-and-conditions/page": "app/terms-and-conditions/page.js",
   "/study-in-india/page": "app/study-in-india/page.js",
-  "/used-car-loan/page": "app/used-car-loan/page.js",
-  "/two-wheeler-loan/page": "app/two-wheeler-loan/page.js"
+  "/terms-and-conditions/page": "app/terms-and-conditions/page.js",
+  "/two-wheeler-loan/page": "app/two-wheeler-loan/page.js",
+  "/used-car-loan/page": "app/used-car-loan/page.js"
 }

@@ -4,13 +4,13 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "Credupe59",
+  title: "Credupe",
   description: "Credupe — one place for loans, credit cards, and credit scores.",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Credupe59",
+    title: "Credupe",
     description: "Credupe — one place for loans, credit cards, and credit scores.",
     type: "website",
   },
