@@ -1,4 +1,4 @@
-// File: /app/frontend/src/app/terms-and-conditions/page.tsx
+// File: /Users/abhishek/code/personal/credupe/Credupe24April/frontend/src/app/terms-and-conditions/page.tsx
 import * as entry from '../../../../src/app/terms-and-conditions/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
