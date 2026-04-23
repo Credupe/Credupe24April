@@ -7,6 +7,7 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "build": "next build",
     "prod": "next start -H 0.0.0.0 -p 3000",
+    "pages:build": "npx @cloudflare/next-on-pages",
     "lint": "next lint"
   },
   "dependencies": {
@@ -63,6 +64,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@cloudflare/workers-types": "^4.20260423.1",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
