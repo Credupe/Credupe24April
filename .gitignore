@@ -20,7 +20,7 @@ node_modules/
 /coverage
 
 # Next.js
-/.next/
+.next/
 /out/
 next-env.d.ts
 *.tsbuildinfo
@@ -59,7 +59,9 @@ chainlit.md
 .ac
 
 # Deployment
-.vercel
+.vercel/
+.wrangler/
+wrangler-debug.log*
 
 # Data and databases
 agenthub/agents/youtube/db
