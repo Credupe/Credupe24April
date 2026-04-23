@@ -83,3 +83,4 @@ android-sdk/frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64
 frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
 frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+cloudflare-backend/node_modules/@cloudflare/workerd-linux-arm64/bin/workerd

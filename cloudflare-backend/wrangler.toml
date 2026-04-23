@@ -1,0 +1,43 @@
+#:schema node_modules/wrangler/config-schema.json
+# Cloudflare Workers config for the Credupe API.
+# Deploy: `wrangler deploy` (after `npm install && wrangler d1 migrations apply credupe --remote`)
+
+name = "credupe-api"
+main = "src/index.ts"
+compatibility_date = "2025-09-23"
+# nodejs_compat is REQUIRED for bcryptjs (uses Buffer) and a few polyfills.
+compatibility_flags = ["nodejs_compat"]
+
+# ─── D1 Database binding ────────────────────────────────────────────────────
+# The database_id below is the one you provided. Update `database_name` to
+# whatever you named it in the Cloudflare dashboard (e.g. `credupe`).
+[[d1_databases]]
+binding = "DB"
+database_name = "credupe"
+database_id = "268e6760-85d8-4f50-9ea6-5c1fd9d28de9"
+migrations_dir = "migrations"
+
+# ─── Secrets (set via `wrangler secret put <NAME>`) ─────────────────────────
+# JWT_ACCESS_SECRET      -- min 32 chars
+# JWT_REFRESH_SECRET     -- min 32 chars
+# SEED_ADMIN_EMAIL       -- used by `scripts/seed.ts`
+# SEED_ADMIN_PASSWORD    -- used by `scripts/seed.ts`
+# Optional R2 for real file upload:
+# R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET
+
+[vars]
+API_PREFIX = "/api/v1"
+JWT_ACCESS_TTL = "900"          # seconds (15 min)
+JWT_REFRESH_TTL = "2592000"     # seconds (30 d)
+BCRYPT_SALT_ROUNDS = "10"
+CORS_ORIGINS = "*"              # tighten to your Pages domain in prod
+
+# ─── Optional: R2 bucket binding for document uploads ───────────────────────
+# Uncomment after creating a bucket via `wrangler r2 bucket create credupe-documents`
+# [[r2_buckets]]
+# binding = "DOCS"
+# bucket_name = "credupe-documents"
+
+# ─── Local dev overrides ────────────────────────────────────────────────────
+# `wrangler dev` creates a local D1 shadow automatically; no extra config
+# needed. Run migrations locally with `wrangler d1 migrations apply credupe --local`.

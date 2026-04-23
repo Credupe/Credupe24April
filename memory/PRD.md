@@ -1,3 +1,42 @@
+# 2026-04-23 (late PM) — Cloudflare Workers + D1 backend scaffold
+### Created new sibling project at `/app/cloudflare-backend/`
+Full backend rewrite targeting Cloudflare Workers + D1, living alongside (NOT replacing) the current NestJS preview so nothing breaks.
+
+- **Stack**: Hono 4 + Drizzle 0.36 + D1 (SQLite) + HS256 JWT (hand-rolled, no external JOSE lib) + bcryptjs + Zod.
+- **Schema parity**: 17 tables, 1:1 with the original Prisma schema. Postgres enums → CHECK constraints. `Decimal(14,2)` → `INTEGER paise` (×100). `JSONB` → `TEXT` + JSON.parse/stringify. Migration SQL at `migrations/0001_initial.sql`.
+- **API parity**: 13 modules / ~45 endpoints matching the NestJS surface — auth (register, login, refresh, logout, me, otp), users, customers, partners, lenders, loan-products (+ /eligibility), quotes (create/get/share/public-slug), loan-applications (CRUD + /:id/transition), leads (+ bulk, follow-ups, reassign), documents (presign, register, verify, optional R2 binding), notifications, analytics (admin/funnel, partner/summary), health.
+- **Response envelope preserved**: same `{ success, data, error }` shape the frontend already consumes — **zero frontend changes needed**.
+- **Auth**: JWT access + rotating refresh token (D1-backed refresh store with SHA-256 hashing). `requireAuth` / `optionalAuth` / `requireRole` middleware.
+- **Seed**: `scripts/seed.sql` creates the 3 demo users (`admin|customer|partner@credupe.local`) with **verified** bcrypt hashes (tested via `bcrypt.compareSync` → OK for all 3), 5 lenders, 10 loan products.
+- **Dropped (per user instruction)**: Redis rate-limiting, BullMQ jobs, eligibility cache.
+- **D1 binding wired** in `wrangler.toml` with the user-provided ID `268e6760-85d8-4f50-9ea6-5c1fd9d28de9` and `database_name = "credupe"`.
+
+### Verified locally
+- `npx tsc --noEmit` → **0 errors** across the whole project
+- `sqlite3` apply migration → all 17 tables created, all indexes applied
+- Seed → 3 users, 5 lenders, 10 products, 1 cust / 1 partner profile
+- `npx wrangler dev --local` → **Worker booted**, D1 bound via Miniflare, `GET /api/v1/health` returned `{"success":true,"data":{"status":"ok","db":"ok"}}`
+
+### What the user does next (per their "we'll deploy ourselves" instruction)
+- Install deps, `wrangler login`, `wrangler d1 migrations apply credupe --remote`, seed, set two JWT secrets, `wrangler deploy`. Full copy-pasteable steps are in `cloudflare-backend/README.md`.
+- Frontend already calls `${NEXT_PUBLIC_BACKEND_URL}/api/v1/…` — just set the Pages env var to the Worker URL and they're done.
+- For Cloudflare Pages deploy of the Next.js frontend: `@cloudflare/next-on-pages` adapter command snippet included in the README.
+
+### Files created (25 files, ~2100 LOC)
+```
+cloudflare-backend/
+  wrangler.toml, package.json, tsconfig.json, drizzle.config.ts, .gitignore, README.md
+  migrations/0001_initial.sql
+  scripts/seed.sql
+  src/index.ts, env.ts
+  src/db/schema.ts
+  src/lib/{envelope,ids,jwt,password}.ts
+  src/middleware/auth.ts
+  src/modules/{auth,health,users,customers,partners,lenders,loan-products,quotes,
+               loan-applications,leads,documents,notifications,analytics}.ts
+```
+
+
 # 2026-04-23 (PM) — Code-review fixes, surgical pass
 ### Applied
 - **`src/app/layout.tsx` — removed `dangerouslySetInnerHTML`**: theme-preload script now served from `public/theme-preload.js` via `<Script src="…" strategy="beforeInteractive">`. Zero inline-script surface, same "no-theme-flash" guarantee. Verified: `html.className` = `"light"`, `colorScheme` = `"light"` on first paint.
