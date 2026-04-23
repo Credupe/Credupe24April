@@ -1,0 +1,5 @@
+name = "credupe-frontend"
+compatibility_date = "2025-01-09"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = ".vercel/output/static"
