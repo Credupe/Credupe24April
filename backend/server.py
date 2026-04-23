@@ -22,6 +22,7 @@ Nothing in this file touches business logic — it's a transparent shim.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import shutil as _shutil
 import signal
@@ -31,10 +32,15 @@ from pathlib import Path
 from typing import Optional
 
 import httpx
+from dotenv import load_dotenv
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import JSONResponse, Response, StreamingResponse
 from starlette.routing import Route
+
+# Load /app/backend/.env explicitly BEFORE reading any env vars, so
+# EMERGENT_LLM_KEY is available when the AI chat endpoint is invoked.
+load_dotenv(Path(__file__).parent / ".env")
 
 BACKEND_DIR = Path(__file__).parent.resolve()
 NEST_HOST = os.environ.get("NEST_HOST", "127.0.0.1")
@@ -222,8 +228,142 @@ async def _proxy(request: Request) -> Response:
     return Response(content=resp.content, status_code=resp.status_code, headers=resp_headers)
 
 
+# ───────────────────────── Credu AI chat endpoint ──────────────────────────
+_CREDU_SYSTEM_PROMPT = """You are **Credu AI**, the friendly, knowledgeable lending assistant for **CreduPe** — India's marketplace for personal loans, home loans, business loans, credit cards, and credit scores.
+
+Scope you help with:
+- Personal loans, home loans, LAP, business loans, car/two-wheeler/used-car loans, gold loans, education loans, micro-loans, credit cards.
+- Credit scores & CIBIL — what they mean, how to improve them, the 4 Indian bureaus.
+- EMI / eligibility calculators (principal, rate, tenure maths).
+- Documents typically required (KYC, income proof, bank statements).
+- Fees, interest rate ranges, tenure ranges on the Indian market.
+
+Style:
+- Warm, concise, practical. Plain English (or Hinglish numbers like ₹50,000 / ₹1 lakh / ₹1 crore).
+- Structure with short bullet points (`- foo`) and bold headings (`**Heading**`) when helpful.
+- Keep answers under 180 words unless the user explicitly asks for detail.
+- If you don't know a bank-specific number, say so and suggest using CreduPe's comparison tool.
+- NEVER give legally-binding advice or claim to approve/reject anyone.
+
+**Every response MUST end on its own line with exactly:**
+`⚠️ Disclaimer: This is AI-generated guidance by Credu AI. For personalized advice, please consult a CreduPe financial advisor.`
+"""
+
+
+async def _stream_llm_openai_sse(messages: list[dict]):
+    """Streams a Claude Sonnet 4.5 response as OpenAI-compatible SSE chunks.
+
+    Emits `data: {"choices":[{"delta":{"content":"..."}}]}\\n\\n` so the
+    frontend (which already parses this format) works unchanged. Falls back
+    to an error chunk if the LLM call fails.
+    """
+    api_key = os.environ.get("EMERGENT_LLM_KEY", "").strip()
+    if not api_key:
+        yield f"data: {json.dumps({'error': 'EMERGENT_LLM_KEY not configured'})}\n\n"
+        yield "data: [DONE]\n\n"
+        return
+
+    # emergentintegrations is a sync-await-friendly facade over the underlying
+    # provider client. We run it per-request (new session each call) and
+    # simulate streaming by chunking the final text — the library in its
+    # current version returns the full string after model completion, so we
+    # split on whitespace to emit delta chunks the browser can render
+    # progressively (feels native without requiring a provider-level stream).
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+    except Exception as e:  # noqa: BLE001
+        yield f"data: {json.dumps({'error': f'emergentintegrations import failed: {e}'})}\n\n"
+        yield "data: [DONE]\n\n"
+        return
+
+    # Collapse the user-supplied history into a single prompt the chat SDK
+    # can consume (the LlmChat facade is single-session; we rebuild each call).
+    convo_lines = []
+    for m in messages[:-1]:
+        role = m.get("role", "user")
+        txt = str(m.get("content", "")).strip()
+        if not txt:
+            continue
+        prefix = "User" if role == "user" else "Credu AI"
+        convo_lines.append(f"{prefix}: {txt}")
+    last = messages[-1] if messages else {"role": "user", "content": ""}
+    last_text = str(last.get("content", "")).strip() or "Hi"
+    prompt = (
+        "\n".join(convo_lines) + ("\n\n" if convo_lines else "") + f"User: {last_text}\nCredu AI:"
+    )
+
+    try:
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"credu-ai-{os.urandom(4).hex()}",
+            system_message=_CREDU_SYSTEM_PROMPT,
+        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+        reply = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:  # noqa: BLE001
+        yield f"data: {json.dumps({'error': f'LLM call failed: {e}'})}\n\n"
+        yield "data: [DONE]\n\n"
+        return
+
+    # Stream word-by-word so the UI "types" the response.
+    reply = str(reply or "").strip()
+    if not reply:
+        reply = "I couldn't generate a response right now. Please try again.\n\n⚠️ Disclaimer: This is AI-generated guidance by Credu AI. For personalized advice, please consult a CreduPe financial advisor."
+
+    # Keep whitespace tokens so line breaks render.
+    import re
+    tokens = re.findall(r"\S+\s*|\n", reply)
+    for tok in tokens:
+        payload = {"choices": [{"delta": {"content": tok}}]}
+        yield f"data: {json.dumps(payload)}\n\n"
+        await asyncio.sleep(0.01)  # lets the reader flush frame-by-frame
+    yield "data: [DONE]\n\n"
+
+
+async def _ai_chat(request: Request) -> Response:
+    # CORS preflight
+    if request.method == "OPTIONS":
+        return Response(
+            status_code=204,
+            headers={
+                "access-control-allow-origin": request.headers.get("origin", "*"),
+                "access-control-allow-methods": "POST, OPTIONS",
+                "access-control-allow-headers": "authorization, content-type",
+                "access-control-max-age": "86400",
+            },
+        )
+
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse(
+            {"success": False, "data": None, "error": {"code": "BAD_JSON", "status": 400, "message": ["Invalid JSON body"]}},
+            status_code=400,
+        )
+
+    messages = body.get("messages") or []
+    if not isinstance(messages, list) or not messages:
+        return JSONResponse(
+            {"success": False, "data": None, "error": {"code": "VALIDATION_ERROR", "status": 400, "message": ["messages[] required"]}},
+            status_code=400,
+        )
+
+    return StreamingResponse(
+        _stream_llm_openai_sse(messages),
+        media_type="text/event-stream",
+        headers={
+            "cache-control": "no-cache, no-transform",
+            "x-accel-buffering": "no",
+            "connection": "keep-alive",
+            "access-control-allow-origin": request.headers.get("origin", "*"),
+        },
+    )
+
+
 app = Starlette(
-    routes=[Route("/{path:path}", _proxy, methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])],
+    routes=[
+        Route("/api/v1/ai/chat", _ai_chat, methods=["POST", "OPTIONS"]),
+        Route("/{path:path}", _proxy, methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]),
+    ],
     on_startup=[_startup],
     on_shutdown=[_shutdown],
 )

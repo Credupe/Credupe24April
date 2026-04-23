@@ -4,9 +4,8 @@ import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-const SUPABASE_URL = (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SUPABASE_URL) || "";
-const SUPABASE_PUBLISHABLE_KEY = (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) || "";
-const CHAT_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/credu-ai-chat` : "";
+const BACKEND_URL = (typeof process !== "undefined" && (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)) || "";
+const CHAT_URL = `${BACKEND_URL}/api/v1/ai/chat`;
 
 const SUGGESTED_QUESTIONS = [
   "What personal loan options does CreduPe offer?",
@@ -31,14 +30,13 @@ async function streamChat({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
       },
       body: JSON.stringify({ messages }),
     });
 
     if (!resp.ok) {
       const errData = await resp.json().catch(() => ({}));
-      onError(errData.error || "Something went wrong. Please try again.");
+      onError(errData.error?.message?.[0] || errData.error || "Something went wrong. Please try again.");
       return;
     }
 

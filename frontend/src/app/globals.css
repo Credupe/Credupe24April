@@ -326,4 +326,61 @@
   .dark .bg-accent:has(> svg.text-primary) {
     background-color: hsl(var(--card));
   }
+
+  /* ── Night-mode neon backgrounds → force BLACK text for readability ──
+   * In dark mode `--primary` / `--accent` both resolve to neon-lime (#D8FF…),
+   * which renders white/light text as low-contrast and barely visible on
+   * buttons, pills, active tabs, and the "Ask Credu AI" CTA.
+   * Force near-pure black text on every neon-backgrounded element (and
+   * its descendants) so labels, icons, and numbers stay legible.
+   * `!important` is used deliberately — Tailwind's utility classes
+   * (`text-white`, `text-primary-foreground`, arbitrary `text-[...]`)
+   * otherwise win the cascade. */
+  .dark .bg-primary,
+  .dark .bg-primary:hover,
+  .dark button.bg-primary,
+  .dark a.bg-primary,
+  .dark .bg-accent:not(:has(> .text-primary)):not(:has(> svg.text-primary)),
+  .dark .hover\:bg-primary:hover,
+  .dark [class*="bg-primary"]:not([class*="bg-primary/"]):not(.bg-primary-foreground) {
+    color: hsl(0 0% 0%) !important;
+  }
+  .dark .bg-primary *,
+  .dark button.bg-primary *,
+  .dark a.bg-primary *,
+  .dark .bg-accent:not(:has(> .text-primary)):not(:has(> svg.text-primary)) * {
+    color: inherit !important;
+  }
+  /* SVG icons inside neon buttons also need to render black (Lucide
+   * inherits `currentColor` by default, so forcing color cascades). */
+  .dark .bg-primary svg,
+  .dark button.bg-primary svg,
+  .dark a.bg-primary svg {
+    color: hsl(0 0% 0%) !important;
+  }
+
+  /* ── Active tab / selected pill indicators using neon ─────────────────
+   * Tab components often swap from `bg-transparent` → `bg-primary` (or
+   * `data-state="active"`), and their labels use `text-primary-foreground`.
+   * Those already match the rule above, but add a belt-and-braces
+   * selector for Radix-style tabs which use `data-[state=active]`. */
+  .dark [data-state="active"].bg-primary,
+  .dark [data-state="active"] .bg-primary,
+  .dark [aria-selected="true"].bg-primary,
+  .dark [aria-selected="true"] .bg-primary {
+    color: hsl(0 0% 0%) !important;
+  }
+  .dark [data-state="active"].bg-primary *,
+  .dark [aria-selected="true"].bg-primary * {
+    color: inherit !important;
+  }
+
+  /* Undo the earlier header rule for neon-backgrounded CTAs inside the
+   * header (e.g. "Get Started") — that rule forces white, which on a
+   * neon button is unreadable. Non-neon header text still stays white. */
+  .dark header .bg-primary,
+  .dark header .bg-primary .text-primary-foreground,
+  .dark header .bg-primary * {
+    color: hsl(0 0% 0%) !important;
+  }
 }

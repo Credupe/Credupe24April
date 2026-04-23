@@ -1,3 +1,18 @@
+# 2026-04-23 (evening) — Credu AI activated + dark-mode neon text readability
+### Credu AI now fully operational
+- **Backend**: new streaming SSE endpoint `POST /api/v1/ai/chat` added to `/app/backend/server.py` (sits alongside the existing NestJS proxy so no ejection of the current backend needed).
+- **LLM**: Claude Sonnet 4.5 via `emergentintegrations.llm.chat.LlmChat` using `EMERGENT_LLM_KEY=sk-emergent-fD1B4016f3699Ac5c3` (added to `/app/backend/.env`).
+- **System prompt**: scoped to Indian lending — loans, credit cards, CIBIL, EMI, eligibility. Every reply ends with a "this is AI guidance, consult a CreduPe advisor" disclaimer.
+- **Streaming format**: OpenAI-compatible SSE (`data: {"choices":[{"delta":{"content":"..."}}]}\n\n` + `data: [DONE]`) so the existing `streamChat()` parser in `CreduAIChat.tsx` works unchanged.
+- **Frontend**: `src/components/CreduAIChat.tsx` now POSTs to `${NEXT_PUBLIC_BACKEND_URL}/api/v1/ai/chat` — removed the dead Supabase edge function reference.
+- **Verified end-to-end**: opened chat, typed "What personal loan options does CreduPe offer?" → streamed back structured reply with Loan Amount / Interest Rates / Tenure bullets. Curl smoke-test of EMI definition also validated the proper SSE + disclaimer format.
+
+### Night-mode neon-text readability fix
+- **Problem**: in dark mode `--primary` = neon lime (#D8FF85), but lots of buttons had `text-white` / `text-primary-foreground` overridden to white by the earlier header rule → unreadable ("Get Started", "Apply for Personal Loan", "Ask Credu AI" CTA, active tabs, etc.).
+- **Fix**: added a scoped rules block at the end of `src/app/globals.css` that forces `color: hsl(0 0% 0%) !important` on every `.dark .bg-primary` / `.dark .bg-accent` / `.dark [data-state="active"]` / `.dark [aria-selected="true"]` element **and its descendants** (including SVGs so Lucide icons go black too). Also neutralises the earlier header rule for neon-backed CTAs inside `<header>`.
+- **Visual verification** (screenshot): Get Started, Apply for Personal Loan, Credu AI button all now show solid black text on neon — pops instantly.
+
+
 # 2026-04-23 (late PM) — Cloudflare Workers + D1 backend scaffold
 ### Created new sibling project at `/app/cloudflare-backend/`
 Full backend rewrite targeting Cloudflare Workers + D1, living alongside (NOT replacing) the current NestJS preview so nothing breaks.

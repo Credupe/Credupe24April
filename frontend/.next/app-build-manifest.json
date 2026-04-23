@@ -20,14 +20,14 @@
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
       "static/chunks/1517-4ba633ea590b6b4c.js",
       "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/css/41982c14ffafda70.css",
+      "static/css/583ed5debab3fe26.css",
       "static/chunks/44530001-6d7143b1c52514ec.js",
       "static/chunks/7543-fa7c160a455a602e.js",
       "static/chunks/9440-aa1f293404a0078b.js",
       "static/chunks/3778-dfa20491e70568cc.js",
       "static/chunks/1295-758152c0c070ab12.js",
       "static/chunks/9916-9570e897a4ee06cf.js",
-      "static/chunks/app/layout-dee78b632a02cb0d.js"
+      "static/chunks/app/layout-7ac40ae71d54b4b9.js"
     ],
     "/about-us/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
@@ -55,6 +55,19 @@
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/business-loan/page-70b87dd0a9a7ba38.js"
     ],
+    "/calculators/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/4689-053100ec46bdfd61.js",
+      "static/chunks/4077-be158feb10e5de93.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/app/calculators/page-9297b65eb983c582.js"
+    ],
     "/calculator/[slug]/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
@@ -71,32 +84,6 @@
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/app/calculator/[slug]/page-5e2725bf7a6c85a1.js"
     ],
-    "/calculators/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/4689-053100ec46bdfd61.js",
-      "static/chunks/4077-be158feb10e5de93.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/app/calculators/page-9297b65eb983c582.js"
-    ],
-    "/car-loan/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/2035-5e1671a4b881e09e.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/61-59881a401af8ca3c.js",
-      "static/chunks/app/car-loan/page-c1833d36f2712cbc.js"
-    ],
     "/careers/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
@@ -111,6 +98,19 @@
       "static/chunks/2880-4c0b039423914799.js",
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/app/careers/page-1807604dd4de8482.js"
+    ],
+    "/car-loan/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/2035-5e1671a4b881e09e.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/61-59881a401af8ca3c.js",
+      "static/chunks/app/car-loan/page-c1833d36f2712cbc.js"
     ],
     "/contact-us/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
@@ -224,17 +224,6 @@
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/loan-against-property/page-764e4dc0f01185fd.js"
     ],
-    "/login/page": [
-      "static/chunks/webpack-786bc8dd37364a66.js",
-      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
-      "static/chunks/1517-4ba633ea590b6b4c.js",
-      "static/chunks/main-app-0799e1fe8628f291.js",
-      "static/chunks/44530001-6d7143b1c52514ec.js",
-      "static/chunks/7543-fa7c160a455a602e.js",
-      "static/chunks/1028-4626d0b4deeb0e1e.js",
-      "static/chunks/6519-2fd12f588933818d.js",
-      "static/chunks/app/login/page-af2490c5a24f784b.js"
-    ],
     "/micro-loan/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
       "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
@@ -250,6 +239,17 @@
       "static/chunks/6519-2fd12f588933818d.js",
       "static/chunks/61-59881a401af8ca3c.js",
       "static/chunks/app/micro-loan/page-2a6b7d0e1535ab30.js"
+    ],
+    "/login/page": [
+      "static/chunks/webpack-786bc8dd37364a66.js",
+      "static/chunks/4bd1b696-cfedbfcc8ef8c3c3.js",
+      "static/chunks/1517-4ba633ea590b6b4c.js",
+      "static/chunks/main-app-0799e1fe8628f291.js",
+      "static/chunks/44530001-6d7143b1c52514ec.js",
+      "static/chunks/7543-fa7c160a455a602e.js",
+      "static/chunks/1028-4626d0b4deeb0e1e.js",
+      "static/chunks/6519-2fd12f588933818d.js",
+      "static/chunks/app/login/page-af2490c5a24f784b.js"
     ],
     "/page": [
       "static/chunks/webpack-786bc8dd37364a66.js",
