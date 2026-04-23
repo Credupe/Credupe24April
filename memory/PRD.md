@@ -1,3 +1,20 @@
+# 2026-04-23 — Perf + Login focus fix + CTA rollout
+### Fixed
+- **Login email-input focus bug**: `InputField` was defined inside the `Login` component, so React remounted the `<input>` every keystroke. Extracted to a module-level `memo`-wrapped component in `src/screens/Login.tsx`. Verified via Playwright — typing `test@credupe.com` now keeps focus.
+- **Duplicate uppercase Pages-Router routes** (`/PersonalLoan`, `/HomeLoan` …): Next.js was auto-routing `src/pages/*.tsx` (which were just React components imported via `@/pages/…`) and serving them without the App-Router CSS. Renamed `src/pages/` → `src/screens/`, added a targeted TS path alias `@/pages/* → ./src/screens/*` so existing imports keep working, and now only the App-Router routes (`/personal-loan`, `/home-loan`, …) exist.
+
+### Added
+- **"Apply Now" CTA on every bank-listing row** of all loan product pages — `PersonalLoan`, `HomeLoan`, `GoldLoan`, `UsedCarLoan`, `MicroLoan`, `CarLoan`, `LoanAgainstProperty` (BusinessLoan & TwoWheelerLoan already had them). CTAs include `data-testid="apply-now-<bank-slug>"` and link to `/login` → the Credupe quote/application funnel.
+
+### Performance (biggest wins)
+- Switched frontend supervisor from **`next dev`** → **`next start`** with a full production build. TTFB dropped from ~3-5s (dev-mode on-demand compilation) to **100-170ms**; static HTML is now pre-rendered for 40+ routes.
+- `next.config.js` hardened: `compress: true`, `poweredByHeader: false`, `productionBrowserSourceMaps: false`, `optimizePackageImports: ["lucide-react", "date-fns", "recharts", "framer-motion"]` to tree-shake large libs.
+- Real-world DOMContentLoaded on `/personal-loan` measured at **126 ms**, full load at **346 ms**.
+
+### Trade-off flagged for the user
+- In production mode, frontend code edits require a rebuild (`yarn build && sudo supervisorctl restart frontend`). Hot reload only fires in `yarn dev`. For dev workflow, the `dev` script remains available.
+
+
 # Preview restored (2026-01-23)
 - Cloned `github.com/maheshmehta79/CredupeEmergent` into `/app`, installed Postgres 15 + Redis 7 inside the container, ran `prisma db push` + `prisma:seed`, installed backend (NestJS) + frontend (Next.js 15) deps via yarn.
 - Backend launcher (`server.py`) spawns NestJS on :4000 and proxies supervisor's :8001 → `/api/v1/health` returns `{status:ok, db:ok, cache:ok}` externally on `credupe-staging.preview.emergentagent.com`.
