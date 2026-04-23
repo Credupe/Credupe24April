@@ -1,0 +1,329 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 258 60% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 252 30% 96%;
+    --secondary-foreground: 258 30% 30%;
+
+    --muted: 252 20% 96%;
+    --muted-foreground: 240 5% 46%;
+
+    --accent: 258 40% 95%;
+    --accent-foreground: 258 40% 30%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 252 15% 92%;
+    --input: 252 15% 92%;
+    --ring: 258 60% 52%;
+
+    --radius: 0.75rem;
+
+    --purple-deep: 258 40% 28%;
+    --purple-dark: 258 45% 38%;
+    --purple-mid: 258 55% 50%;
+    --purple-light: 258 50% 95%;
+    --purple-soft: 258 40% 97%;
+    --purple-accent: 275 45% 58%;
+    --lavender: 252 55% 72%;
+    --lavender-light: 252 45% 85%;
+
+    --dark-surface: 240 12% 12%;
+    --dark-surface-foreground: 0 0% 96%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* ───────────── Night Mode (exact replica of reference) ─────────────
+   * Palette tokens (from the reference brief):
+   *   bg-primary      #0B0F14  → 213 31% 6%
+   *   gradient-end    #1A221A  → 114 14% 12%
+   *   bg-secondary    #11161D  → 213 25% 9%
+   *   card-surface    #161C24  → 213 23% 12%
+   *   border          #232A33  → 213 19% 17%
+   *   neon primary    #C6FF4D  → 75 100% 65%
+   *   glow accent     #A6F34A  → 84 87% 62%
+   *   light glow      #D8FF85  → 74 100% 76%
+   *   text primary    #FFFFFF
+   *   text secondary  #A1A8B3  → 216 10% 67%
+   *   text muted      #6B7280  → 220 9% 46%
+   */
+  .dark {
+    --background: 213 31% 6%;
+    --foreground: 0 0% 100%;
+
+    --card: 213 23% 12%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 213 23% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 75 100% 65%;
+    --primary-foreground: 213 31% 6%;
+
+    --secondary: 213 25% 9%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 213 23% 12%;
+    --muted-foreground: 216 10% 67%;
+
+    --accent: 75 100% 65%;
+    --accent-foreground: 213 31% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 19% 17%;
+    --input: 213 19% 17%;
+    --ring: 75 100% 65%;
+
+    /* Re-point Credupe's purple-* brand tokens to the neon-green palette
+     * so the many components that reference --purple-* via inline gradients
+     * automatically reflect the dark theme without per-component edits. */
+    --purple-deep: 213 31% 6%;
+    --purple-dark: 213 25% 9%;
+    --purple-mid: 114 14% 12%;
+    --purple-light: 213 23% 12%;
+    --purple-soft: 213 25% 9%;
+    --purple-accent: 75 100% 65%;
+    --lavender: 84 87% 62%;
+    --lavender-light: 74 100% 76%;
+
+    --dark-surface: 213 23% 12%;
+    --dark-surface-foreground: 0 0% 100%;
+
+    --sidebar-background: 213 31% 6%;
+    --sidebar-foreground: 216 10% 67%;
+    --sidebar-primary: 75 100% 65%;
+    --sidebar-primary-foreground: 213 31% 6%;
+    --sidebar-accent: 213 23% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 213 19% 17%;
+    --sidebar-ring: 75 100% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-outfit antialiased;
+    transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
+  }
+}
+
+@layer utilities {
+  .gradient-hero {
+    background: linear-gradient(180deg, hsl(258 50% 97%), hsl(0 0% 100%));
+  }
+  .dark .gradient-hero {
+    /* Reference gradient: #0B0F14 → #1A221A (213 31% 6% → 114 14% 12%) */
+    background: linear-gradient(90deg, hsl(213 31% 6%) 0%, hsl(114 14% 12%) 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--purple-accent)));
+  }
+
+  .gradient-soft {
+    background: linear-gradient(180deg, hsl(var(--purple-soft)), hsl(var(--background)));
+  }
+
+  .gradient-purple-band {
+    background: linear-gradient(135deg, hsl(var(--dark-surface)), hsl(240 12% 18%));
+  }
+  .dark .gradient-purple-band {
+    background: linear-gradient(135deg, hsl(213 31% 6%), hsl(114 14% 12%));
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--purple-accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark-surface {
+    background-color: hsl(var(--dark-surface));
+    color: hsl(var(--dark-surface-foreground));
+  }
+
+  .pill-tag {
+    @apply inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium;
+  }
+
+  /* ── Night-mode neon glow effects (reference-matched) ───────────────
+   * Soft outer glow around primary CTAs + highlight text, applied only in
+   * dark mode so light mode keeps Credupe's original purple look. */
+  .dark .bg-primary,
+  .dark button.bg-primary {
+    box-shadow: 0 0 24px -4px hsl(75 100% 65% / 0.35), 0 0 8px -2px hsl(75 100% 65% / 0.25);
+  }
+  .dark .text-primary {
+    text-shadow: 0 0 18px hsl(75 100% 65% / 0.35);
+  }
+  .dark .text-gradient {
+    background: linear-gradient(135deg, hsl(75 100% 65%), hsl(74 100% 76%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+  }
+
+  /* ── Dark-mode contrast rescues ─────────────────────────────────────
+   * Components that hard-code `bg-white` or `text-primary-foreground`
+   * against a non-primary background need a scoped override in dark so
+   * the layout/typography stay untouched while readability is preserved.
+   */
+  .dark header .text-primary-foreground,
+  .dark header .text-primary-foreground a,
+  .dark header .text-primary-foreground button {
+    color: hsl(0 0% 100%);
+  }
+  /* Common hardcoded light surfaces → dark equivalents in night mode. */
+  .dark .bg-white {
+    background-color: hsl(var(--card));
+  }
+  .dark .bg-gray-50,
+  .dark .bg-slate-50,
+  .dark .bg-neutral-50 {
+    background-color: hsl(var(--muted));
+  }
+  .dark .text-gray-900,
+  .dark .text-slate-900,
+  .dark .text-neutral-900,
+  .dark .text-black {
+    color: hsl(var(--foreground));
+  }
+  .dark .text-gray-700,
+  .dark .text-slate-700 {
+    color: hsl(var(--muted-foreground));
+  }
+  .dark .border-gray-200,
+  .dark .border-slate-200,
+  .dark .border-neutral-200 {
+    border-color: hsl(var(--border));
+  }
+
+  /* Tinted icon-chip containers (bg-primary/10 + text-primary) lose contrast
+   * in dark mode because both tokens resolve to shades of the same neon. Bump
+   * the chip background to a dark card surface so the neon icon reads clearly. */
+  .dark .bg-primary\/10,
+  .dark [class*="bg-primary/"] {
+    background-color: hsl(var(--card)) !important;
+  }
+  /* Selected / gradient cards that blend from primary → something dark:
+   * force legible text on solid-primary surfaces. */
+  .dark .bg-primary {
+    color: hsl(var(--primary-foreground));
+  }
+  .dark .bg-primary * {
+    color: inherit;
+  }
+
+  /* ── Purple brand gradient bands (BecomePartner, hero CTA strips) ──────
+   * In night mode the --purple-* tokens resolve to dark surfaces. Text
+   * using `text-primary-foreground` (dark #0B0F14) on those bands becomes
+   * invisible. Promote in-band text to white and translate the legacy
+   * "bg-white" pill buttons into neon-primary pills so the reference
+   * dark-band look stays intact without touching component markup. */
+  .dark [class*="from-[hsl(var(--purple-"],
+  .dark [class*="bg-gradient-to-r"][class*="purple-"],
+  .dark [class*="bg-gradient-to-br"][class*="purple-"] {
+    color: hsl(0 0% 100%);
+  }
+  .dark [class*="from-[hsl(var(--purple-"] .text-primary-foreground,
+  .dark [class*="from-[hsl(var(--purple-"].text-primary-foreground,
+  .dark [class*="bg-gradient-to-r"][class*="purple-"] .text-primary-foreground {
+    color: hsl(0 0% 100%);
+  }
+  .dark [class*="from-[hsl(var(--purple-"] .text-primary-foreground\/80,
+  .dark [class*="from-[hsl(var(--purple-"] .text-primary-foreground\/70 {
+    color: hsl(216 10% 80%);
+  }
+  /* White CTA pills sitting on dark purple bands → neon primary pills. */
+  .dark [class*="from-[hsl(var(--purple-"] .bg-white,
+  .dark [class*="from-[hsl(var(--purple-"] a.bg-white,
+  .dark [class*="from-[hsl(var(--purple-"] button.bg-white {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  /* Purple-deep text on those CTA pills → dark (for readable neon pill). */
+  .dark [class*="from-[hsl(var(--purple-"] [class*="text-[hsl(var(--purple-deep)"] {
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* ── Product grid "highlight" cards ────────────────────────────────────
+   * Markup uses `bg-purple-deep text-primary-foreground` which in dark
+   * mode collapses to dark-on-dark. Re-skin them as neon-primary cards
+   * so the reference palette's "accent card" pops correctly. */
+  .dark .bg-purple-deep {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary)) !important;
+  }
+  .dark .bg-purple-deep .text-primary-foreground,
+  .dark .bg-purple-deep.text-primary-foreground,
+  .dark .bg-purple-deep .text-primary-foreground\/70,
+  .dark .bg-purple-deep .text-primary-foreground\/80 {
+    color: hsl(var(--primary-foreground));
+  }
+  .dark .bg-purple-deep .text-purple-light,
+  .dark .bg-purple-deep .text-purple-mid {
+    color: hsl(var(--primary-foreground));
+  }
+  .dark .bg-purple-deep .bg-primary-foreground\/20 {
+    background-color: hsl(var(--primary-foreground) / 0.18);
+  }
+
+  /* ── StatsSection "Ready to elevate your lifestyle?" band ─────────────
+   * Component uses `text-background` (white on light mode's dark band).
+   * In night mode `--background` flips to dark, making the text vanish
+   * on the still-dark gradient band. Keep it readable by forcing white. */
+  .dark .gradient-purple-band .text-background,
+  .dark .gradient-purple-band [class^="text-background\/"],
+  .dark .gradient-purple-band [class*=" text-background\/"] {
+    color: hsl(0 0% 100%);
+  }
+  .dark .gradient-purple-band .text-background\/60 {
+    color: hsl(0 0% 100% / 0.75);
+  }
+  .dark .gradient-purple-band .text-background\/50 {
+    color: hsl(0 0% 100% / 0.6);
+  }
+
+  /* ── Calculator type-tab icon chips (bg-accent + text-primary) ────────
+   * In night mode both --accent and --primary resolve to the same neon
+   * green, so the icon becomes invisible on the chip. Scope-fix only
+   * those chips that actually host a neon-primary icon. */
+  .dark .bg-accent:has(> .text-primary),
+  .dark .bg-accent:has(> svg.text-primary) {
+    background-color: hsl(var(--card));
+  }
+}

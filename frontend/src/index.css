@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 258 60% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 252 30% 96%;
+    --secondary-foreground: 258 30% 30%;
+
+    --muted: 252 20% 96%;
+    --muted-foreground: 240 5% 46%;
+
+    --accent: 258 40% 95%;
+    --accent-foreground: 258 40% 30%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 252 15% 92%;
+    --input: 252 15% 92%;
+    --ring: 258 60% 52%;
+
+    --radius: 0.75rem;
+
+    --purple-deep: 258 40% 28%;
+    --purple-dark: 258 45% 38%;
+    --purple-mid: 258 55% 50%;
+    --purple-light: 258 50% 95%;
+    --purple-soft: 258 40% 97%;
+    --purple-accent: 275 45% 58%;
+    --lavender: 252 55% 72%;
+    --lavender-light: 252 45% 85%;
+
+    --dark-surface: 240 12% 12%;
+    --dark-surface-foreground: 0 0% 96%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-outfit antialiased;
+  }
+}
+
+@layer utilities {
+  .gradient-hero {
+    background: linear-gradient(180deg, hsl(258 50% 97%), hsl(0 0% 100%));
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--purple-accent)));
+  }
+
+  .gradient-soft {
+    background: linear-gradient(180deg, hsl(var(--purple-soft)), hsl(var(--background)));
+  }
+
+  .gradient-purple-band {
+    background: linear-gradient(135deg, hsl(var(--dark-surface)), hsl(240 12% 18%));
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--purple-accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark-surface {
+    background-color: hsl(var(--dark-surface));
+    color: hsl(var(--dark-surface-foreground));
+  }
+
+  .pill-tag {
+    @apply inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium;
+  }
+}

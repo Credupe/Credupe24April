@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: credupe
+      POSTGRES_PASSWORD: credupe_dev
+      POSTGRES_DB: credupe
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  backend:
+    build: .
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://credupe:credupe_dev@postgres:5432/credupe?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change_me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_too}
+      SEED_ADMIN_EMAIL: admin@credupe.local
+      SEED_ADMIN_PASSWORD: Admin@12345
+    depends_on: [postgres, redis]
+    ports: ["4000:4000"]
+
+volumes:
+  pgdata:

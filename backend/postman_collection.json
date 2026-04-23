@@ -1,0 +1,141 @@
+{
+  "info": {
+    "name": "Credupe Backend (NestJS)",
+    "_postman_id": "credupe-backend-v1",
+    "description": "Production-grade Credupe API. Set `{{base}}` and use the Login request to populate `{{accessToken}}` / `{{refreshToken}}` collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base", "value": "http://localhost:8001/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}" }] },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"new.user@example.com\",\n  \"password\": \"Secret@123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\"\n}" }
+          }
+        },
+        {
+          "name": "Login (admin)",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const j = pm.response.json().data;",
+              "pm.collectionVariables.set('accessToken', j.accessToken);",
+              "pm.collectionVariables.set('refreshToken', j.refreshToken);"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\"email\":\"admin@credupe.local\",\"password\":\"Admin@12345\"}" }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/auth/refresh",
+            "body": { "mode": "raw", "raw": "{\"refreshToken\":\"{{refreshToken}}\"}" }
+          }
+        },
+        { "name": "Me", "request": { "method": "GET", "url": "{{base}}/auth/me" } },
+        {
+          "name": "OTP request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/auth/otp/request",
+            "body": { "mode": "raw", "raw": "{\"destination\":\"+919999900005\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Loan Products",
+      "item": [
+        { "name": "List (public)", "request": { "method": "GET", "url": "{{base}}/loan-products?loanType=PERSONAL_LOAN" } },
+        {
+          "name": "Eligibility match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/loan-products/eligibility",
+            "body": { "mode": "raw", "raw": "{\"loanType\":\"PERSONAL_LOAN\",\"amount\":500000,\"tenureMonths\":36,\"monthlyIncome\":80000,\"cibilScore\":780}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications (Customer)",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/loan-applications",
+            "body": { "mode": "raw", "raw": "{\"loanType\":\"PERSONAL_LOAN\",\"amountRequested\":500000,\"tenureMonths\":36,\"purpose\":\"Wedding\"}" }
+          }
+        },
+        { "name": "List mine", "request": { "method": "GET", "url": "{{base}}/loan-applications/mine" } },
+        {
+          "name": "Transition → CANCELLED",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/loan-applications/:id/transition",
+            "body": { "mode": "raw", "raw": "{\"toStatus\":\"CANCELLED\",\"note\":\"Changed my mind\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leads (Partner)",
+      "item": [
+        {
+          "name": "Create lead",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/leads",
+            "body": { "mode": "raw", "raw": "{\"customerName\":\"Priya\",\"customerMobile\":\"+919988776655\",\"loanType\":\"HOME_LOAN\",\"amountRequested\":4500000,\"city\":\"Pune\"}" }
+          }
+        },
+        { "name": "List leads", "request": { "method": "GET", "url": "{{base}}/leads" } }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Presign upload",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base}}/documents/presign",
+            "body": { "mode": "raw", "raw": "{\"fileName\":\"pan.pdf\",\"mimeType\":\"application/pdf\",\"tag\":\"KYC\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        { "name": "Admin funnel", "request": { "method": "GET", "url": "{{base}}/analytics/admin/funnel" } },
+        { "name": "Partner summary", "request": { "method": "GET", "url": "{{base}}/analytics/partner/summary" } }
+      ]
+    },
+    { "name": "Health", "request": { "method": "GET", "url": "{{base}}/health" } }
+  ]
+}

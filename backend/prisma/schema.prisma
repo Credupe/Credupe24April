@@ -1,0 +1,453 @@
+// Credupe — Prisma schema (PostgreSQL)
+// ---------------------------------------------------------------------------
+// All business entities live here. Soft-delete is opt-in via `deletedAt`.
+// Audit columns (createdBy / updatedBy) are populated from the request context
+// by the service layer (see RequestContextInterceptor).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── RBAC / identity ────────────────────────────────────────────────────────
+enum Role {
+  CUSTOMER
+  PARTNER
+  ADMIN
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  mobile       String?  @unique
+  passwordHash String?
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+  createdBy    String?
+  updatedBy    String?
+
+  customerProfile CustomerProfile?
+  partnerProfile  PartnerProfile?
+  refreshTokens   RefreshToken[]
+  otps            OtpCode[]
+  auditLogs       AuditLog[]     @relation("AuditActor")
+  notifications   Notification[]
+  applications    LoanApplication[]
+  leadsCreated    Lead[]          @relation("LeadCreatedBy")
+
+  @@index([role, isActive])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  userAgent   String?
+  ip          String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OtpCode {
+  id         String   @id @default(uuid())
+  userId     String?
+  channel    String    // "mobile" | "email"
+  destination String   // phone or email
+  codeHash   String
+  purpose    String    // "login" | "verify" | "reset"
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([destination, purpose])
+}
+
+// ─── Customer profile ───────────────────────────────────────────────────────
+enum EmploymentType {
+  SALARIED
+  SELF_EMPLOYED
+  BUSINESS
+  FREELANCER
+  UNEMPLOYED
+  STUDENT
+}
+
+model CustomerProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  firstName       String?
+  lastName        String?
+  dob             DateTime?
+  gender          String?
+  city            String?
+  state           String?
+  pincode         String?
+  panLast4        String?   // never store full PAN — only last-4 for display
+  aadhaarLast4    String?
+  employmentType  EmploymentType?
+  monthlyIncome   Decimal? @db.Decimal(14, 2)
+  employerName    String?
+  cibilRange      String?   // e.g. "750-800" — MVP proxy for real bureau score
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  createdBy       String?
+  updatedBy       String?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Partner (DSA/Agent) ────────────────────────────────────────────────────
+model PartnerProfile {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  businessName  String
+  contactPerson String?
+  city          String?
+  state         String?
+  pincode       String?
+  gstNumber     String?
+  panLast4      String?
+  kycStatus     KycStatus @default(PENDING)
+  parentPartnerId String?  // optional hierarchy: Admin → Manager → Agent
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  createdBy     String?
+  updatedBy     String?
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        PartnerProfile? @relation("PartnerHierarchy", fields: [parentPartnerId], references: [id], onDelete: SetNull)
+  children      PartnerProfile[] @relation("PartnerHierarchy")
+  leads         Lead[]
+  commissions   Commission[]
+}
+
+// ─── Lender & Loan Products ─────────────────────────────────────────────────
+enum LoanType {
+  PERSONAL_LOAN
+  HOME_LOAN
+  LOAN_AGAINST_PROPERTY
+  BUSINESS_LOAN
+  CAR_LOAN
+  USED_CAR_LOAN
+  TWO_WHEELER_LOAN
+  EDUCATION_LOAN
+  GOLD_LOAN
+  MICRO_LOAN
+  CREDIT_CARD
+}
+
+model Lender {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  slug         String   @unique
+  logoUrl      String?
+  active       Boolean  @default(true)
+  integrationMode String @default("mock") // mock | api | webhook
+  webhookUrl   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+  createdBy    String?
+  updatedBy    String?
+
+  products     LoanProduct[]
+  applications LoanApplication[]
+}
+
+model LoanProduct {
+  id                 String    @id @default(uuid())
+  lenderId           String
+  name               String
+  slug               String    @unique
+  loanType           LoanType
+  version            Int       @default(1)
+  minAmount          Decimal   @db.Decimal(14, 2)
+  maxAmount          Decimal   @db.Decimal(14, 2)
+  minTenureMonths    Int
+  maxTenureMonths    Int
+  minInterestRate    Decimal   @db.Decimal(5, 2)
+  maxInterestRate    Decimal   @db.Decimal(5, 2)
+  processingFeePct   Decimal?  @db.Decimal(5, 2)
+  minMonthlyIncome   Decimal?  @db.Decimal(14, 2)
+  minCibilScore      Int?
+  allowedCities      String[]  @default([])
+  allowedStates      String[]  @default([])
+  commissionPct      Decimal?  @db.Decimal(5, 2)
+  active             Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+  createdBy          String?
+  updatedBy          String?
+
+  lender             Lender    @relation(fields: [lenderId], references: [id], onDelete: Cascade)
+  applications       LoanApplication[]
+  leads              Lead[]
+
+  @@index([loanType, active])
+}
+
+// ─── Loan Applications (B2C) ────────────────────────────────────────────────
+enum ApplicationStatus {
+  LEAD
+  LOGIN
+  DOC_PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DISBURSED
+  CANCELLED
+}
+
+model LoanApplication {
+  id              String             @id @default(uuid())
+  referenceNo     String             @unique
+  userId          String
+  productId       String?
+  lenderId        String?
+  loanType        LoanType
+  amountRequested Decimal            @db.Decimal(14, 2)
+  tenureMonths    Int
+  purpose         String?
+  status          ApplicationStatus  @default(LEAD)
+  formData        Json?              // loan-type-specific dynamic fields
+  rejectionReason String?
+  approvedAmount  Decimal?           @db.Decimal(14, 2)
+  approvedTenure  Int?
+  approvedRate    Decimal?           @db.Decimal(5, 2)
+  disbursedAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  deletedAt       DateTime?
+  createdBy       String?
+  updatedBy       String?
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product         LoanProduct?       @relation(fields: [productId], references: [id], onDelete: SetNull)
+  lender          Lender?            @relation(fields: [lenderId], references: [id], onDelete: SetNull)
+  documents       Document[]
+  statusHistory   ApplicationStatusHistory[]
+  lead            Lead?
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+model ApplicationStatusHistory {
+  id            String   @id @default(uuid())
+  applicationId String
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  note          String?
+  changedBy     String?
+  createdAt     DateTime @default(now())
+
+  application   LoanApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+// ─── Leads (B2B) ────────────────────────────────────────────────────────────
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  APPLICATION_CREATED
+  DROPPED
+  CONVERTED
+}
+
+model Lead {
+  id             String     @id @default(uuid())
+  partnerId      String
+  createdById    String
+  customerName   String
+  customerMobile String
+  customerEmail  String?
+  loanType       LoanType
+  amountRequested Decimal?  @db.Decimal(14, 2)
+  productId      String?
+  city           String?
+  status         LeadStatus @default(NEW)
+  notes          String?
+  applicationId  String?    @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  deletedAt      DateTime?
+  createdBy      String?
+  updatedBy      String?
+
+  partner        PartnerProfile   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  createdByUser  User             @relation("LeadCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  product        LoanProduct?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  application    LoanApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  followUps      LeadFollowUp[]
+  commissions    Commission[]
+
+  @@index([partnerId, status])
+}
+
+model LeadFollowUp {
+  id          String   @id @default(uuid())
+  leadId      String
+  scheduledAt DateTime
+  note        String?
+  doneAt      DateTime?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+// ─── Commissions ────────────────────────────────────────────────────────────
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  REVERSED
+}
+
+model Commission {
+  id           String           @id @default(uuid())
+  partnerId    String
+  leadId       String?
+  productId    String?
+  amount       Decimal          @db.Decimal(14, 2)
+  payoutPct    Decimal?         @db.Decimal(5, 2)
+  status       CommissionStatus @default(PENDING)
+  paidAt       DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  partner      PartnerProfile   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  lead         Lead?            @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId, status])
+}
+
+// ─── Documents ──────────────────────────────────────────────────────────────
+enum DocumentTag {
+  KYC
+  INCOME
+  PROPERTY
+  BANK_STATEMENT
+  OTHER
+}
+
+enum DocumentStatus {
+  UPLOADED
+  VERIFIED
+  REJECTED
+}
+
+model Document {
+  id            String         @id @default(uuid())
+  ownerUserId   String
+  applicationId String?
+  tag           DocumentTag    @default(OTHER)
+  fileName      String
+  mimeType      String?
+  sizeBytes     Int?
+  storageKey    String         // S3/R2 object key
+  version       Int            @default(1)
+  status        DocumentStatus @default(UPLOADED)
+  rejectionReason String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  createdBy     String?
+  updatedBy     String?
+
+  application   LoanApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId])
+  @@index([applicationId])
+}
+
+// ─── Notifications ──────────────────────────────────────────────────────────
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+model NotificationTemplate {
+  id        String   @id @default(uuid())
+  code      String   @unique  // e.g. "APPLICATION_STATUS_CHANGED"
+  channel   NotificationChannel
+  subject   String?
+  body      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id         String               @id @default(uuid())
+  userId     String
+  channel    NotificationChannel
+  templateCode String?
+  title      String
+  body       String
+  status     NotificationStatus   @default(PENDING)
+  readAt     DateTime?
+  metadata   Json?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+// ─── Audit trail ────────────────────────────────────────────────────────────
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}
