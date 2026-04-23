@@ -1,36 +1,6 @@
 {
   "version": 3,
   "middleware": {},
-  "functions": {
-    "/calculator/[slug]/page": {
-      "files": [
-        "server/server-reference-manifest.js",
-        "server/app/calculator/[slug]/page_client-reference-manifest.js",
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/app/calculator/[slug]/page.js"
-      ],
-      "name": "app/calculator/[slug]/page",
-      "page": "/calculator/[slug]/page",
-      "matchers": [
-        {
-          "regexp": "^/calculator/(?<slug>[^/]+?)$",
-          "originalSource": "/calculator/[slug]"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "env": {
-        "__NEXT_BUILD_ID": "O89oFssjRHVKThZF8oZyT",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "aLnbtsji2jd+cJfeuoTzsNmKiFVBx9I+xQdDJ677KzI=",
-        "__NEXT_PREVIEW_MODE_ID": "49ca8436b971ea1762db5fada8f0e8f8",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "b828b4ac76488cd328a21fc1b0c50f22d7303741accc0d1e7e03db9be152f527",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "be52a2776e4e190f3075382048a17b8b37787949f942dccd78567bfa7cbb5493"
-      }
-    }
-  },
+  "functions": {},
   "sortedMiddleware": []
 }
