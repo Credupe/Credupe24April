@@ -156,7 +156,13 @@ export const credupeApi = {
     },
     async logout() {
       try { await request("POST", "/auth/logout", { refreshToken: credupeTokens.getRefresh() }); }
-      catch { /* non-fatal */ }
+      catch (err) {
+        // Logout server-side is best-effort — the client still clears its
+        // tokens below. Log in dev to catch regressions.
+        if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+          console.warn("[credupe-api] logout request failed:", err);
+        }
+      }
       credupeTokens.clear();
     },
     async requestOtp(mobile: string) {

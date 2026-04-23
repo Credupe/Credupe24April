@@ -1,3 +1,26 @@
+# 2026-04-23 (PM) — Code-review fixes, surgical pass
+### Applied
+- **`src/app/layout.tsx` — removed `dangerouslySetInnerHTML`**: theme-preload script now served from `public/theme-preload.js` via `<Script src="…" strategy="beforeInteractive">`. Zero inline-script surface, same "no-theme-flash" guarantee. Verified: `html.className` = `"light"`, `colorScheme` = `"light"` on first paint.
+- **`src/hooks/useAuth.tsx` — stale-closure bug**: the Supabase `onAuthStateChange` callback captured `authSource` at effect-setup time and could clobber a live Credupe session. Added `authSourceRef` that mirrors the latest value.
+- **`src/lib/credupe-api.ts` + `src/components/ThemeProvider.tsx` — empty catch blocks**: both now log via `console.warn` in non-production only (prod stays silent — these paths are genuinely non-fatal: logout server call, localStorage quota).
+- **`src/screens/NotFound.tsx`**: removed stray `console.error` in prod; path now rendered inline in the 404 copy for debuggability.
+- **`src/screens/ProductCalculator.tsx`**: `calculatorProducts.filter().slice()` hoisted into `useMemo([slug])` so slider movement doesn't re-filter the "other calculators" grid on every render.
+
+### Investigated but skipped (false positives or out-of-scope)
+- **localStorage → httpOnly cookies**: architectural migration touching NestJS auth + CORS + Supabase fallback. Flagged to the user with explicit scope options; not applied without sign-off.
+- **"CustomerDashboard missing 10+ deps"**: all referenced names (`LOAN_TYPE_LABEL`, `STATUS_TO_STAGE`, `formatAmount`, `mockApplications`) are module-level constants — adding them to the dep array would be noise, not a fix. Current `[authSource]` is correct.
+- **Calculator useMemo "missing emi/loan deps"**: `emiVal`, `n`, `r`, `maxEmi`, `maxLoan` are **locals** inside the memo body — not closed-over values. Static analyzer false positive.
+- **Python `is` vs `==` (33 instances)**: every occurrence in `server.py` / tests is `is None` / `is True` / `is not None`, which are correct PEP-8 idioms. No fix needed.
+- **Component-splitting of 400+ line loan pages** & **CreduAIChat complexity**: pure maintainability refactors with regression risk and zero correctness/UX impact. Deferred.
+- **63 "array index as key" instances**: most are on static, never-reordered arrays (`features.map((f, i)`) where the index is stable. Fixing blindly would add churn without a real bug. Can revisit per-file if reordering is ever introduced.
+
+### Regression verified
+- `/`, `/login`, `/personal-loan`, `/calculators`, `/calculator/personal-loan-emi-calculator` → 200 with CSS.
+- `/nonexistent-xyz` → 404.
+- Login email field retains focus through full continuous typing.
+- Theme preload static file (`/theme-preload.js`) serves 509 bytes, applied before hydration.
+
+
 # 2026-04-23 — Perf + Login focus fix + CTA rollout
 ### Fixed
 - **Login email-input focus bug**: `InputField` was defined inside the `Login` component, so React remounted the `<input>` every keystroke. Extracted to a module-level `memo`-wrapped component in `src/screens/Login.tsx`. Verified via Playwright — typing `test@credupe.com` now keeps focus.

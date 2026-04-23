@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import { useState, useEffect, useRef, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import { credupeApi, credupeTokens } from "@/lib/credupe-api";
@@ -40,6 +40,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [authSource, setAuthSource] = useState<"credupe" | "supabase" | null>(null);
   const [isReady, setIsReady] = useState(false);
+  // Mirror `authSource` into a ref so the Supabase listener below reads the
+  // current value instead of the stale one captured at effect-setup time.
+  const authSourceRef = useRef<"credupe" | "supabase" | null>(null);
+  useEffect(() => { authSourceRef.current = authSource; }, [authSource]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,13 +79,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     bootstrap();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (authSource === "credupe") return; // Credupe wins; don't clobber
+      // Read the LATEST authSource via ref (not the stale closure value).
+      if (authSourceRef.current === "credupe") return; // Credupe wins; don't clobber
       setSession(s);
       setUser(s?.user ?? null);
       setAuthSource(s ? "supabase" : null);
     });
 
     return () => { cancelled = true; subscription.unsubscribe(); };
+    // Intentionally runs once — bootstrap + Supabase subscription lifecycle.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

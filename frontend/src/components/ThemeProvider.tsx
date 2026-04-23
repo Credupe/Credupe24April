@@ -34,7 +34,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (t: Theme) => {
     apply(t);
     setThemeState(t);
-    try { window.localStorage.setItem("theme", t); } catch { /* quota, etc. */ }
+    try { window.localStorage.setItem("theme", t); }
+    catch (err) {
+      // localStorage can throw (quota exceeded, private browsing, disabled
+      // cookies). Surface it in dev so we notice regressions, but don't
+      // break the UI in prod — the theme still applies for the session.
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[theme] persist failed:", err);
+      }
+    }
   };
 
   const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
@@ -48,17 +56,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 export const useTheme = () => useContext(ThemeContext);
 
-/**
- * Inline script that runs before React hydration to set the correct class
- * on <html> so we never flash the wrong theme. Emit this in the <head>.
- */
-export const themePreloadScript = `
-(function(){try{
-  var t = localStorage.getItem('theme');
-  var d = t === 'dark';
-  var r = document.documentElement;
-  r.classList.remove('light','dark');
-  r.classList.add(d ? 'dark' : 'light');
-  r.style.colorScheme = d ? 'dark' : 'light';
-}catch(e){}})();
-`;
+// `themePreloadScript` is no longer exported — the same logic now lives
+// in `public/theme-preload.js` and is loaded via a <Script src="…">
+// tag in app/layout.tsx, so the app no longer needs
+// dangerouslySetInnerHTML.

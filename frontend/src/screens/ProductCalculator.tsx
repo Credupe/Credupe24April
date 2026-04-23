@@ -60,6 +60,13 @@ const ProductCalculator = () => {
 
   const principalPercent = emiResult.totalAmount > 0 ? (amount / emiResult.totalAmount) * 100 : 50;
 
+  // Memoise the "other calculators" grid so the filter/slice isn't
+  // re-computed on every render (triggered by slider moves).
+  const otherCalculators = useMemo(
+    () => calculatorProducts.filter((c) => c.slug !== slug).slice(0, 8),
+    [slug],
+  );
+
   if (!product) {
     return (
       <div className="min-h-screen bg-background max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
@@ -347,10 +354,7 @@ const ProductCalculator = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">Explore Other Calculators</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {calculatorProducts
-              .filter((c) => c.slug !== slug)
-              .slice(0, 8)
-              .map((c) => {
+            {otherCalculators.map((c) => {
                 const CIcon = c.icon;
                 return (
                   <Link key={c.slug} to={`/calculator/${c.slug}`} className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/30 hover:shadow-sm transition-all group">
