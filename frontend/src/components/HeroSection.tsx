@@ -14,7 +14,7 @@ const HeroSection = () => {
           >
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight">
-              India's Best
+              India's Trusted
               <br />
               Platform for
               <br />
