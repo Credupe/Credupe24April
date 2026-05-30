@@ -1,0 +1,64 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare (Staging)
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 1. Install & build backend
+      - name: Install Backend Dependencies
+        run: |
+          cd cloudflare-backend
+          npm install
+
+      - name: Migrate Staging Database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd cloudflare-backend
+          npx wrangler d1 migrations apply credupe-db-staging --remote --env staging
+
+      - name: Deploy Backend Worker (Staging)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd cloudflare-backend
+          npx wrangler deploy --env staging
+
+      # 2. Build & deploy frontend
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build Frontend via Next-on-Pages
+        env:
+          NEXT_PUBLIC_BACKEND_URL: https://credupe-api-staging.credupe.workers.dev
+        run: |
+          cd frontend
+          npx @cloudflare/next-on-pages
+
+      - name: Deploy to Cloudflare Pages (Staging)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd frontend
+          npx wrangler pages deploy .vercel/output/static --project-name credupe-frontend-staging --branch staging

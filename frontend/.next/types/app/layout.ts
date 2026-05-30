@@ -1,4 +1,4 @@
-// File: /Users/abhishek/code/personal/credupe/Credupe24April/frontend/src/app/layout.tsx
+// File: D:\ONeDrive\Desktop\EdFin\Credupe24April\frontend\src\app\layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

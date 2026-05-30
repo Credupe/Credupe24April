@@ -41,3 +41,20 @@ CORS_ORIGINS = "*"              # tighten to your Pages domain in prod
 # ─── Local dev overrides ────────────────────────────────────────────────────
 # `wrangler dev` creates a local D1 shadow automatically; no extra config
 # needed. Run migrations locally with `wrangler d1 migrations apply credupe --local`.
+
+# ─── Staging Environment Configuration ──────────────────────────────────────
+[env.staging]
+name = "credupe-api-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "credupe-db-staging"
+database_id = "e87a3726-0767-4271-bd5c-1be07f0c0fde"  
+migrations_dir = "migrations"
+
+[env.staging.vars]
+API_PREFIX = "/api/v1"
+JWT_ACCESS_TTL = "900"
+JWT_REFRESH_TTL = "2592000"
+BCRYPT_SALT_ROUNDS = "10"
+CORS_ORIGINS = "https://credupe-frontend-staging.pages.dev"
