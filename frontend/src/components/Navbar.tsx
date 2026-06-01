@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, Search, ChevronDown, CreditCard, Briefcase, BarChart3, Building2, Store, Mail, LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import SearchDialog from "@/components/SearchDialog";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 const icon = "/assets/credupe-icon.jpg";
 const navItems = [
-  { label: "Loans", hasDropdown: true, icon: Briefcase, dropdownItems: [{ label: "Personal Loan", href: "/personal-loan" }, { label: "Education Loan", href: "/education-loan" }, { label: "Home Loan", href: "/home-loan" }, { label: "Loan Against Property", href: "/loan-against-property" }, { label: "Car Loan", href: "/car-loan" }, { label: "Used Car Loan", href: "/used-car-loan" }, { label: "Two Wheeler Loan", href: "/two-wheeler-loan" }, { label: "Gold Loan", href: "/gold-loan" }] },
+  { label: "Loans", hasDropdown: true, icon: Briefcase, dropdownItems: [{ label: "Education Loan", href: "/education-loan" }, { label: "Personal Loan", href: "/personal-loan" }, { label: "Home Loan", href: "/home-loan" }, { label: "Loan Against Property", href: "/loan-against-property" }, { label: "Car Loan", href: "/car-loan" }, { label: "Used Car Loan", href: "/used-car-loan" }, { label: "Two Wheeler Loan", href: "/two-wheeler-loan" }, { label: "Gold Loan", href: "/gold-loan" }] },
   { label: "Business Loans", hasDropdown: true, icon: Store, dropdownItems: [{ label: "Business Loan", href: "/business-loan" }, { label: "Micro Loan", href: "/micro-loan" }] },
   { label: "Credit Cards", hasDropdown: true, icon: CreditCard, dropdownItems: [{ label: "Credit Cards", href: "/credit-cards" }] },
   { label: "Credit Score", hasDropdown: false, icon: BarChart3, href: "/credit-score" },
@@ -20,6 +21,54 @@ const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { config, fetchConfig } = useUIConfigStore();
+
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const getDashboardHref = () => {
+    const role = user?.user_metadata?.role;
+    if (role === "ADMIN") return "/admin-dashboard";
+    if (role === "PARTNER") return "/partner-dashboard";
+    return "/customer-dashboard";
+  };
+
+  const filteredNavItems = navItems
+    .filter((item) => {
+      if (item.label === "Business Loans" && config.navbar?.hideBusinessLoans === true) {
+        return false;
+      }
+      return true;
+    })
+    .map((item) => {
+      if (item.label === "Loans" && item.dropdownItems) {
+        return {
+          ...item,
+          dropdownItems: item.dropdownItems.filter((sub) => {
+            if (sub.label === "Car Loan" && config.navbar?.hideCarLoan === true) {
+              return false;
+            }
+            if (sub.label === "Used Car Loan" && config.navbar?.hideUsedCarLoan === true) {
+              return false;
+            }
+            if (sub.label === "Two Wheeler Loan" && config.navbar?.hideTwoWheelerLoan === true) {
+              return false;
+            }
+            if (sub.label === "Gold Loan" && config.navbar?.hideGoldLoan === true) {
+              return false;
+            }
+            return true;
+          }),
+        };
+      }
+      return item;
+    });
 
   return (
     <>
@@ -46,7 +95,7 @@ const Navbar = () => {
           </Link>
 
           <nav className="hidden xl:flex items-center gap-0.5 mx-4">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <div
                 key={item.label}
                 className="relative"
@@ -93,19 +142,39 @@ const Navbar = () => {
             <ThemeToggle className="hidden sm:inline-flex" />
 
             {user ? (
-              <>
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted text-sm">
+              <div
+                className="relative hidden sm:block"
+                onMouseEnter={() => setOpenDropdown("user")}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
+                <button
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-sm hover:bg-muted/80 transition-colors"
+                >
                   <User className="w-3.5 h-3.5 text-primary" />
                   <span className="text-foreground font-medium max-w-[120px] truncate">{user.email?.split("@")[0]}</span>
-                </div>
-                <button
-                  onClick={signOut}
-                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  Logout
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
-              </>
+                {openDropdown === "user" && (
+                  <div className="absolute right-0 top-full pt-1.5 w-48 z-50">
+                    <div className="bg-card border border-border rounded-xl shadow-lg py-1.5">
+                      <Link
+                        to={getDashboardHref()}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-150 rounded-t-lg"
+                      >
+                        <Briefcase className="w-4 h-4" />
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all duration-150 rounded-b-lg text-left"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <button
@@ -130,7 +199,7 @@ const Navbar = () => {
 
         {mobileOpen && (
           <div className="xl:hidden border-t border-border bg-background p-4 space-y-1 max-h-[70vh] overflow-y-auto">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.label}>
@@ -158,9 +227,23 @@ const Navbar = () => {
             })}
             <div className="flex gap-2 pt-3">
               {user ? (
-                <button onClick={signOut} className="flex-1 px-4 py-2.5 rounded-full border border-border text-foreground text-sm font-medium">
-                  Logout
-                </button>
+                <>
+                  <Link
+                    to={getDashboardHref()}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Briefcase className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
               ) : (
                 <>
                   <button onClick={() => navigate("/login?mode=signup")} className="flex-1 px-4 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold">

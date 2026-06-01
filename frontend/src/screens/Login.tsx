@@ -95,7 +95,18 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) navigate("/");
+    if (user) {
+      const role = user.user_metadata?.role;
+      if (role === "CUSTOMER") {
+        navigate("/customer-dashboard");
+      } else if (role === "PARTNER") {
+        navigate("/partner-dashboard");
+      } else if (role === "ADMIN") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/");
+      }
+    }
   }, [user, navigate]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -113,14 +124,23 @@ const Login = () => {
     try {
       if (isSignUp) {
         try {
-          await credupeApi.auth.register({
+          const res = await credupeApi.auth.register({
             email,
             password,
             firstName: firstName || undefined,
             lastName: lastName || undefined,
             mobile: phone ? `+${phone.replace(/\D/g, "")}` : undefined,
           });
-          window.location.href = "/";
+          const role = res.user?.role;
+          if (role === "CUSTOMER") {
+            window.location.href = "/customer-dashboard";
+          } else if (role === "PARTNER") {
+            window.location.href = "/partner-dashboard";
+          } else if (role === "ADMIN") {
+            window.location.href = "/admin-dashboard";
+          } else {
+            window.location.href = "/";
+          }
           return;
         } catch (e) {
           if (e instanceof CredupeApiError && (e.status === 409 || e.status === 400)) {
@@ -148,8 +168,17 @@ const Login = () => {
         }
       } else {
         try {
-          await credupeApi.auth.login(email, password);
-          window.location.href = "/";
+          const res = await credupeApi.auth.login(email, password);
+          const role = res.user?.role;
+          if (role === "CUSTOMER") {
+            window.location.href = "/customer-dashboard";
+          } else if (role === "PARTNER") {
+            window.location.href = "/partner-dashboard";
+          } else if (role === "ADMIN") {
+            window.location.href = "/admin-dashboard";
+          } else {
+            window.location.href = "/";
+          }
           return;
         } catch (e) {
           if (e instanceof CredupeApiError && e.status === 401) {

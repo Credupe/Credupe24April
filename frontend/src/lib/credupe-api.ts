@@ -262,6 +262,11 @@ export const credupeApi = {
     markAllRead() { return request<any>("PATCH", "/notifications/read-all"); },
   },
 
+  uiConfig: {
+    get() { return request<any>("GET", "/ui-config", undefined, { auth: false }); },
+    patch(key: string, value: boolean) { return request<any>("PATCH", "/ui-config", { key, value }); },
+  },
+
   health() { return request<any>("GET", "/health", undefined, { auth: false }); },
 };
 

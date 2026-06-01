@@ -42,11 +42,21 @@ route.post("/register", async (c) => {
   if (!parsed.success) return fail(c, 400, "VALIDATION_ERROR", parsed.error.issues.map((i) => i.message));
   const { email, password, firstName, lastName, mobile, role, businessName } = parsed.data;
   const db = drizzle(c.env.DB);
+  
+  // Check for duplicate email
   const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
   if (existing.length) return fail(c, 409, "UNIQUE_VIOLATION", "Email already registered");
+  
+  // Sanitize mobile: treat empty strings as null to prevent SQLite UNIQUE constraint failures
+  const mobileValue = (mobile && mobile.trim()) ? mobile.trim() : null;
+  if (mobileValue) {
+    const existingMobile = await db.select().from(users).where(eq(users.mobile, mobileValue)).limit(1);
+    if (existingMobile.length) return fail(c, 409, "UNIQUE_VIOLATION", "Mobile number already registered");
+  }
+
   const id = newId("u");
   const passwordHash = await hashPassword(password, Number(c.env.BCRYPT_SALT_ROUNDS || 10));
-  await db.insert(users).values({ id, email, mobile: mobile ?? null, passwordHash, role });
+  await db.insert(users).values({ id, email, mobile: mobileValue, passwordHash, role });
   if (role === "CUSTOMER") {
     await db.insert(customerProfiles).values({ id: newId("cp"), userId: id, firstName: firstName ?? null, lastName: lastName ?? null });
   } else if (role === "PARTNER") {

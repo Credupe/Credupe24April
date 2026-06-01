@@ -390,3 +390,14 @@ export const quotes = sqliteTable(
   },
   (t) => ({ slugIdx: uniqueIndex("idx_quotes_slug").on(t.shareSlug) }),
 );
+
+/* ─────────────────────────── UI Config ────────────────────────────────── */
+export const uiConfigs = sqliteTable(
+  "ui_configs",
+  {
+    config: text("config").primaryKey(), // Using 'config' column to store the key/name as requested
+    value: integer("value", { mode: "boolean" }).notNull(),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  }
+);

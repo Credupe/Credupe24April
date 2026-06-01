@@ -41,7 +41,16 @@ export const Link = React.forwardRef<HTMLAnchorElement, AnyProps>(function Link(
   );
 });
 
-export const NavLink = React.forwardRef<HTMLAnchorElement, AnyProps>(function NavLink(
+export interface NavLinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "className" | "style" | "children"> {
+  to?: any;
+  href?: any;
+  end?: boolean;
+  className?: string | ((props: { isActive: boolean; isPending: boolean }) => string);
+  style?: React.CSSProperties | ((props: { isActive: boolean; isPending: boolean }) => React.CSSProperties);
+  children?: React.ReactNode | ((props: { isActive: boolean; isPending: boolean }) => React.ReactNode);
+}
+
+export const NavLink = React.forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
   { to, href, className, style, children, end, ...rest },
   ref,
 ) {

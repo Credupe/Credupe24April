@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 
 const testimonials = [
   { name: "Rajesh K.", role: "Home Loan Customer", text: "Got my home loan approved in just 3 days. The process was seamless and transparent.", rating: 5 },
@@ -11,6 +12,12 @@ const testimonials = [
 ];
 
 const WallOfWin = () => {
+  const { config } = useUIConfigStore();
+
+  if (config.sections?.hideWallOfWin) {
+    return null;
+  }
+
   return (
     <section className="py-10 md:py-14">
       <div className="text-center mb-10">

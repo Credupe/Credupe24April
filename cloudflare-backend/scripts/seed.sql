@@ -56,3 +56,25 @@ INSERT OR REPLACE INTO loan_products (
     20000000, 500000000, 12, 60, 1400, 2199, 250, 5000000, 700),
   ('p_bajaj_bl', 'l_bajaj', 'Bajaj Business Loan', 'bajaj-business-loan', 'BUSINESS_LOAN',
     20000000, 800000000, 12, 60, 1400, 2299, 300, 4000000, 685);
+
+-- ─── UI Config (Key-Value pairs) ──────────────────────────────────────────
+INSERT OR REPLACE INTO ui_configs (config, value) VALUES
+  ('navbar.hideCarLoan', 0),
+  ('navbar.hideUsedCarLoan', 0),
+  ('navbar.hideTwoWheelerLoan', 0),
+  ('navbar.hideGoldLoan', 0),
+  ('navbar.hideBusinessLoans', 0),
+  ('sections.hidePartnerStats', 0),
+  ('sections.hideWallOfWin', 0),
+  ('sections.hideBankingEcosystem', 0),
+  ('sections.hideStatsSection', 0),
+  ('sections.hideFooterCarLoan', 0),
+  ('sections.hideFooterTwoWheelerLoan', 0),
+  ('sections.hideFooterBusinessLoan', 0),
+  ('sections.hideFooterGoldLoan', 0),
+  ('sections.hideAboutUsCompanyStats', 0),
+  ('sections.hideAboutUsStats', 0),
+  ('sections.hideAboutUsFounders', 0),
+  ('sections.hideAboutUsAdvisors', 0),
+  ('sections.hideAboutUsInvestors', 0),
+  ('sections.hideAboutUsPress', 0);

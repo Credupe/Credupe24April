@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 import { Target, Eye, Users, Award, TrendingUp, Shield, Heart, Zap, Sparkles, Building2, BarChart3, PiggyBank } from "lucide-react";
 const aboutUsIllustration = "/assets/about-us-illustration.png";
 const stats = [
@@ -47,6 +48,8 @@ const fadeUp = {
 };
 
 const AboutUs = () => {
+  const { config } = useUIConfigStore();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -67,20 +70,22 @@ const AboutUs = () => {
               <p className="text-sm md:text-base opacity-90 mb-6 leading-relaxed max-w-lg">
                 From comparing loan offers across 80+ banks to checking your credit score for free — CreduPe is India's most trusted platform for loans, credit cards, and investments.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center gap-2 text-sm opacity-80">
-                  <Shield className="w-4 h-4" />
-                  <span>10M+ Users Served</span>
+              {!config.sections?.hideAboutUsCompanyStats && (
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 text-sm opacity-80">
+                    <Shield className="w-4 h-4" />
+                    <span>10M+ Users Served</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm opacity-80">
+                    <Building2 className="w-4 h-4" />
+                    <span>80+ Banking Partners</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm opacity-80">
+                    <Sparkles className="w-4 h-4" />
+                    <span>₹50,000Cr+ Disbursed</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm opacity-80">
-                  <Building2 className="w-4 h-4" />
-                  <span>80+ Banking Partners</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm opacity-80">
-                  <Sparkles className="w-4 h-4" />
-                  <span>₹50,000Cr+ Disbursed</span>
-                </div>
-              </div>
+              )}
             </div>
             <div className="flex justify-center">
               <img
@@ -96,18 +101,20 @@ const AboutUs = () => {
       </section>
 
       {/* Stats */}
-      <section className="border-b border-border">
-        <div className="container py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((s) => (
-              <motion.div key={s.label} {...fadeUp} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">{s.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{s.label}</div>
-              </motion.div>
-            ))}
+      {!config.sections?.hideAboutUsStats && (
+        <section className="border-b border-border">
+          <div className="container py-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((s) => (
+                <motion.div key={s.label} {...fadeUp} className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-primary">{s.value}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{s.label}</div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Mission & Vision */}
       <section className="container py-16">
@@ -155,85 +162,93 @@ const AboutUs = () => {
       </section>
 
       {/* Founders */}
-      <section className="container py-16">
-        <motion.div {...fadeUp} className="text-center mb-12">
-          <p className="text-primary font-medium mb-2">Our Founders</p>
-          <h2 className="text-3xl font-bold text-foreground">Shaping CreduPe</h2>
-        </motion.div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {team.map((m) => (
-            <motion.div key={m.name} {...fadeUp} className="text-center">
-              <div className="w-32 h-32 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center">
-                <Users className="w-12 h-12 text-primary/40" />
-              </div>
-              <h3 className="font-semibold text-foreground">{m.name}</h3>
-              <p className="text-sm text-primary font-medium">{m.role}</p>
-              <p className="text-xs text-muted-foreground mt-2">{m.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-        <div className="text-center mt-10">
-          <p className="text-muted-foreground mb-4">Build your career at CreduPe.</p>
-          <button className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            Join Us
-          </button>
-        </div>
-      </section>
-
-      {/* Advisors */}
-      <section className="border-t border-border py-16">
-        <div className="container">
+      {!config.sections?.hideAboutUsFounders && (
+        <section className="container py-16">
           <motion.div {...fadeUp} className="text-center mb-12">
-            <p className="text-primary font-medium mb-2">Our Advisors</p>
-            <h2 className="text-3xl font-bold text-foreground">Supporting Us</h2>
+            <p className="text-primary font-medium mb-2">Our Founders</p>
+            <h2 className="text-3xl font-bold text-foreground">Shaping CreduPe</h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {advisors.map((a) => (
-              <motion.div key={a.name} {...fadeUp} className="bg-card border border-border rounded-2xl p-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center">
-                  <Award className="w-8 h-8 text-primary/40" />
+            {team.map((m) => (
+              <motion.div key={m.name} {...fadeUp} className="text-center">
+                <div className="w-32 h-32 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                  <Users className="w-12 h-12 text-primary/40" />
                 </div>
-                <h3 className="font-semibold text-foreground">{a.name}</h3>
-                <p className="text-sm text-primary">{a.role}</p>
-                <p className="text-xs text-muted-foreground">{a.org}</p>
+                <h3 className="font-semibold text-foreground">{m.name}</h3>
+                <p className="text-sm text-primary font-medium">{m.role}</p>
+                <p className="text-xs text-muted-foreground mt-2">{m.desc}</p>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
+          <div className="text-center mt-10">
+            <p className="text-muted-foreground mb-4">Build your career at CreduPe.</p>
+            <button className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+              Join Us
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Advisors */}
+      {!config.sections?.hideAboutUsAdvisors && (
+        <section className="border-t border-border py-16">
+          <div className="container">
+            <motion.div {...fadeUp} className="text-center mb-12">
+              <p className="text-primary font-medium mb-2">Our Advisors</p>
+              <h2 className="text-3xl font-bold text-foreground">Supporting Us</h2>
+            </motion.div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {advisors.map((a) => (
+                <motion.div key={a.name} {...fadeUp} className="bg-card border border-border rounded-2xl p-6 text-center">
+                  <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                    <Award className="w-8 h-8 text-primary/40" />
+                  </div>
+                  <h3 className="font-semibold text-foreground">{a.name}</h3>
+                  <p className="text-sm text-primary">{a.role}</p>
+                  <p className="text-xs text-muted-foreground">{a.org}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Investors */}
-      <section className="gradient-soft py-16">
-        <div className="container">
+      {!config.sections?.hideAboutUsInvestors && (
+        <section className="gradient-soft py-16">
+          <div className="container">
+            <motion.div {...fadeUp} className="text-center mb-10">
+              <p className="text-primary font-medium mb-2">Our Investors</p>
+              <h2 className="text-3xl font-bold text-foreground">Backed By The Best</h2>
+            </motion.div>
+            <div className="flex flex-wrap justify-center gap-6">
+              {investors.map((inv) => (
+                <motion.div key={inv} {...fadeUp} className="bg-card border border-border rounded-xl px-8 py-5 text-center min-w-[180px]">
+                  <span className="font-bold text-foreground text-lg">{inv}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Press */}
+      {!config.sections?.hideAboutUsPress && (
+        <section className="container py-16">
           <motion.div {...fadeUp} className="text-center mb-10">
-            <p className="text-primary font-medium mb-2">Our Investors</p>
-            <h2 className="text-3xl font-bold text-foreground">Backed By The Best</h2>
+            <p className="text-primary font-medium mb-2">Featured</p>
+            <h2 className="text-3xl font-bold text-foreground">In The Press</h2>
           </motion.div>
-          <div className="flex flex-wrap justify-center gap-6">
-            {investors.map((inv) => (
-              <motion.div key={inv} {...fadeUp} className="bg-card border border-border rounded-xl px-8 py-5 text-center min-w-[180px]">
-                <span className="font-bold text-foreground text-lg">{inv}</span>
+          <div className="grid md:grid-cols-3 gap-6">
+            {pressFeatures.map((p) => (
+              <motion.div key={p.name} {...fadeUp} className="bg-card border border-border rounded-2xl p-8 text-center hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-bold text-foreground mb-3">{p.name}</h3>
+                <p className="text-muted-foreground italic">"{p.quote}"</p>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Press */}
-      <section className="container py-16">
-        <motion.div {...fadeUp} className="text-center mb-10">
-          <p className="text-primary font-medium mb-2">Featured</p>
-          <h2 className="text-3xl font-bold text-foreground">In The Press</h2>
-        </motion.div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {pressFeatures.map((p) => (
-            <motion.div key={p.name} {...fadeUp} className="bg-card border border-border rounded-2xl p-8 text-center hover:shadow-lg transition-shadow">
-              <h3 className="text-xl font-bold text-foreground mb-3">{p.name}</h3>
-              <p className="text-muted-foreground italic">"{p.quote}"</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="gradient-purple-band py-16">

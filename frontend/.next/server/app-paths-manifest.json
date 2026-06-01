@@ -1,8 +1,6 @@
 {
   "/login/page": "app/login/page.js",
-  "/customer-dashboard/page": "app/customer-dashboard/page.js",
-  "/partner-gateway/page": "app/partner-gateway/page.js",
-  "/personal-loan/page": "app/personal-loan/page.js",
+  "/admin-dashboard/page": "app/admin-dashboard/page.js",
   "/page": "app/page.js",
-  "/partner-dashboard/page": "app/partner-dashboard/page.js"
+  "/about-us/page": "app/about-us/page.js"
 }

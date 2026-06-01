@@ -36,6 +36,7 @@ import leads from "./modules/leads";
 import documents from "./modules/documents";
 import notifications from "./modules/notifications";
 import analytics from "./modules/analytics";
+import uiConfig from "./modules/ui-config";
 
 const app = new Hono<AppEnv>();
 
@@ -70,6 +71,7 @@ v1.route("/leads", leads);
 v1.route("/documents", documents);
 v1.route("/notifications", notifications);
 v1.route("/analytics", analytics);
+v1.route("/ui-config", uiConfig);
 
 app.route("/api/v1", v1);
 

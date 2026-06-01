@@ -1,11 +1,14 @@
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
+
 const logo = "/assets/credupe-logo.jpeg";
 const footerLinks = {
   "Products": [
-    { label: "Personal Loan", href: "/personal-loan" },
     { label: "Education Loan", href: "/education-loan" },
+    { label: "Personal Loan", href: "/personal-loan" },
     { label: "Home Loan", href: "/home-loan" },
+    { label: "Loan Against Property", href: "/loan-against-property" },
     { label: "Business Loan", href: "/business-loan" },
     { label: "Credit Cards", href: "/credit-cards" },
     { label: "Gold Loan", href: "/gold-loan" },
@@ -15,7 +18,6 @@ const footerLinks = {
     { label: "EMI Calculators", href: "/calculators" },
     { label: "Car Loan", href: "/car-loan" },
     { label: "Two Wheeler Loan", href: "/two-wheeler-loan" },
-    { label: "Loan Against Property", href: "/loan-against-property" },
   ],
   "Company": [
     { label: "About Us", href: "/about-us" },
@@ -29,6 +31,8 @@ const footerLinks = {
 };
 
 const Footer = () => {
+  const { config } = useUIConfigStore();
+
   return (
     <footer className="bg-background border-t border-border">
       <div className="container py-14">
@@ -54,20 +58,32 @@ const Footer = () => {
             </div>
           </div>
 
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h4 className="font-semibold text-sm mb-4 text-foreground">{title}</h4>
-              <ul className="space-y-2.5">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <Link to={link.href} className="text-muted-foreground text-sm hover:text-foreground transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {Object.entries(footerLinks).map(([title, links]) => {
+            const filteredLinks = links.filter((link) => {
+              if (link.label === "Car Loan" && config.sections?.hideFooterCarLoan) return false;
+              if (link.label === "Two Wheeler Loan" && config.sections?.hideFooterTwoWheelerLoan) return false;
+              if (link.label === "Business Loan" && config.sections?.hideFooterBusinessLoan) return false;
+              if (link.label === "Gold Loan" && config.sections?.hideFooterGoldLoan) return false;
+              return true;
+            });
+
+            if (filteredLinks.length === 0) return null;
+
+            return (
+              <div key={title}>
+                <h4 className="font-semibold text-sm mb-4 text-foreground">{title}</h4>
+                <ul className="space-y-2.5">
+                  {filteredLinks.map((link) => (
+                    <li key={link.label}>
+                      <Link to={link.href} className="text-muted-foreground text-sm hover:text-foreground transition-colors">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         {/* Disclaimer */}
