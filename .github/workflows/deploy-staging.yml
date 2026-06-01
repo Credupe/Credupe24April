@@ -64,4 +64,5 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           cd frontend
+          npx wrangler pages project create credupe-frontend-staging --production-branch staging || true
           npx wrangler pages deploy .vercel/output/static --project-name credupe-frontend-staging --branch staging
