@@ -21,5 +21,6 @@ export interface UIConfig {
     hideAboutUsAdvisors: boolean;
     hideAboutUsInvestors: boolean;
     hideAboutUsPress: boolean;
+    hideCareersSalaryPerk: boolean;
   };
 }

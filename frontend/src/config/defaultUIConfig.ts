@@ -23,5 +23,6 @@ export const defaultUIConfig: UIConfig = {
     hideAboutUsAdvisors: false,
     hideAboutUsInvestors: false,
     hideAboutUsPress: false,
+    hideCareersSalaryPerk: false,
   },
 };

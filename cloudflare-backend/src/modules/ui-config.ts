@@ -32,6 +32,7 @@ const DEFAULT_CONFIG = {
     hideAboutUsAdvisors: false,
     hideAboutUsInvestors: false,
     hideAboutUsPress: false,
+    hideCareersSalaryPerk: false,
   },
 };
 

@@ -77,4 +77,5 @@ INSERT OR REPLACE INTO ui_configs (config, value) VALUES
   ('sections.hideAboutUsFounders', 0),
   ('sections.hideAboutUsAdvisors', 0),
   ('sections.hideAboutUsInvestors', 0),
-  ('sections.hideAboutUsPress', 0);
+  ('sections.hideAboutUsPress', 0),
+  ('sections.hideCareersSalaryPerk', 0);

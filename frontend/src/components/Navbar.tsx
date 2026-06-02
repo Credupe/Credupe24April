@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import SearchDialog from "@/components/SearchDialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useUIConfigStore } from "@/stores/uiConfigStore";
-const icon = "/assets/credupe-icon.jpg";
+const icon = "/assets/credupe-icon.png";
 const navItems = [
   { label: "Loans", hasDropdown: true, icon: Briefcase, dropdownItems: [{ label: "Education Loan", href: "/education-loan" }, { label: "Personal Loan", href: "/personal-loan" }, { label: "Home Loan", href: "/home-loan" }, { label: "Loan Against Property", href: "/loan-against-property" }, { label: "Car Loan", href: "/car-loan" }, { label: "Used Car Loan", href: "/used-car-loan" }, { label: "Two Wheeler Loan", href: "/two-wheeler-loan" }, { label: "Gold Loan", href: "/gold-loan" }] },
   { label: "Business Loans", hasDropdown: true, icon: Store, dropdownItems: [{ label: "Business Loan", href: "/business-loan" }, { label: "Micro Loan", href: "/micro-loan" }] },
@@ -73,9 +73,9 @@ const Navbar = () => {
   return (
     <>
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border ">
         <div className="border-b border-border/50 bg-gradient-to-r from-[hsl(var(--purple-deep))] via-[hsl(var(--purple-dark))] to-[hsl(var(--purple-mid))] text-primary-foreground">
-          <div className="container flex h-9 items-center justify-between text-xs">
+          <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 flex h-9 items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <Mail className="w-3.5 h-3.5" />
               <a href="mailto:contact@credupe.com" className="hover:underline font-medium">contact@credupe.com</a>
@@ -88,10 +88,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="container flex h-14 items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 flex h-14 items-center justify-between">
           <Link to="/" className="flex flex-col items-center shrink-0 py-1">
-            <img src={icon} alt="CreduPe" className="h-9 w-auto object-contain" />
-            <span className="text-[10px] font-bold tracking-wide text-foreground leading-none">CreduPe</span>
+            <img src={icon} alt="CreduPe" className="h-14 w-auto object-contain" />
+
           </Link>
 
           <nav className="hidden xl:flex items-center gap-0.5 mx-4">
