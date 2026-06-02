@@ -24,5 +24,11 @@ export const defaultUIConfig: UIConfig = {
     hideAboutUsInvestors: false,
     hideAboutUsPress: false,
     hideCareersSalaryPerk: false,
+    hideProductCarLoan: false,
+    hideProductUsedCarLoan: false,
+    hideProductTwoWheelerLoan: false,
+    hideProductGoldLoan: false,
+    hideProductBusinessLoan: false,
+    hideProductMicroLoan: false,
   },
 };

@@ -118,16 +118,18 @@ const Navbar = () => {
                   </button>
                 )}
                 {openDropdown === item.label && item.dropdownItems && (
-                  <div className="absolute top-full left-0 mt-1 w-52 bg-card border border-border rounded-xl shadow-lg py-1.5 z-50">
-                    {item.dropdownItems.map((sub) => (
-                      <Link
-                        key={sub.label}
-                        to={sub.href}
-                        className="block px-5 py-3 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-150 first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        {sub.label}
-                      </Link>
-                    ))}
+                  <div className="absolute top-full left-0 pt-1.5 w-52 z-50">
+                    <div className="bg-card border border-border rounded-xl shadow-lg py-1.5">
+                      {item.dropdownItems.map((sub) => (
+                        <Link
+                          key={sub.label}
+                          to={sub.href}
+                          className="block px-5 py-3 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-150 first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

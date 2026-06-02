@@ -2553,10 +2553,6 @@ body{
   padding-top: 2rem;
   padding-bottom: 2rem;
 }
-.px-0{
-  padding-left: 0px;
-  padding-right: 0px;
-}
 .pb-0{
   padding-bottom: 0px;
 }
@@ -5647,11 +5643,6 @@ body{
   .md\:py-16{
     padding-top: 4rem;
     padding-bottom: 4rem;
-  }
-
-  .md\:px-0{
-    padding-left: 0px;
-    padding-right: 0px;
   }
 
   .md\:pb-5{

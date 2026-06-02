@@ -33,6 +33,12 @@ const DEFAULT_CONFIG = {
     hideAboutUsInvestors: false,
     hideAboutUsPress: false,
     hideCareersSalaryPerk: false,
+    hideProductCarLoan: false,
+    hideProductUsedCarLoan: false,
+    hideProductTwoWheelerLoan: false,
+    hideProductGoldLoan: false,
+    hideProductBusinessLoan: false,
+    hideProductMicroLoan: false,
   },
 };
 

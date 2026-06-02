@@ -22,5 +22,11 @@ export interface UIConfig {
     hideAboutUsInvestors: boolean;
     hideAboutUsPress: boolean;
     hideCareersSalaryPerk: boolean;
+    hideProductCarLoan: boolean;
+    hideProductUsedCarLoan: boolean;
+    hideProductTwoWheelerLoan: boolean;
+    hideProductGoldLoan: boolean;
+    hideProductBusinessLoan: boolean;
+    hideProductMicroLoan: boolean;
   };
 }

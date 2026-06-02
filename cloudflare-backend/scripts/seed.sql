@@ -78,4 +78,10 @@ INSERT OR REPLACE INTO ui_configs (config, value) VALUES
   ('sections.hideAboutUsAdvisors', 0),
   ('sections.hideAboutUsInvestors', 0),
   ('sections.hideAboutUsPress', 0),
-  ('sections.hideCareersSalaryPerk', 0);
+  ('sections.hideCareersSalaryPerk', 0),
+  ('sections.hideProductCarLoan', 0),
+  ('sections.hideProductUsedCarLoan', 0),
+  ('sections.hideProductTwoWheelerLoan', 0),
+  ('sections.hideProductGoldLoan', 0),
+  ('sections.hideProductBusinessLoan', 0),
+  ('sections.hideProductMicroLoan', 0);

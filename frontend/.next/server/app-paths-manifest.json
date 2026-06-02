@@ -1,8 +1,4 @@
 {
-  "/personal-loan/page": "app/personal-loan/page.js",
-  "/loan-against-property/page": "app/loan-against-property/page.js",
   "/page": "app/page.js",
-  "/credit-cards/page": "app/credit-cards/page.js",
-  "/about-us/page": "app/about-us/page.js",
-  "/careers/page": "app/careers/page.js"
+  "/admin-dashboard/page": "app/admin-dashboard/page.js"
 }
