@@ -21,7 +21,6 @@ const nextConfig = {
     ],
   },
   images: { unoptimized: true },
-  webpack: (config) => config,
 };
 
 module.exports = nextConfig;
