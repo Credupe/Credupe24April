@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Search, ChevronDown, CreditCard, Briefcase, BarChart3, Building2, Store, Mail, LogOut, User } from "lucide-react";
+import { Menu, X, Search, ChevronDown, CreditCard, Briefcase, BarChart3, Building2, Store, Mail, LogOut, User, Sparkles, LayoutDashboard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import SearchDialog from "@/components/SearchDialog";
@@ -12,7 +12,9 @@ const navItems = [
   { label: "Credit Cards", hasDropdown: true, icon: CreditCard, dropdownItems: [{ label: "Credit Cards", href: "/credit-cards" }] },
   { label: "Credit Score", hasDropdown: false, icon: BarChart3, href: "/credit-score" },
   { label: "Calculators", hasDropdown: false, icon: Building2, href: "/calculators" },
+  { label: "My Portfolio", hasDropdown: false, icon: LayoutDashboard, href: "/portfolio", highlight: true },
   { label: "Partner Login", hasDropdown: false, icon: Briefcase, href: "/partner-gateway" },
+  { label: "Employee Login", hasDropdown: false, icon: User, href: "/employee-login" },
 ];
 
 const Navbar = () => {
@@ -81,6 +83,10 @@ const Navbar = () => {
               <a href="mailto:contact@credupe.com" className="hover:underline font-medium">contact@credupe.com</a>
             </div>
             <div className="hidden sm:flex items-center gap-6">
+              <Link to="/loan-intelligence" data-testid="topbar-loan-intelligence" className="hover:underline font-medium inline-flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                Loan Intelligence
+              </Link>
               <Link to="/about-us" className="hover:underline font-medium">About Us</Link>
               <Link to="/careers" className="hover:underline font-medium">Careers</Link>
               <Link to="/contact-us" className="hover:underline font-medium">Contact Us</Link>

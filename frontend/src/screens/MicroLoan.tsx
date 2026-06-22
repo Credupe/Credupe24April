@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductSidebar from "@/components/ProductSidebar";
+import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 import SidebarContentPanel from "@/components/SidebarContentPanel";
 import { useSidebarContent } from "@/hooks/useSidebarContent";
 import { FileText, IndianRupee, Users, HeartPulse, User, Coins, Briefcase, Wallet, ArrowRight, ShoppingCart, Store, Smartphone, Banknote, Clock, Zap, HandCoins, Receipt, TrendingDown, CheckCircle2, CreditCard, ShieldCheck, Percent, BadgeCheck } from "lucide-react";
@@ -278,6 +279,12 @@ const MicroLoan = () => {
           </div>
         </div>
       </section>
+
+      {/* Best Loan Recommendation (AI) */}
+      <BestLoanRecommendation
+        loanType="MICRO_LOAN"
+        offerings={interestRates.map((r) => ({ lender: r.lender, rateText: r.rate, processingText: r.processing }))}
+      />
 
       {/* Eligibility */}
       <section ref={eligibilityRef} className="pb-12 scroll-mt-32">

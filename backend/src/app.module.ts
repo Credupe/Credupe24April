@@ -20,6 +20,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { HealthModule } from './health/health.module';
 import { QuotesModule } from './quotes/quotes.module';
+import { PortfolioModule } from './portfolio/portfolio.module';
+import { EmployeeModule } from './employee/employee.module';
 
 @Module({
   imports: [
@@ -57,6 +59,8 @@ import { QuotesModule } from './quotes/quotes.module';
     AnalyticsModule,
     HealthModule,
     QuotesModule,
+    PortfolioModule,
+    EmployeeModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

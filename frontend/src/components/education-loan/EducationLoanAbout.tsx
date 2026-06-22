@@ -1,5 +1,6 @@
 import { GraduationCap, BookOpen, Shield, Clock, IndianRupee, FileText, CheckCircle, HelpCircle } from "lucide-react";
 import { useState } from "react";
+import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 
 const faqs = [
   { q: "What exactly is a student loan?", a: "A student loan is a type of financial support that helps cover the expenses of higher education. This can include tuition fees, accommodation, books, equipment, and other costs directly related to your studies." },
@@ -137,6 +138,12 @@ const EducationLoanAbout = () => {
           </table>
         </div>
       </section>
+
+      {/* Best Loan Recommendation (AI) */}
+      <BestLoanRecommendation
+        loanType="EDUCATION_LOAN"
+        offerings={interestRates.map((r) => ({ lender: r.bank, rateText: r.secured && r.secured !== "NA" ? r.secured : r.unsecured }))}
+      />
 
       {/* Eligibility */}
       <section>

@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductSidebar from "@/components/ProductSidebar";
+import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 import { Link } from "react-router-dom";
 import { useRef } from "react";
 import { useSidebarContent } from "@/hooks/useSidebarContent";
@@ -327,6 +328,12 @@ const GoldLoan = () => {
             </div>
             <p className="text-[11px] text-muted-foreground mt-2 italic">*Rates as of April 2026. Actual rates may vary.</p>
           </div>
+
+          {/* Best Loan Recommendation (AI) */}
+          <BestLoanRecommendation
+            loanType="GOLD_LOAN"
+            offerings={interestRates.map((r) => ({ lender: r.lender, rateText: r.rate }))}
+          />
 
           {/* Eligibility Section */}
           <div ref={sectionRefs.Eligibility} className="scroll-mt-24 mb-10">

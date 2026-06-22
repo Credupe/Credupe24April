@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useSidebarContent } from "@/hooks/useSidebarContent";
 import SidebarContentPanel from "@/components/SidebarContentPanel";
 import { Link } from "react-router-dom";
+import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 const carLoanHero = "/assets/car-loan-hero.png";
 import ProductSidebar from "@/components/ProductSidebar";
 import { Car, IndianRupee, FileText, Calculator, HelpCircle, CheckCircle2, ChevronDown, Building2, Users, Percent, Clock, Shield } from "lucide-react";
@@ -240,6 +241,12 @@ const CarLoan = () => {
             </table>
           </div>
         </div>
+
+        {/* Best Loan Recommendation (AI) */}
+        <BestLoanRecommendation
+          loanType="CAR_LOAN"
+          offerings={bankRates.map((b) => ({ lender: b.bank, rateText: b.rate, processingText: b.processing }))}
+        />
 
         {/* Eligibility */}
         <div ref={sectionRefs.Eligibility} className="scroll-mt-32 space-y-8">

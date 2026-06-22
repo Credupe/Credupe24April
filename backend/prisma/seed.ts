@@ -53,6 +53,31 @@ async function main() {
     update: {},
   });
 
+  // ── Demo employee (internal loan officer)
+  const employee = await prisma.user.upsert({
+    where: { email: 'employee@credupe.local' },
+    create: {
+      email: 'employee@credupe.local',
+      passwordHash: await bcrypt.hash('Employee@123', salt),
+      role: Role.EMPLOYEE,
+      mobile: '+919999900003',
+      employeeProfile: {
+        create: {
+          employeeCode: 'CRP-EMP-0001',
+          fullName: 'Krish Mehra',
+          designation: 'Senior Loan Officer',
+          department: 'Retail Loans',
+          branch: 'Mumbai — Andheri East',
+          city: 'Mumbai',
+          monthlyTarget: 50_000_000 as any,   // ₹5 Cr disbursal target
+          joinedAt: new Date('2024-03-15'),
+        },
+      },
+    },
+    update: {},
+  });
+  console.log('→ employee:', employee.email);
+
   // ── Lenders
   const lenderSeeds = [
     { name: 'HDFC Bank',  slug: 'hdfc-bank' },
@@ -95,6 +120,94 @@ async function main() {
       processingFeePct: 0.5, commissionPct: 0.5,
       minMonthlyIncome: 40000, minCibilScore: 720, active: true,
     });
+    productSeeds.push({
+      slug: `${lender.slug}-car-loan`,
+      name: `${lender.name} Car Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.CAR_LOAN,
+      minAmount: 100000, maxAmount: 5000000,
+      minTenureMonths: 12, maxTenureMonths: 84,
+      minInterestRate: 8.75 + idx * 0.10, maxInterestRate: 12 + idx * 0.10,
+      processingFeePct: idx === 2 ? 0.25 : 0.5, commissionPct: 0.7,
+      minMonthlyIncome: 30000, minCibilScore: 700, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-used-car-loan`,
+      name: `${lender.name} Used Car Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.USED_CAR_LOAN,
+      minAmount: 100000, maxAmount: 3000000,
+      minTenureMonths: 12, maxTenureMonths: 60,
+      minInterestRate: 11.5 + idx * 0.15, maxInterestRate: 16 + idx * 0.15,
+      processingFeePct: 0.75, commissionPct: 0.9,
+      minMonthlyIncome: 25000, minCibilScore: 680, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-two-wheeler-loan`,
+      name: `${lender.name} Two-Wheeler Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.TWO_WHEELER_LOAN,
+      minAmount: 30000, maxAmount: 500000,
+      minTenureMonths: 12, maxTenureMonths: 48,
+      minInterestRate: 10.99 + idx * 0.20, maxInterestRate: 18 + idx * 0.20,
+      processingFeePct: 1.0, commissionPct: 1.2,
+      minMonthlyIncome: 15000, minCibilScore: 650, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-loan-against-property`,
+      name: `${lender.name} Loan Against Property`,
+      lenderId: lender.id,
+      loanType: LoanType.LOAN_AGAINST_PROPERTY,
+      minAmount: 500000, maxAmount: 50000000,
+      minTenureMonths: 60, maxTenureMonths: 240,
+      minInterestRate: 9.5 + idx * 0.15, maxInterestRate: 13 + idx * 0.15,
+      processingFeePct: 1.0, commissionPct: 0.8,
+      minMonthlyIncome: 50000, minCibilScore: 700, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-business-loan`,
+      name: `${lender.name} Business Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.BUSINESS_LOAN,
+      minAmount: 100000, maxAmount: 50000000,
+      minTenureMonths: 12, maxTenureMonths: 84,
+      minInterestRate: 12 + idx * 0.25, maxInterestRate: 21 + idx * 0.25,
+      processingFeePct: 1.5, commissionPct: 1.5,
+      minMonthlyIncome: 80000, minCibilScore: 700, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-education-loan`,
+      name: `${lender.name} Education Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.EDUCATION_LOAN,
+      minAmount: 100000, maxAmount: 15000000,
+      minTenureMonths: 60, maxTenureMonths: 180,
+      minInterestRate: 8.85 + idx * 0.15, maxInterestRate: 14 + idx * 0.15,
+      processingFeePct: idx === 3 ? 0 : 0.5, commissionPct: 0.6,
+      minMonthlyIncome: 20000, minCibilScore: 680, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-gold-loan`,
+      name: `${lender.name} Gold Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.GOLD_LOAN,
+      minAmount: 25000, maxAmount: 5000000,
+      minTenureMonths: 3, maxTenureMonths: 36,
+      minInterestRate: 8.5 + idx * 0.20, maxInterestRate: 16 + idx * 0.20,
+      processingFeePct: 0.5, commissionPct: 0.5,
+      minMonthlyIncome: 15000, minCibilScore: 600, active: true,
+    });
+    productSeeds.push({
+      slug: `${lender.slug}-micro-loan`,
+      name: `${lender.name} Micro Loan`,
+      lenderId: lender.id,
+      loanType: LoanType.MICRO_LOAN,
+      minAmount: 10000, maxAmount: 500000,
+      minTenureMonths: 6, maxTenureMonths: 36,
+      minInterestRate: 14 + idx * 0.30, maxInterestRate: 24 + idx * 0.30,
+      processingFeePct: 2.0, commissionPct: 2.0,
+      minMonthlyIncome: 10000, minCibilScore: 600, active: true,
+    });
   });
   for (const p of productSeeds) {
     await prisma.loanProduct.upsert({
@@ -118,7 +231,7 @@ async function main() {
     });
   }
 
-  console.log(`✓ seed done — admin=${adminEmail}, customer=customer@credupe.local (Customer@123), partner=partner@credupe.local (Partner@123)`);
+  console.log(`✓ seed done — admin=${adminEmail}, customer=customer@credupe.local (Customer@123), partner=partner@credupe.local (Partner@123), employee=employee@credupe.local (Employee@123)`);
   console.log(`  lenders=${lenders.length}, products=${productSeeds.length}`);
 }
 

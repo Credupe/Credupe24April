@@ -5,6 +5,7 @@ import SidebarContentPanel from "@/components/SidebarContentPanel";
 import { useSidebarContent } from "@/hooks/useSidebarContent";
 import { Link } from "react-router-dom";
 import { useRef, useState } from "react";
+import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 const businessLoanHero = "/assets/business-loan-hero.png";
 import {
   CheckCircle2, ChevronDown, FileText, IndianRupee, Percent, Shield, Building2, Users,
@@ -361,6 +362,12 @@ const BusinessLoan = () => {
           </p>
         </section>
       </div>
+
+      {/* Best Loan Recommendation (AI) */}
+      <BestLoanRecommendation
+        loanType="BUSINESS_LOAN"
+        offerings={bankRates.map((b) => ({ lender: b.bank, rateText: b.rate }))}
+      />
 
       {/* Eligibility */}
       <div ref={sectionRefs.Eligibility} className="scroll-mt-32">
