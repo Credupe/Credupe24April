@@ -131,7 +131,7 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
-  user: { id: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" };
+  user: { id: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" | "EMPLOYEE" };
 }
 
 export interface Paged<T> { items: T[]; total: number; page: number; pageSize: number; totalPages?: number; }
@@ -157,8 +157,6 @@ export const credupeApi = {
     async logout() {
       try { await request("POST", "/auth/logout", { refreshToken: credupeTokens.getRefresh() }); }
       catch (err) {
-        // Logout server-side is best-effort — the client still clears its
-        // tokens below. Log in dev to catch regressions.
         if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
           console.warn("[credupe-api] logout request failed:", err);
         }
@@ -260,6 +258,35 @@ export const credupeApi = {
     },
     markRead(id: string) { return request<any>("PATCH", `/notifications/${id}/read`); },
     markAllRead() { return request<any>("PATCH", "/notifications/read-all"); },
+  },
+
+  portfolio: {
+    me() { return request<any>("GET", "/portfolio/me"); },
+    demo() { return request<any>("GET", "/portfolio/demo"); },
+    requestConsent() { return request<{ consentHandle: string; redirectUrl: string; status: string; expiresAt: string; mocked: boolean }>("POST", "/portfolio/aa/consent"); },
+    consentStatus(handle: string) {
+      return request<{ status: string; approvedAt?: string; consumedAt?: string; errorReason?: string }>("GET", `/portfolio/aa/consent/${encodeURIComponent(handle)}`);
+    },
+    sync(handle: string) {
+      return request<{ synced: number; deactivated: number; status: string }>("POST", `/portfolio/aa/consent/${encodeURIComponent(handle)}/sync`);
+    },
+    removeLoan(id: string) { return request<{ id: string; removed: boolean }>("DELETE", `/portfolio/loans/${encodeURIComponent(id)}`); },
+    applyBalanceTransfer(
+      loanId: string,
+      input: {
+        targetLender?: string;
+        targetRatePct?: number;
+        expectedMonthlySaving?: number;
+        expectedLifetimeSaving?: number;
+        productId?: string;
+      } = {},
+    ) {
+      return request<{ application: any; sourceLoanId: string; message: string }>(
+        "POST",
+        `/portfolio/loans/${encodeURIComponent(loanId)}/balance-transfer`,
+        input,
+      );
+    },
   },
 
   uiConfig: {

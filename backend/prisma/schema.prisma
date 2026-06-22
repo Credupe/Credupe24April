@@ -18,6 +18,7 @@ enum Role {
   CUSTOMER
   PARTNER
   ADMIN
+  EMPLOYEE
 }
 
 enum KycStatus {
@@ -43,9 +44,12 @@ model User {
 
   customerProfile CustomerProfile?
   partnerProfile  PartnerProfile?
+  employeeProfile EmployeeProfile?
   refreshTokens   RefreshToken[]
   otps            OtpCode[]
   auditLogs       AuditLog[]     @relation("AuditActor")
+  aggregatedLoans AggregatedLoan[]
+  aaConsents      AAConsent[]
   notifications   Notification[]
   applications    LoanApplication[]
   leadsCreated    Lead[]          @relation("LeadCreatedBy")
@@ -450,4 +454,72 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId])
+}
+
+// ─── Employee (internal Credupe loan officer / sales agent) ─────────────────
+model EmployeeProfile {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  employeeCode  String    @unique          // e.g. "CRP-EMP-0001"
+  fullName      String
+  designation   String                     // e.g. "Senior Loan Officer"
+  department    String                     // e.g. "Retail Loans"
+  branch        String?
+  city          String?
+  reportingTo   String?                    // employeeCode of manager
+  monthlyTarget Decimal   @default(0) @db.Decimal(14, 2)  // disbursal ₹ target
+  joinedAt      DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Loan Intelligence Platform: Aggregated portfolio + Account Aggregator ──
+// Each customer's de-aggregated active loans (pulled via Sahamati AA + CIBIL).
+// `source` is "AA" for AA-pull, "CIBIL" for CIBIL-fetch, "MANUAL" for self-entry.
+model AggregatedLoan {
+  id                String   @id @default(cuid())
+  userId            String
+  source            String   @default("AA")
+  lenderName        String
+  productName       String?
+  loanType          LoanType
+  outstandingPaise  BigInt
+  emiPaise          BigInt
+  rateBps           Int                                                // ×100 (10.50% = 1050)
+  marketRateBps     Int?                                               // best market rate snapshot
+  tenureLeftMonths  Int
+  disbursedOn       DateTime?
+  externalAccountId String?  // opaque AA account reference (for re-pulls)
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, active])
+}
+
+// Sahamati Account Aggregator consent handle lifecycle.
+// status: PENDING → APPROVED → CONSUMED   (or REJECTED / EXPIRED on failure)
+model AAConsent {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String   @default("sahamati-mock")
+  handle       String   @unique
+  redirectUrl  String
+  status       String   @default("PENDING")
+  scope        String   @default("DEPOSITS,LOANS,CREDIT_REPORT")
+  requestedAt  DateTime @default(now())
+  approvedAt   DateTime?
+  consumedAt   DateTime?
+  expiresAt    DateTime
+  errorReason  String?
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
 }

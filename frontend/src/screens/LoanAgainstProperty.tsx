@@ -6,6 +6,7 @@ import { useSidebarContent } from "@/hooks/useSidebarContent";
 import { Home, IndianRupee, Building2, Users, ArrowRight, Shield, Zap, Clock, Percent, FileText, CheckCircle, Landmark, HandCoins, TrendingDown, Calculator, Briefcase, User, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useRef, useState } from "react";
+import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 const lapHero = "/assets/loan-against-property-hero.png";
 const tabs = ["Overview", "Interest Rates", "Eligibility", "How to Apply", "FAQ"];
 
@@ -331,6 +332,12 @@ const LoanAgainstProperty = () => {
           </table>
         </div>
       </section>
+
+      {/* Best Loan Recommendation (AI) */}
+      <BestLoanRecommendation
+        loanType="LOAN_AGAINST_PROPERTY"
+        offerings={topBanks.map((b) => ({ lender: b.bank, rateText: b.rate, processingText: b.processing }))}
+      />
 
       {/* Features & Benefits */}
       <section className="pb-12">
