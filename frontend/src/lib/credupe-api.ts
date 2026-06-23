@@ -134,7 +134,15 @@ export interface AuthTokens {
   user: { id: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" | "EMPLOYEE" };
 }
 
-export interface Paged<T> { items: T[]; total: number; page: number; pageSize: number; totalPages?: number; }
+export interface Paged<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+// BYPASS SWITCH: Set to true to use the local frontend mock for portfolio features.
+// Set to false to use the real NestJS/Hono backend endpoints.
+const USE_PORTFOLIO_MOCK = true;
 
 export const credupeApi = {
   base: API_BASE,
@@ -261,17 +269,235 @@ export const credupeApi = {
   },
 
   portfolio: {
-    me() { return request<any>("GET", "/portfolio/me"); },
-    demo() { return request<any>("GET", "/portfolio/demo"); },
-    requestConsent() { return request<{ consentHandle: string; redirectUrl: string; status: string; expiresAt: string; mocked: boolean }>("POST", "/portfolio/aa/consent"); },
-    consentStatus(handle: string) {
+    // me() { return request<any>("GET", "/portfolio/me"); },
+    async me() {
+      if (USE_PORTFOLIO_MOCK) {
+        const removedLoans = JSON.parse((typeof window !== "undefined" && window.localStorage.getItem("mock_removed_loans")) || "[]");
+        const loans = [
+          {
+            id: "demo_home",
+            source: "AA",
+            lender: "Axis Bank",
+            productName: "Axis Home Loan",
+            loanType: "HOME_LOAN",
+            outstanding: 20000000,
+            emi: 215000,
+            rate: 9.40,
+            marketRate: 8.50,
+            tenureLeftMonths: 228,
+            disbursedOn: "2022-04-15",
+          },
+          {
+            id: "demo_pl",
+            source: "AA",
+            lender: "ICICI Bank",
+            productName: "ICICI Personal Loan",
+            loanType: "PERSONAL_LOAN",
+            outstanding: 1000000,
+            emi: 35000,
+            rate: 14.99,
+            marketRate: 10.75,
+            tenureLeftMonths: 34,
+            disbursedOn: "2023-09-10",
+          },
+        ].filter(l => !removedLoans.includes(l.id));
+
+        const totalOutstanding = loans.reduce((s, l) => s + l.outstanding, 0);
+        const totalEmi = loans.reduce((s, l) => s + l.emi, 0);
+        const weightedAvgRate = totalOutstanding === 0 ? 0 : loans.reduce((s, l) => s + l.rate * l.outstanding, 0) / totalOutstanding;
+
+        return {
+          loans,
+          summary: {
+            totalOutstanding,
+            totalEmi,
+            weightedAvgRate,
+            lenderCount: new Set(loans.map((l) => l.lender)).size,
+            loanCount: loans.length,
+          },
+          insights: [
+            {
+              loanId: "demo_pl",
+              kind: "BALANCE_TRANSFER",
+              loanType: "PERSONAL_LOAN",
+              currentLender: "ICICI Bank",
+              currentRate: 14.99,
+              suggestedRate: 10.75,
+              currentEmi: 35000,
+              newEmi: 34260,
+              monthlySaving: 740,
+              lifetimeSaving: 25160,
+              reason: "Your current rate is 14.99%, today's best market rate is 10.75%.",
+            },
+            {
+              loanId: "demo_home",
+              kind: "BALANCE_TRANSFER",
+              loanType: "HOME_LOAN",
+              currentLender: "Axis Bank",
+              currentRate: 9.40,
+              suggestedRate: 8.50,
+              currentEmi: 215000,
+              newEmi: 177382,
+              monthlySaving: 37618,
+              lifetimeSaving: 8576904,
+              reason: "Your current rate is 9.40%, today's best market rate is 8.50%.",
+            },
+          ].filter(ins => loans.some(l => l.id === ins.loanId)),
+          hasData: loans.length > 0,
+        };
+      }
+      return request<any>("GET", "/portfolio/me");
+    },
+
+    // demo() { return request<any>("GET", "/portfolio/demo"); },
+    async demo() {
+      if (USE_PORTFOLIO_MOCK) {
+        const loans = [
+          {
+            id: "demo_home",
+            source: "DEMO",
+            lender: "Axis Bank",
+            productName: "Axis Home Loan",
+            loanType: "HOME_LOAN",
+            outstanding: 20000000,
+            emi: 215000,
+            rate: 9.40,
+            marketRate: 8.50,
+            tenureLeftMonths: 228,
+            disbursedOn: "2022-04-15",
+          },
+          {
+            id: "demo_pl",
+            source: "DEMO",
+            lender: "ICICI Bank",
+            productName: "ICICI Personal Loan",
+            loanType: "PERSONAL_LOAN",
+            outstanding: 1000000,
+            emi: 35000,
+            rate: 14.99,
+            marketRate: 10.75,
+            tenureLeftMonths: 34,
+            disbursedOn: "2023-09-10",
+          },
+        ];
+        return {
+          loans,
+          summary: {
+            totalOutstanding: loans.reduce((s, l) => s + l.outstanding, 0),
+            totalEmi: loans.reduce((s, l) => s + l.emi, 0),
+            weightedAvgRate: loans.reduce((s, l) => s + l.rate * l.outstanding, 0) / loans.reduce((s, l) => s + l.outstanding, 0),
+            lenderCount: new Set(loans.map((l) => l.lender)).size,
+            loanCount: loans.length,
+          },
+          insights: [
+            {
+              loanId: "demo_pl",
+              kind: "BALANCE_TRANSFER",
+              loanType: "PERSONAL_LOAN",
+              currentLender: "ICICI Bank",
+              currentRate: 14.99,
+              suggestedRate: 10.75,
+              currentEmi: 35000,
+              newEmi: 34260,
+              monthlySaving: 740,
+              lifetimeSaving: 25160,
+              reason: "Your current rate is 14.99%, today's best market rate is 10.75%.",
+            },
+            {
+              loanId: "demo_home",
+              kind: "BALANCE_TRANSFER",
+              loanType: "HOME_LOAN",
+              currentLender: "Axis Bank",
+              currentRate: 9.40,
+              suggestedRate: 8.50,
+              currentEmi: 215000,
+              newEmi: 177382,
+              monthlySaving: 37618,
+              lifetimeSaving: 8576904,
+              reason: "Your current rate is 9.40%, today's best market rate is 8.50%.",
+            },
+          ],
+          hasData: true,
+          demo: true,
+        };
+      }
+      return request<any>("GET", "/portfolio/demo");
+    },
+
+    // requestConsent() { return request<{ consentHandle: string; redirectUrl: string; status: string; expiresAt: string; mocked: boolean }>("POST", "/portfolio/aa/consent"); },
+    async requestConsent() {
+      if (USE_PORTFOLIO_MOCK) {
+        return {
+          consentHandle: "mock-consent-handle",
+          redirectUrl: "https://aa-mock.credupe.local/consent/mock-consent-handle",
+          status: "PENDING",
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+          mocked: true,
+        };
+      }
+      return request<{ consentHandle: string; redirectUrl: string; status: string; expiresAt: string; mocked: boolean }>("POST", "/portfolio/aa/consent");
+    },
+
+    // consentStatus(handle: string) {
+    //   return request<{ status: string; approvedAt?: string; consumedAt?: string; errorReason?: string }>("GET", `/portfolio/aa/consent/${encodeURIComponent(handle)}`);
+    // },
+    async consentStatus(handle: string) {
+      if (USE_PORTFOLIO_MOCK) {
+        return {
+          status: "APPROVED",
+          approvedAt: new Date().toISOString(),
+        };
+      }
       return request<{ status: string; approvedAt?: string; consumedAt?: string; errorReason?: string }>("GET", `/portfolio/aa/consent/${encodeURIComponent(handle)}`);
     },
-    sync(handle: string) {
+
+    // sync(handle: string) {
+    //   return request<{ synced: number; deactivated: number; status: string }>("POST", `/portfolio/aa/consent/${encodeURIComponent(handle)}/sync`);
+    // },
+    async sync(handle: string) {
+      if (USE_PORTFOLIO_MOCK) {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("mock_has_synced", "true");
+        }
+        return {
+          synced: 2,
+          deactivated: 0,
+          status: "CONSUMED",
+        };
+      }
       return request<{ synced: number; deactivated: number; status: string }>("POST", `/portfolio/aa/consent/${encodeURIComponent(handle)}/sync`);
     },
-    removeLoan(id: string) { return request<{ id: string; removed: boolean }>("DELETE", `/portfolio/loans/${encodeURIComponent(id)}`); },
-    applyBalanceTransfer(
+
+    // removeLoan(id: string) { return request<{ id: string; removed: boolean }>("DELETE", `/portfolio/loans/${encodeURIComponent(id)}`); },
+    async removeLoan(id: string) {
+      if (USE_PORTFOLIO_MOCK) {
+        if (typeof window !== "undefined") {
+          const removedLoans = JSON.parse(window.localStorage.getItem("mock_removed_loans") || "[]");
+          removedLoans.push(id);
+          window.localStorage.setItem("mock_removed_loans", JSON.stringify(removedLoans));
+        }
+        return { id, removed: true };
+      }
+      return request<{ id: string; removed: boolean }>("DELETE", `/portfolio/loans/${encodeURIComponent(id)}`);
+    },
+
+    // applyBalanceTransfer(
+    //   loanId: string,
+    //   input: {
+    //     targetLender?: string;
+    //     targetRatePct?: number;
+    //     expectedMonthlySaving?: number;
+    //     expectedLifetimeSaving?: number;
+    //     productId?: string;
+    //   } = {},
+    // ) {
+    //   return request<{ application: any; sourceLoanId: string; message: string }>(
+    //     "POST",
+    //     `/portfolio/loans/${encodeURIComponent(loanId)}/balance-transfer`,
+    //     input,
+    //   );
+    // },
+    async applyBalanceTransfer(
       loanId: string,
       input: {
         targetLender?: string;
@@ -281,6 +507,16 @@ export const credupeApi = {
         productId?: string;
       } = {},
     ) {
+      if (USE_PORTFOLIO_MOCK) {
+        return {
+          application: {
+            id: "app_mock_bt_" + Math.random().toString(36).substr(2, 9),
+            referenceNo: "BT-MOCK-" + Math.floor(100000 + Math.random() * 900000),
+          },
+          sourceLoanId: loanId,
+          message: "Balance transfer application created. Track progress in your dashboard.",
+        };
+      }
       return request<{ application: any; sourceLoanId: string; message: string }>(
         "POST",
         `/portfolio/loans/${encodeURIComponent(loanId)}/balance-transfer`,

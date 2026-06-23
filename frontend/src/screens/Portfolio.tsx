@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, refreshCredupeAuth } from "@/hooks/useAuth";
 import { credupeApi, CredupeApiError } from "@/lib/credupe-api";
 import { toast } from "@/components/ui/sonner";
 
@@ -15,8 +15,8 @@ import { toast } from "@/components/ui/sonner";
 type Loan = {
   id: string; source: string; lender: string; productName: string | null;
   loanType: "HOME_LOAN" | "PERSONAL_LOAN" | "CAR_LOAN" | "EDUCATION_LOAN" |
-            "LOAN_AGAINST_PROPERTY" | "BUSINESS_LOAN" | "CREDIT_CARD" |
-            "GOLD_LOAN" | "TWO_WHEELER_LOAN" | "USED_CAR_LOAN" | "MICRO_LOAN";
+  "LOAN_AGAINST_PROPERTY" | "BUSINESS_LOAN" | "CREDIT_CARD" |
+  "GOLD_LOAN" | "TWO_WHEELER_LOAN" | "USED_CAR_LOAN" | "MICRO_LOAN";
   outstanding: number; emi: number; rate: number; marketRate: number | null;
   tenureLeftMonths: number; disbursedOn: string | null;
 };
@@ -35,24 +35,24 @@ type PortfolioData = {
 };
 
 const LOAN_META: Record<Loan["loanType"], { label: string; icon: any; tint: string }> = {
-  HOME_LOAN:             { label: "Home Loan",              icon: Home,         tint: "from-[hsl(258_60%_52%)] to-[hsl(275_45%_58%)]" },
-  PERSONAL_LOAN:         { label: "Personal Loan",          icon: Briefcase,    tint: "from-[hsl(275_45%_58%)] to-[hsl(252_55%_72%)]" },
-  CAR_LOAN:              { label: "Auto Loan",              icon: Car,          tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
-  USED_CAR_LOAN:         { label: "Used Car Loan",          icon: Car,          tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
-  TWO_WHEELER_LOAN:      { label: "Two-Wheeler Loan",       icon: Car,          tint: "from-[hsl(275_45%_58%)] to-[hsl(252_55%_72%)]" },
-  EDUCATION_LOAN:        { label: "Education Loan",         icon: GraduationCap,tint: "from-[hsl(258_60%_52%)] to-[hsl(258_60%_42%)]" },
-  LOAN_AGAINST_PROPERTY: { label: "Loan Against Property",  icon: Building2,    tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
-  BUSINESS_LOAN:         { label: "Business Loan",          icon: Briefcase,    tint: "from-[hsl(275_45%_58%)] to-[hsl(258_60%_52%)]" },
-  GOLD_LOAN:             { label: "Gold Loan",              icon: Wallet,       tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
-  MICRO_LOAN:            { label: "Micro Loan",             icon: Briefcase,    tint: "from-[hsl(275_45%_58%)] to-[hsl(252_55%_72%)]" },
-  CREDIT_CARD:           { label: "Credit Card",            icon: CreditCard,   tint: "from-[hsl(252_55%_72%)] to-[hsl(258_60%_52%)]" },
+  HOME_LOAN: { label: "Home Loan", icon: Home, tint: "from-[hsl(258_60%_52%)] to-[hsl(275_45%_58%)]" },
+  PERSONAL_LOAN: { label: "Personal Loan", icon: Briefcase, tint: "from-[hsl(275_45%_58%)] to-[hsl(252_55%_72%)]" },
+  CAR_LOAN: { label: "Auto Loan", icon: Car, tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
+  USED_CAR_LOAN: { label: "Used Car Loan", icon: Car, tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
+  TWO_WHEELER_LOAN: { label: "Two-Wheeler Loan", icon: Car, tint: "from-[hsl(275_45%_58%)] to-[hsl(252_55%_72%)]" },
+  EDUCATION_LOAN: { label: "Education Loan", icon: GraduationCap, tint: "from-[hsl(258_60%_52%)] to-[hsl(258_60%_42%)]" },
+  LOAN_AGAINST_PROPERTY: { label: "Loan Against Property", icon: Building2, tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
+  BUSINESS_LOAN: { label: "Business Loan", icon: Briefcase, tint: "from-[hsl(275_45%_58%)] to-[hsl(258_60%_52%)]" },
+  GOLD_LOAN: { label: "Gold Loan", icon: Wallet, tint: "from-[hsl(258_60%_52%)] to-[hsl(252_55%_72%)]" },
+  MICRO_LOAN: { label: "Micro Loan", icon: Briefcase, tint: "from-[hsl(275_45%_58%)] to-[hsl(252_55%_72%)]" },
+  CREDIT_CARD: { label: "Credit Card", icon: CreditCard, tint: "from-[hsl(252_55%_72%)] to-[hsl(258_60%_52%)]" },
 };
 
 /* ─────────────────────── Helpers ──────────────────────────────────────── */
 const inr = (n: number) =>
   n >= 10_000_000 ? `₹${(n / 10_000_000).toFixed(2)} Cr`
-  : n >= 100_000 ? `₹${(n / 100_000).toFixed(2)} L`
-  : `₹${Math.round(n).toLocaleString("en-IN")}`;
+    : n >= 100_000 ? `₹${(n / 100_000).toFixed(2)} L`
+      : `₹${Math.round(n).toLocaleString("en-IN")}`;
 const inrFull = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 const sinceLabel = (iso: string | null) => {
   if (!iso) return "";
@@ -123,6 +123,8 @@ function AAConsentModal({ open, onClose, onDone }: { open: boolean; onClose: () 
   }, [state, handle]);
 
   async function startConsent() {
+    // COMMENTED OUT FOR BYPASS:
+    /*
     setState("requesting"); setErr("");
     try {
       const data: any = await credupeApi.portfolio.requestConsent();
@@ -132,6 +134,16 @@ function AAConsentModal({ open, onClose, onDone }: { open: boolean; onClose: () 
       setErr(e instanceof CredupeApiError ? e.messages[0] : "Failed to start consent");
       setState("error");
     }
+    */
+
+    // TEMPORARY BYPASS: Immediately simulate successful consent sync and close
+    setState("consumed");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("mock_has_synced", "true");
+    }
+    setTimeout(() => {
+      onDoneRef.current();
+    }, 500);
   }
 
   if (!open) return null;
@@ -405,7 +417,7 @@ const Portfolio = () => {
             </h1>
             <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
               {user ? <>Welcome back, <strong className="text-foreground">{user.email}</strong>. Your portfolio is aggregated via the RBI-licensed Sahamati AA framework.</>
-                    : "Connect via Sahamati Account Aggregator to import your real loans across every bank & NBFC."}
+                : "Connect via Sahamati Account Aggregator to import your real loans across every bank & NBFC."}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -427,7 +439,16 @@ const Portfolio = () => {
               </button>
             )}
             {!user && (
-              <button onClick={() => navigate("/login")} data-testid="portfolio-login-cta" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90">
+              <button
+                onClick={() => {
+                  // Commented out to bypass login page and redirect to mock portfolio directly
+                  // navigate("/login");
+                  localStorage.setItem("use_mock_auth", "true");
+                  refreshCredupeAuth();
+                }}
+                data-testid="portfolio-login-cta"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90"
+              >
                 <Shield className="w-4 h-4" />
                 Login to connect
               </button>
@@ -579,7 +600,7 @@ const Portfolio = () => {
                             <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold">Smart save</span>
                           </div>
                           <h3 className="text-lg font-bold text-foreground leading-snug">
-                            Move your <span className="underline decoration-primary decoration-2">{meta.label}</span> from {ins.currentLender} to a lender at {ins.suggestedRate.toFixed(2)}%
+                            Move your <span className="underline decoration-primary decoration-2">{meta.label}</span> from {ins.currentLender} to a HDFC at {ins.suggestedRate.toFixed(2)}%
                           </h3>
                           <p className="text-sm text-muted-foreground mt-1">{ins.reason} We'll handle the paperwork end-to-end.</p>
                         </div>

@@ -49,6 +49,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
 
     async function bootstrap() {
+      // TEMPORARY BYPASS: check mock auth first
+      if (typeof window !== "undefined" && window.localStorage.getItem("use_mock_auth") === "true") {
+        const isEmployee = window.localStorage.getItem("use_mock_employee") === "true";
+        setUser({
+          id: "mock-user-id",
+          email: isEmployee ? "employee@credupe.local" : "mock.customer@credupe.com",
+          user_metadata: { role: isEmployee ? "EMPLOYEE" : "CUSTOMER" },
+        });
+        setAuthSource("credupe");
+        setIsReady(true);
+        return;
+      }
+
       // 1. Try Credupe backend first
       if (credupeApi.auth.isAuthenticated()) {
         try {
@@ -78,6 +91,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     bootstrap();
 
+    // Listen to custom credupe auth change event
+    const handleAuthChanged = () => {
+      bootstrap();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("credupe:auth-changed", handleAuthChanged);
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       // Read the LATEST authSource via ref (not the stale closure value).
       if (authSourceRef.current === "credupe") return; // Credupe wins; don't clobber
@@ -86,12 +107,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setAuthSource(s ? "supabase" : null);
     });
 
-    return () => { cancelled = true; subscription.unsubscribe(); };
-    // Intentionally runs once — bootstrap + Supabase subscription lifecycle.
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+      if (typeof window !== "undefined") {
+        window.removeEventListener("credupe:auth-changed", handleAuthChanged);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signOut = async () => {
+    // TEMPORARY BYPASS: clear mock auth
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("use_mock_auth");
+      window.localStorage.removeItem("use_mock_employee");
+    }
     if (authSource === "credupe") {
       await credupeApi.auth.logout();
     } else {

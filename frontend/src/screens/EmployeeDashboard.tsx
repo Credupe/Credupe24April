@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { credupeApi, CredupeApiError } from "@/lib/credupe-api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, refreshCredupeAuth } from "@/hooks/useAuth";
 import { toast } from "@/components/ui/sonner";
 import {
   LayoutDashboard, Users, FileText, BarChart3, Wallet, ListChecks, Search,
@@ -42,12 +42,199 @@ const inr = (n: number) =>
       : `₹${Math.round(n).toLocaleString("en-IN")}`;
 const inrFull = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
-const proxy = <T,>(path: string) =>
-  fetch(`/bff/proxy${path}`, { credentials: "include" }).then(async (r) => {
+const proxy = <T,>(path: string): Promise<T> => {
+  // BYPASS LOGIC:
+  if (typeof window !== "undefined" && window.localStorage.getItem("use_mock_employee") === "true") {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const cleanPath = path.split("?")[0];
+        
+        if (cleanPath === "/employee/me") {
+          resolve({
+            employee: {
+              id: "mock-emp-id",
+              employeeCode: "CRP-EMP-0001",
+              fullName: "Krish Mehra",
+              email: "employee@credupe.local",
+              mobile: "+91 9876543210",
+              designation: "Senior Loan Officer",
+              department: "Retail Loans",
+              branch: "Andheri West, Mumbai",
+              city: "Mumbai",
+              joinedAt: "2024-04-15T00:00:00.000Z",
+              monthlyTarget: 50000000,
+            },
+            kpis: {
+              monthDisbursal: 42000000,
+              monthDisbursalCr: 4.2,
+              leadsThisMonth: 85,
+              convertedThisMonth: 18,
+              conversionRate: 21.2,
+              targetPct: 84,
+              rankInBranch: 2,
+              rankNational: 14,
+              avgTat: 8.2,
+            },
+          } as any as T);
+        } else if (cleanPath === "/employee/leads") {
+          resolve({
+            leads: Array.from({ length: 24 }, (_, i) => {
+              const stages = ["NEW", "CONTACTED", "QUALIFIED", "APPLICATION_CREATED", "CONVERTED", "DROPPED"] as const;
+              const types = ["HOME_LOAN", "PERSONAL_LOAN", "CAR_LOAN", "BUSINESS_LOAN", "EDUCATION_LOAN", "LOAN_AGAINST_PROPERTY"];
+              const sources = ["Website", "Walk-in", "Referral", "Tele-calling", "Channel Partner"];
+              const status = stages[i % stages.length];
+              const lt = types[i % types.length];
+              return {
+                id: `LD-${2000 + i}`,
+                customerName: `${["Rohan", "Priya", "Aditya", "Neha", "Vikram", "Ananya"][i % 6]} ${["Sharma", "Verma", "Patel", "Reddy", "Kapoor"][i % 5]}`,
+                mobile: `+91 9${800000000 + i * 12345}`,
+                city: "Mumbai",
+                loanType: lt,
+                amountRequested: 1000000 + i * 100000,
+                status,
+                source: sources[i % sources.length],
+                ageDays: i,
+                lastAction: status === "NEW" ? "Awaiting call" : "In discussion",
+                createdAt: new Date().toISOString(),
+              };
+            }),
+            summary: {
+              NEW: 4,
+              CONTACTED: 4,
+              QUALIFIED: 4,
+              APPLICATION_CREATED: 4,
+              CONVERTED: 4,
+              DROPPED: 4,
+            },
+          } as any as T);
+        } else if (cleanPath === "/employee/applications") {
+          resolve({
+            applications: [
+              {
+                id: "app-1",
+                referenceNo: "APP-HL-9812",
+                customerEmail: "customer1@example.com",
+                customerMobile: "+91 9123456780",
+                loanType: "HOME_LOAN",
+                amountRequested: 3500000,
+                tenureMonths: 240,
+                status: "UNDER_REVIEW",
+                lender: "HDFC Bank",
+                product: "HDFC Max Home Loan",
+                createdAt: new Date().toISOString(),
+                purpose: "Purchase of flat",
+              },
+            ],
+            counts: {
+              LEAD: 0,
+              LOGIN: 0,
+              DOC_PENDING: 0,
+              UNDER_REVIEW: 1,
+              APPROVED: 0,
+            },
+          } as any as T);
+        } else if (cleanPath === "/employee/performance") {
+          resolve({
+            kpis: {
+              monthDisbursal: 42000000,
+              monthDisbursalCr: 4.2,
+              leadsThisMonth: 85,
+              convertedThisMonth: 18,
+              conversionRate: 21.2,
+              targetPct: 84,
+              rankInBranch: 2,
+              rankNational: 14,
+              avgTat: 8.2,
+            },
+            trend: [
+              { month: "Jan", disbursalCr: 3.2, leads: 50, conversions: 10 },
+              { month: "Feb", disbursalCr: 3.8, leads: 55, conversions: 12 },
+              { month: "Mar", disbursalCr: 4.5, leads: 70, conversions: 15 },
+              { month: "Apr", disbursalCr: 4.2, leads: 85, conversions: 18 },
+            ],
+            leaderboard: [
+              { rank: 1, name: "Anjali Kapoor", code: "CRP-EMP-0007", disbursalCr: 4.6, conversions: 20, you: false },
+              { rank: 2, name: "Krish Mehra", code: "CRP-EMP-0001", disbursalCr: 4.2, conversions: 18, you: true },
+              { rank: 3, name: "Rohit Sharma", code: "CRP-EMP-0012", disbursalCr: 3.8, conversions: 15, you: false },
+              { rank: 4, name: "Sneha Iyer", code: "CRP-EMP-0019", disbursalCr: 3.1, conversions: 13, you: false },
+              { rank: 5, name: "Vikram Singh", code: "CRP-EMP-0023", disbursalCr: 2.6, conversions: 11, you: false },
+            ],
+            productMix: [
+              { loanType: "HOME_LOAN", share: 42 },
+              { loanType: "PERSONAL_LOAN", share: 18 },
+              { loanType: "BUSINESS_LOAN", share: 14 },
+              { loanType: "CAR_LOAN", share: 11 },
+              { loanType: "LOAN_AGAINST_PROPERTY", share: 9 },
+              { loanType: "EDUCATION_LOAN", share: 6 },
+            ],
+          } as any as T);
+        } else if (cleanPath === "/employee/payouts") {
+          resolve({
+            statements: [
+              { period: "Mar 2025", disbursalCr: 4.5, commissionPct: 0.55, earned: 24750, tds: 1238, net: 23512, status: "PROCESSING", statementUrl: "#statement-mar-2025" },
+              { period: "Feb 2025", disbursalCr: 3.8, commissionPct: 0.55, earned: 20900, tds: 1045, net: 19855, status: "PAID", statementUrl: "#statement-feb-2025" },
+              { period: "Jan 2025", disbursalCr: 3.2, commissionPct: 0.55, earned: 17600, tds: 880, net: 16720, status: "PAID", statementUrl: "#statement-jan-2025" },
+            ],
+            totals: {
+              earned: 63250,
+              paid: 36575,
+              pending: 23512,
+            },
+          } as any as T);
+        } else if (cleanPath === "/employee/tasks") {
+          resolve({
+            tasks: [
+              { id: "TSK-3000", type: "CALL_BACK", title: "Call back Rohan S.", customer: "Rohan Sharma", dueAt: new Date().toISOString(), priority: "HIGH", status: "OPEN" },
+              { id: "TSK-3001", type: "DOC_COLLECTION", title: "Collect Form 16 from Vikram K.", customer: "Vikram Kapoor", dueAt: new Date().toISOString(), priority: "MEDIUM", status: "OPEN" },
+              { id: "TSK-3002", type: "SITE_VISIT", title: "Property visit — Andheri", customer: "Aditya Patel", dueAt: new Date().toISOString(), priority: "LOW", status: "OPEN" },
+            ],
+            summary: {
+              overdue: 0,
+              today: 3,
+              upcoming: 0,
+              done: 0,
+            },
+          } as any as T);
+        } else if (cleanPath === "/employee/announcements") {
+          resolve({
+            announcements: [
+              { id: "AN-1", date: "2026-02-05", category: "POLICY", title: "HDFC Home Loan rate cut: 8.40% effective immediately", body: "HDFC has revised its retail home-loan benchmark rate. All new sanctions from today qualify. Update your pitches." },
+              { id: "AN-2", date: "2026-02-03", category: "TRAINING", title: "Mandatory: New AA-based KYC onboarding session — Feb 10", body: "All retail-loan officers must complete the 60-min refresher on Sahamati AA consent flow. Slots open on the LMS." },
+              { id: "AN-3", date: "2026-01-28", category: "INCENTIVE", title: "Q4 Sprint: ₹50K bonus on every business-loan disbursal > ₹50L", body: "Special incentive runs through end of March. Eligible across all branches; no cap." },
+            ],
+          } as any as T);
+        } else if (cleanPath === "/employee/customer-search") {
+          resolve({
+            results: [
+              {
+                id: "cust-1",
+                email: "rohan@example.com",
+                mobile: "+91 980012345",
+                name: "Rohan Sharma",
+                city: "Mumbai",
+                cibilRange: "750-800",
+                applicationsCount: 1,
+                latestApplication: { referenceNo: "APP-HL-9812", status: "UNDER_REVIEW", loanType: "HOME_LOAN" },
+              },
+            ],
+          } as any as T);
+        } else {
+          resolve({} as T);
+        }
+      }, 300);
+    });
+  }
+
+  // ORIGINAL CODE COMMENTED OUT:
+  /*
+  return fetch(`/bff/proxy${path}`, { credentials: "include" }).then(async (r) => {
     const j = await r.json();
     if (!j.success) throw new CredupeApiError(r.status, j.error?.message ?? ["Request failed"]);
     return j.data as T;
   });
+  */
+  return Promise.reject(new Error("Mock auth not enabled"));
+};
 
 // Centralised loader so every section gets identical error handling.
 // `proxy` is module-level and `setData` is a stable useState setter, so the
@@ -79,14 +266,29 @@ const EmployeeDashboard = () => {
 
   useEffect(() => {
     if (!isReady) return;
+
+    // BYPASS LOGIC: Redirect to employee login if not logged in as employee
+    if (!user || (user as any).user_metadata?.role !== "EMPLOYEE") {
+      navigate("/employee-login");
+      return;
+    }
+
+    // ORIGINAL CODE COMMENTED OUT:
+    /*
     if (!user) { navigate("/login"); return; }
+    */
+
     proxy<any>("/employee/me")
       .then((d) => setMe(d))
       .catch((e) => {
+        // ORIGINAL CODE COMMENTED OUT:
+        /*
         if (e instanceof CredupeApiError && e.status === 403) {
           toast.error("Not an employee account", { description: "Sign in with employee@credupe.local / Employee@123" });
           navigate("/login");
         }
+        */
+        if (process.env.NODE_ENV !== "production") console.warn("Failed to load /employee/me:", e);
       })
       .finally(() => setLoading(false));
   }, [isReady, user, navigate]);
@@ -556,6 +758,25 @@ function QuickApplySection() {
     if (!pick) return;
     setSubmitting(true);
     try {
+      // BYPASS LOGIC:
+      if (typeof window !== "undefined" && window.localStorage.getItem("use_mock_employee") === "true") {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const mockData = {
+          application: {
+            referenceNo: "APP-QA-" + Math.floor(100000 + Math.random() * 900000),
+            status: "LEAD",
+          },
+          message: `Application created on behalf of ${pick.email}.`,
+        };
+        setCreated(mockData);
+        setStep("done");
+        toast.success("Application created", { description: mockData.application.referenceNo });
+        setSubmitting(false);
+        return;
+      }
+
+      // ORIGINAL CODE COMMENTED OUT:
+      /*
       const r = await fetch("/bff/proxy/employee/quick-apply", {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -569,6 +790,7 @@ function QuickApplySection() {
       if (!r.success) throw new Error(r.error?.message?.[0] ?? "Failed");
       setCreated(r.data); setStep("done");
       toast.success("Application created", { description: r.data.application.referenceNo });
+      */
     } catch (e: any) {
       toast.error("Could not file application", { description: e.message });
     } finally {

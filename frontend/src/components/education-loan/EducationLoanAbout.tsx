@@ -1,6 +1,7 @@
-import { GraduationCap, BookOpen, Shield, Clock, IndianRupee, FileText, CheckCircle, HelpCircle } from "lucide-react";
+import { GraduationCap, BookOpen, Shield, Clock, IndianRupee, FileText, CheckCircle, HelpCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
+import { Link } from "react-router-dom";
 
 const faqs = [
   { q: "What exactly is a student loan?", a: "A student loan is a type of financial support that helps cover the expenses of higher education. This can include tuition fees, accommodation, books, equipment, and other costs directly related to your studies." },
@@ -122,6 +123,7 @@ const EducationLoanAbout = () => {
                 <th className="text-left p-3 font-semibold">Unsecured Rate</th>
                 <th className="text-left p-3 font-semibold">Max Secured</th>
                 <th className="text-left p-3 font-semibold">Max Unsecured</th>
+                <th className="text-right p-3 font-semibold">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +134,12 @@ const EducationLoanAbout = () => {
                   <td className="p-3 text-muted-foreground">{r.unsecured}</td>
                   <td className="p-3 text-muted-foreground">{r.maxSecured}</td>
                   <td className="p-3 text-muted-foreground">{r.maxUnsecured}</td>
+                  <td className="p-3 text-right">
+                    <Link to="/login" data-testid={`apply-now-${r.bank.toLowerCase().replace(/\s+/g, '-')}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity whitespace-nowrap">
+                      Apply Now
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

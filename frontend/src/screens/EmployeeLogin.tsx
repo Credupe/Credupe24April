@@ -13,7 +13,7 @@ import { ShieldCheck, Briefcase, Lock, Mail, Loader2, AlertCircle } from "lucide
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { credupeApi, CredupeApiError } from "@/lib/credupe-api";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, refreshCredupeAuth } from "@/hooks/useAuth";
 
 export default function EmployeeLogin() {
   const [email, setEmail] = useState("");
@@ -35,6 +35,19 @@ export default function EmployeeLogin() {
     setLoading(true);
     setError(null);
     try {
+      // BYPASS LOGIC: Verify demo credentials
+      if (email === "employee@credupe.local" && password === "Employee@123") {
+        localStorage.setItem("use_mock_employee", "true");
+        localStorage.setItem("use_mock_auth", "true");
+        refreshCredupeAuth();
+        window.location.href = "/employee-dashboard";
+      } else {
+        setError("Invalid credentials. Please use employee@credupe.local · Employee@123");
+        setLoading(false);
+      }
+
+      // ORIGINAL CODE COMMENTED OUT:
+      /*
       const res = await credupeApi.auth.login(email, password);
       const me = res.user;
       if (me?.role !== "EMPLOYEE" && me?.role !== "ADMIN") {
@@ -44,6 +57,7 @@ export default function EmployeeLogin() {
         return;
       }
       window.location.href = "/employee-dashboard";
+      */
     } catch (err) {
       const msg = err instanceof CredupeApiError ? err.messages[0] : "Could not sign in.";
       setError(msg || "Could not sign in.");

@@ -5,7 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 import SearchDialog from "@/components/SearchDialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useUIConfigStore } from "@/stores/uiConfigStore";
-const icon = "/assets/credupe-icon.png";
+import { useTheme } from "@/components/ThemeProvider";
+
+const lightIcon = "/assets/credupe-icon.png";
+const darkIcon = "/assets/credupe-icon-darkmode.png";
 const navItems = [
   { label: "Loans", hasDropdown: true, icon: Briefcase, dropdownItems: [{ label: "Education Loan", href: "/education-loan" }, { label: "Personal Loan", href: "/personal-loan" }, { label: "Home Loan", href: "/home-loan" }, { label: "Loan Against Property", href: "/loan-against-property" }, { label: "Car Loan", href: "/car-loan" }, { label: "Used Car Loan", href: "/used-car-loan" }, { label: "Two Wheeler Loan", href: "/two-wheeler-loan" }, { label: "Gold Loan", href: "/gold-loan" }] },
   { label: "Business Loans", hasDropdown: true, icon: Store, dropdownItems: [{ label: "Business Loan", href: "/business-loan" }, { label: "Micro Loan", href: "/micro-loan" }] },
@@ -18,6 +21,7 @@ const navItems = [
 ];
 
 const Navbar = () => {
+  const { theme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -96,7 +100,7 @@ const Navbar = () => {
 
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 flex h-14 items-center justify-between">
           <Link to="/" className="flex flex-col items-center shrink-0 py-1">
-            <img src={icon} alt="CreduPe" className="h-14 w-auto object-contain" />
+            <img src={theme === "dark" ? darkIcon : lightIcon} alt="CreduPe" className="h-14 w-auto object-contain" />
 
           </Link>
 
