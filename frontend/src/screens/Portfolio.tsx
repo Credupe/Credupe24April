@@ -293,13 +293,9 @@ const Portfolio = () => {
 
   async function handleApplyBalanceTransfer(ins: Insight) {
     if (!user) {
-      // Stash intent and bounce through login; user lands back on the dashboard
-      // and can re-click. We don't auto-resubmit to keep the flow auditable.
-      try {
+     try {
         sessionStorage.setItem("credupe_bt_intent", JSON.stringify({ loanId: ins.loanId }));
       } catch (err) {
-        // sessionStorage can be unavailable (private mode, disabled storage,
-        // quota). Worst case the user just has to click again post-login.
         if (process.env.NODE_ENV !== "production") {
           console.warn("[portfolio] sessionStorage stash failed:", err);
         }
@@ -311,7 +307,7 @@ const Portfolio = () => {
     setApplyingBT(ins.loanId);
     try {
       const res = await credupeApi.portfolio.applyBalanceTransfer(ins.loanId, {
-        targetLender: undefined,            // ops team picks final lender during underwriting
+        targetLender: undefined,           
         targetRatePct: ins.suggestedRate,
         expectedMonthlySaving: ins.monthlySaving,
         expectedLifetimeSaving: ins.lifetimeSaving,
@@ -329,9 +325,6 @@ const Portfolio = () => {
     }
   }
 
-  // Load the user's real portfolio (or the demo one if not logged in).
-  // NOTE: `request<T>` already unwraps the envelope, so the returned value
-  // IS the data object (not `{ data: ... }`).
   const reload = async () => {
     setLoading(true);
     try {
@@ -340,9 +333,7 @@ const Portfolio = () => {
         : await credupeApi.portfolio.demo();
       setData(portfolio as PortfolioData);
     } catch (e) {
-      // Real portfolio fetch failed (network/auth). Fall back to the public
-      // demo so the page still shows *something* instead of a blank screen.
-      if (process.env.NODE_ENV !== "production") {
+       if (process.env.NODE_ENV !== "production") {
         console.warn("[portfolio] /me failed, falling back to /demo:", e);
       }
       try {
@@ -363,10 +354,7 @@ const Portfolio = () => {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady, user?.id]);
-
-  // Whenever the portfolio (re)loads, fetch Top-3 NEW car-loan offers
-  // re-ranked using *current* monthly-EMI burden as an approval signal.
-  useEffect(() => {
+ useEffect(() => {
     if (!data) return;
     let cancelled = false;
     credupeApi.loanProducts.eligibility({

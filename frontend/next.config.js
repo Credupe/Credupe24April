@@ -7,11 +7,11 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
-  allowedDevOrigins: [
-    "*.preview.emergentagent.com",
-    "*.emergentagent.com",
-    "localhost",
-  ],
+  // allowedDevOrigins: [
+  //   "*.preview.emergentagent.com",
+  //   "*.emergentagent.com",
+  //   "localhost",
+  // ],
   experimental: {
     optimizePackageImports: [
       "lucide-react",
