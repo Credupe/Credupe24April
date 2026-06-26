@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "credupe-prod-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-01-09",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "credupe-prod-web"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "env": {
+    "staging": {
+      "name": "credupe-staging-web",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "credupe-staging-web"
+        }
+      ]
+    }
+  }
+}
