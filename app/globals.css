@@ -181,8 +181,8 @@
   /* ── Night-mode neon glow effects (reference-matched) ───────────────
    * Soft outer glow around primary CTAs + highlight text, applied only in
    * dark mode so light mode keeps Credupe's original purple look. */
-  .dark .bg-primary,
-  .dark button.bg-primary {
+  /* Neon glow: covers .bg-primary on any element including buttons/links */
+  .dark .bg-primary {
     box-shadow: 0 0 24px -4px hsl(75 100% 65% / 0.35), 0 0 8px -2px hsl(75 100% 65% / 0.25);
   }
   .dark .text-primary {
@@ -322,8 +322,9 @@
    * In night mode both --accent and --primary resolve to the same neon
    * green, so the icon becomes invisible on the chip. Scope-fix only
    * those chips that actually host a neon-primary icon. */
-  .dark .bg-accent:has(> .text-primary),
-  .dark .bg-accent:has(> svg.text-primary) {
+  /* Single :has(.text-primary) covers both div and svg children — svg. tag
+   * qualifier is redundant and causes Turbopack to generate :hoversvg. */
+  .dark .bg-accent:has(> .text-primary) {
     background-color: hsl(var(--card));
   }
 
@@ -336,26 +337,23 @@
    * `!important` is used deliberately — Tailwind's utility classes
    * (`text-white`, `text-primary-foreground`, arbitrary `text-[...]`)
    * otherwise win the cascade. */
+  /* Force black text on any neon (lime-green) background in dark mode.
+   * Uses attribute selector instead of escaped .hover\:bg-primary:hover
+   * because Turbopack's Tailwind JIT mangles escaped selectors combined
+   * with tag selectors (button/a) into invalid :hoverbutton pseudo-classes. */
   .dark .bg-primary,
   .dark .bg-primary:hover,
-  .dark button.bg-primary,
-  .dark a.bg-primary,
-  .dark .bg-accent:not(:has(> .text-primary)):not(:has(> svg.text-primary)),
-  .dark .hover\:bg-primary:hover,
-  .dark [class*="bg-primary"]:not([class*="bg-primary/"]):not(.bg-primary-foreground) {
+  .dark .bg-accent:not(:has(> .text-primary)),
+  .dark [class*="bg-primary"]:not([class*="bg-primary/"]):not(.bg-primary-foreground),
+  .dark [class~="hover:bg-primary"]:hover {
     color: hsl(0 0% 0%) !important;
   }
   .dark .bg-primary *,
-  .dark button.bg-primary *,
-  .dark a.bg-primary *,
-  .dark .bg-accent:not(:has(> .text-primary)):not(:has(> svg.text-primary)) * {
+  .dark .bg-accent:not(:has(> .text-primary)) * {
     color: inherit !important;
   }
-  /* SVG icons inside neon buttons also need to render black (Lucide
-   * inherits `currentColor` by default, so forcing color cascades). */
-  .dark .bg-primary svg,
-  .dark button.bg-primary svg,
-  .dark a.bg-primary svg {
+  /* SVG icons inside neon buttons inherit black from parent (Lucide uses currentColor). */
+  .dark .bg-primary svg {
     color: hsl(0 0% 0%) !important;
   }
 

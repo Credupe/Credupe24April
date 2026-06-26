@@ -84,7 +84,7 @@ const MicroLoan = () => {
   const featuresRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
 
-  const sectionRefs: Record<string, React.RefObject<HTMLDivElement>> = {
+  const sectionRefs: Record<string, React.RefObject<HTMLDivElement | null>> = {
     "About": aboutRef,
     "Interest Rates": ratesRef,
     "Eligibility": eligibilityRef,

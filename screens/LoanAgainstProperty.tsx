@@ -134,7 +134,7 @@ const LoanAgainstProperty = () => {
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
-    const refMap: Record<string, React.RefObject<HTMLDivElement>> = {
+    const refMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
       Overview: overviewRef,
       "Interest Rates": ratesRef,
       Eligibility: eligibilityRef,

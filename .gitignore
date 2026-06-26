@@ -70,3 +70,11 @@ temp/
 # ==========================
 *.sqlite
 *.sqlite3
+
+# OpenNext & Wrangler Auto-generated files
+.open-next/
+next-env.d.ts
+.dev.vars*
+!.dev.vars.example
+worker-configuration.d.ts
+

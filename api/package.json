@@ -6,14 +6,14 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --config wrangler.api.jsonc",
+    "deploy": "wrangler deploy --config wrangler.api.jsonc",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply credupe --local",
-    "db:migrate:remote": "wrangler d1 migrations apply credupe --remote",
+    "db:migrate:local": "wrangler d1 migrations apply credupe --local --config wrangler.api.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply credupe --remote --config wrangler.api.jsonc",
     "db:studio": "drizzle-kit studio",
-    "seed:local": "wrangler d1 execute credupe --local --file=./scripts/seed.sql",
-    "seed:remote": "wrangler d1 execute credupe --remote --file=./scripts/seed.sql",
+    "seed:local": "wrangler d1 execute credupe --local --file=./scripts/seed.sql --config wrangler.api.jsonc",
+    "seed:remote": "wrangler d1 execute credupe --remote --file=./scripts/seed.sql --config wrangler.api.jsonc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
