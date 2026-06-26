@@ -8,9 +8,7 @@ const nextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   allowedDevOrigins: [
-    "*.preview.emergentagent.com",
-    "*.emergentagent.com",
-    "localhost",
+     "localhost",
   ],
   experimental: {
     optimizePackageImports: [
