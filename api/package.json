@@ -1,0 +1,33 @@
+{
+  "name": "credupe-api",
+  "version": "1.0.0",
+  "description": "Credupe backend on Cloudflare Workers + D1 (Hono + Drizzle).",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev --config wrangler.api.jsonc",
+    "deploy": "wrangler deploy --config wrangler.api.jsonc",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply credupe --local --config wrangler.api.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply credupe --remote --config wrangler.api.jsonc",
+    "db:studio": "drizzle-kit studio",
+    "seed:local": "wrangler d1 execute credupe --local --file=./scripts/seed.sql --config wrangler.api.jsonc",
+    "seed:remote": "wrangler d1 execute credupe --remote --file=./scripts/seed.sql --config wrangler.api.jsonc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.12",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "@types/bcryptjs": "^2.4.6",
+    "better-sqlite3": "^12.10.0",
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.95.0"
+  }
+}
