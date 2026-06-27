@@ -42,6 +42,9 @@ const DEFAULT_CONFIG = {
     hideProductMicroLoan: false,
     hideAllFooterLinks: false,
     hideCreduAi: false,
+    hideHeroCtas: false,
+    hideCreditScoreForm: false,
+    hideFooterBottomLinks: false,
   },
 };
 

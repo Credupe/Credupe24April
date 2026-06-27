@@ -33,5 +33,8 @@ export const defaultUIConfig: UIConfig = {
     hideProductMicroLoan: false,
     hideAllFooterLinks: false,
     hideCreduAi: false,
+    hideHeroCtas: false,
+    hideCreditScoreForm: false,
+    hideFooterBottomLinks: false,
   },
 };
