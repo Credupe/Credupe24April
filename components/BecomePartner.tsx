@@ -23,12 +23,11 @@ const BecomePartner = () => {
             <p className="mt-3 text-primary-foreground/80 text-sm md:text-base leading-relaxed">
               Join India's fastest-growing fintech ecosystem. Access premium leads, earn competitive commissions, and grow your business with CreduPe.
             </p>
-            <Link
-              to="/partner-gateway"
+            <button
               className="inline-flex items-center gap-2 mt-6 px-7 py-3 rounded-full bg-white text-[hsl(var(--purple-deep))] font-semibold text-sm hover:bg-white/90 transition-colors"
             >
               Join Us <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
           </motion.div>
 
           {!config.sections?.hidePartnerStats && (

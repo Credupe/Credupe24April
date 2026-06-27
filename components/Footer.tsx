@@ -58,7 +58,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {Object.entries(footerLinks).map(([title, links]) => {
+          {!config.sections?.hideAllFooterLinks && Object.entries(footerLinks).map(([title, links]) => {
             const filteredLinks = links.filter((link) => {
               if (link.label === "Car Loan" && config.sections?.hideFooterCarLoan) return false;
               if (link.label === "Two Wheeler Loan" && config.sections?.hideFooterTwoWheelerLoan) return false;

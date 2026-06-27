@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot, User, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -80,6 +81,7 @@ async function streamChat({
 }
 
 const CreduAIChat = () => {
+  const { config } = useUIConfigStore();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -162,6 +164,8 @@ const CreduAIChat = () => {
       );
     });
   };
+
+  if (config.sections?.hideCreduAi) return null;
 
   return (
     <>
