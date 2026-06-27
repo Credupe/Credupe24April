@@ -20,9 +20,17 @@
   "images": {
     "binding": "IMAGES"
   },
+  "routes": [
+    { "pattern": "credupe.com", "custom_domain": true },
+    { "pattern": "www.credupe.com", "custom_domain": true },
+    { "pattern": "*.credupe.com/*", "zone_name": "credupe.com" }
+  ],
   "env": {
     "staging": {
       "name": "credupe-staging-web",
+      "routes": [
+        { "pattern": "staging.credupe.com/*", "zone_name": "credupe.com" }
+      ],
       "services": [
         {
           "binding": "WORKER_SELF_REFERENCE",

@@ -33,7 +33,7 @@ jobs:
       - name: Build Frontend via OpenNext
         run: npx opennextjs-cloudflare build
         env:
-          NEXT_PUBLIC_BACKEND_URL: https://credupe-staging-api.credupe.workers.dev
+          NEXT_PUBLIC_BACKEND_URL: https://staging-api.credupe.com
 
       - name: Deploy Backend Worker (Staging)
         env:
