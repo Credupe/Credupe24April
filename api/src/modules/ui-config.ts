@@ -16,6 +16,7 @@ const DEFAULT_CONFIG = {
     hideTwoWheelerLoan: false,
     hideGoldLoan: false,
     hideBusinessLoans: false,
+    hideAllTabs: false,
   },
   sections: {
     hidePartnerStats: false,
@@ -39,6 +40,8 @@ const DEFAULT_CONFIG = {
     hideProductGoldLoan: false,
     hideProductBusinessLoan: false,
     hideProductMicroLoan: false,
+    hideAllFooterLinks: false,
+    hideCreduAi: false,
   },
 };
 

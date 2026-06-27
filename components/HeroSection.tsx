@@ -35,12 +35,12 @@ const HeroSection = () => {
             </div>
 
             <div className="flex flex-wrap gap-3 mt-8">
-              <Link to="/login" className="px-7 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center gap-2">
+              <button className="px-7 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center gap-2">
                 Check Eligibility <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link to="/calculators" className="px-7 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors">
+              </button>
+              <button className="px-7 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors">
                 Explore Products
-              </Link>
+              </button>
             </div>
           </motion.div>
 

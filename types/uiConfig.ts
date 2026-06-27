@@ -5,6 +5,7 @@ export interface UIConfig {
     hideTwoWheelerLoan: boolean;
     hideGoldLoan: boolean;
     hideBusinessLoans: boolean;
+    hideAllTabs: boolean;
   };
   sections: {
     hidePartnerStats: boolean;
@@ -28,5 +29,7 @@ export interface UIConfig {
     hideProductGoldLoan: boolean;
     hideProductBusinessLoan: boolean;
     hideProductMicroLoan: boolean;
+    hideAllFooterLinks: boolean;
+    hideCreduAi: boolean;
   };
 }
