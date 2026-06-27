@@ -7,6 +7,7 @@ export const defaultUIConfig: UIConfig = {
     hideTwoWheelerLoan: false,
     hideGoldLoan: false,
     hideBusinessLoans: false,
+    hideAllTabs: false,
   },
   sections: {
     hidePartnerStats: false,
@@ -30,5 +31,7 @@ export const defaultUIConfig: UIConfig = {
     hideProductGoldLoan: false,
     hideProductBusinessLoan: false,
     hideProductMicroLoan: false,
+    hideAllFooterLinks: false,
+    hideCreduAi: false,
   },
 };

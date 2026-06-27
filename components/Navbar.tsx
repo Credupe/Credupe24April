@@ -47,6 +47,9 @@ const Navbar = () => {
 
   const filteredNavItems = navItems
     .filter((item) => {
+      if (config.navbar?.hideAllTabs) {
+        return false;
+      }
       if (item.label === "Business Loans" && config.navbar?.hideBusinessLoans === true) {
         return false;
       }
@@ -86,15 +89,17 @@ const Navbar = () => {
               <Mail className="w-3.5 h-3.5" />
               <a href="mailto:contact@credupe.com" className="hover:underline font-medium">contact@credupe.com</a>
             </div>
-            <div className="hidden sm:flex items-center gap-6">
-              <Link to="/loan-intelligence" data-testid="topbar-loan-intelligence" className="hover:underline font-medium inline-flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                Loan Intelligence
-              </Link>
-              <Link to="/about-us" className="hover:underline font-medium">About Us</Link>
-              <Link to="/careers" className="hover:underline font-medium">Careers</Link>
-              <Link to="/contact-us" className="hover:underline font-medium">Contact Us</Link>
-            </div>
+            {!config.navbar?.hideAllTabs && (
+              <div className="hidden sm:flex items-center gap-6">
+                <Link to="/loan-intelligence" data-testid="topbar-loan-intelligence" className="hover:underline font-medium inline-flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Loan Intelligence
+                </Link>
+                <Link to="/about-us" className="hover:underline font-medium">About Us</Link>
+                <Link to="/careers" className="hover:underline font-medium">Careers</Link>
+                <Link to="/contact-us" className="hover:underline font-medium">Contact Us</Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -146,67 +151,69 @@ const Navbar = () => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => setSearchOpen(true)} className="p-2 hover:bg-muted rounded-lg transition-colors">
-              <Search className="w-4 h-4 text-muted-foreground" />
-            </button>
+          {!config.navbar?.hideAllTabs && (
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={() => setSearchOpen(true)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+                <Search className="w-4 h-4 text-muted-foreground" />
+              </button>
 
-            <ThemeToggle className="hidden sm:inline-flex" />
+              <ThemeToggle className="hidden sm:inline-flex" />
 
-            {user ? (
-              <div
-                className="relative hidden sm:block"
-                onMouseEnter={() => setOpenDropdown("user")}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                <button
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-sm hover:bg-muted/80 transition-colors"
+              {user ? (
+                <div
+                  className="relative hidden sm:block"
+                  onMouseEnter={() => setOpenDropdown("user")}
+                  onMouseLeave={() => setOpenDropdown(null)}
                 >
-                  <User className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-foreground font-medium max-w-[120px] truncate">{user.email?.split("@")[0]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
-                {openDropdown === "user" && (
-                  <div className="absolute right-0 top-full pt-1.5 w-48 z-50">
-                    <div className="bg-card border border-border rounded-xl shadow-lg py-1.5">
-                      <Link
-                        to={getDashboardHref()}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-150 rounded-t-lg"
-                      >
-                        <Briefcase className="w-4 h-4" />
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all duration-150 rounded-b-lg text-left"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
+                  <button
+                    className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-sm hover:bg-muted/80 transition-colors"
+                  >
+                    <User className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-foreground font-medium max-w-[120px] truncate">{user.email?.split("@")[0]}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+                  {openDropdown === "user" && (
+                    <div className="absolute right-0 top-full pt-1.5 w-48 z-50">
+                      <div className="bg-card border border-border rounded-xl shadow-lg py-1.5">
+                        <Link
+                          to={getDashboardHref()}
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-150 rounded-t-lg"
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all duration-150 rounded-b-lg text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Logout
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => navigate("/login?mode=signup")}
-                  className="hidden sm:inline-flex px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-                >
-                  Get Started
-                </button>
-                <button
-                  onClick={() => navigate("/login")}
-                  className="hidden sm:inline-flex px-4 py-1.5 rounded-full border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  Login
-                </button>
-              </>
-            )}
-            <button className="xl:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate("/login?mode=signup")}
+                    className="hidden sm:inline-flex px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Get Started
+                  </button>
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="hidden sm:inline-flex px-4 py-1.5 rounded-full border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    Login
+                  </button>
+                </>
+              )}
+              <button className="xl:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          )}
         </div>
 
         {mobileOpen && (
