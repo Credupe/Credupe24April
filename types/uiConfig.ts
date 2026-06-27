@@ -31,5 +31,8 @@ export interface UIConfig {
     hideProductMicroLoan: boolean;
     hideAllFooterLinks: boolean;
     hideCreduAi: boolean;
+    hideHeroCtas: boolean;
+    hideCreditScoreForm: boolean;
+    hideFooterBottomLinks: boolean;
   };
 }
