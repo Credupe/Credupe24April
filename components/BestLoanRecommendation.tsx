@@ -369,6 +369,19 @@ export function BestLoanRecommendation({
                   Recommendations are derived from the {offerings.length} lender offerings listed above. We do <strong className="text-foreground">not</strong> charge customers — lenders pay us a referral fee, equal across all partners, so our ranking stays unbiased.
                 </p>
               </div>
+
+              {/* Portfolio CTA */}
+              <div className="flex justify-center pt-4">
+                <Link
+                  to="/portfolio"
+                  data-testid="best-loan-rec-portfolio-cta"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Check your Portfolio
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
           )}
         </div>

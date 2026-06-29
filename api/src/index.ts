@@ -37,6 +37,8 @@ import documents from "./modules/documents";
 import notifications from "./modules/notifications";
 import analytics from "./modules/analytics";
 import uiConfig from "./modules/ui-config";
+import partnerOnboarding from "./modules/partner-onboarding";
+import partnerDashboard from "./modules/partner-dashboard";
 
 const app = new Hono<AppEnv>();
 
@@ -72,6 +74,8 @@ v1.route("/documents", documents);
 v1.route("/notifications", notifications);
 v1.route("/analytics", analytics);
 v1.route("/ui-config", uiConfig);
+v1.route("/partner-onboarding", partnerOnboarding);
+v1.route("/partner-dashboard", partnerDashboard);
 
 app.route("/api/v1", v1);
 
