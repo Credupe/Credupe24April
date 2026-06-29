@@ -16,8 +16,67 @@ VALUES
 INSERT OR REPLACE INTO customer_profiles (id, user_id, first_name, last_name, city)
 VALUES ('cp_demo', 'u_customer', 'Demo', 'Customer', 'Mumbai');
 
-INSERT OR REPLACE INTO partner_profiles (id, user_id, business_name, kyc_status)
-VALUES ('pp_demo', 'u_partner', 'Demo Partner LLP', 'VERIFIED');
+INSERT OR REPLACE INTO partner_profiles (
+  id, user_id, partner_code, business_name, contact_person, email, mobile,
+  city, state, pincode, address, gst_number, pan_number, pan_last4, aadhaar_last4,
+  bank_account_json, tier, onboarding_step, kyc_status, mobile_verified_at, email_verified_at, agreement_signed_at, activated_at
+)
+VALUES (
+  'pp_demo', 
+  'u_partner', 
+  'CRD-PA00001', 
+  'Demo Partner LLP', 
+  'Demo Partner', 
+  'partner@credupe.local', 
+  '9876543210',
+  'Mumbai', 
+  'Maharashtra', 
+  '400001', 
+  '123 Business Hub, BKC', 
+  '27AAAAA1111A1Z1', 
+  'ABCDE1234F', 
+  '1234', 
+  '5678',
+  '{"bankName":"HDFC Bank Ltd","accountHolder":"Demo Partner LLP","accountNumber":"50200012345678","ifsc":"HDFC0000123"}', 
+  'GOLD', 
+  'COMPLETE', 
+  'VERIFIED', 
+  '2026-06-20T10:00:00Z', 
+  '2026-06-20T10:05:00Z', 
+  '2026-06-20T10:10:00Z', 
+  '2026-06-20T10:15:00Z'
+);
+
+-- ─── Commission Rules ──────────────────────────────────────────────────
+INSERT OR REPLACE INTO commission_rules (id, loan_type, rule_type, payout_bps, flat_amount_paise, min_amount_paise, max_amount_paise, notes, active)
+VALUES
+  ('r_pl', 'PERSONAL_LOAN', 'PERCENT', 150, NULL, NULL, NULL, 'Standard personal loan rate (1.5%)', 1),
+  ('r_hl', 'HOME_LOAN', 'PERCENT', 50, NULL, NULL, NULL, 'Standard home loan rate (0.5%)', 1),
+  ('r_bl', 'BUSINESS_LOAN', 'PERCENT', 100, NULL, NULL, NULL, 'Standard business loan rate (1.0%)', 1),
+  ('r_el', 'EDUCATION_LOAN', 'PERCENT', 125, NULL, NULL, NULL, 'Standard education loan rate (1.25%)', 1);
+
+-- ─── Leads ─────────────────────────────────────────────────────────────
+INSERT OR REPLACE INTO leads (id, partner_id, created_by_id, customer_name, customer_mobile, customer_email, loan_type, amount_requested_paise, product_id, city, status, notes)
+VALUES
+  ('ld_1', 'pp_demo', 'u_partner', 'Rajesh Kumar', '9811122233', 'rajesh@gmail.com', 'PERSONAL_LOAN', 50000000, 'p_hdfc_pl', 'Mumbai', 'CONVERTED', 'Approved and paid'),
+  ('ld_2', 'pp_demo', 'u_partner', 'Anita Sharma', '9811122244', 'anita@gmail.com', 'HOME_LOAN', 300000000, 'p_icici_hl', 'Mumbai', 'CONVERTED', 'Approved and paid'),
+  ('ld_3', 'pp_demo', 'u_partner', 'Vikram Singh', '9811122255', 'vikram@gmail.com', 'BUSINESS_LOAN', 100000000, 'p_hdfc_bl', 'Mumbai', 'APPLICATION_CREATED', 'Under review'),
+  ('ld_4', 'pp_demo', 'u_partner', 'Pooja Patel', '9811122266', 'pooja@gmail.com', 'PERSONAL_LOAN', 25000000, 'p_axis_pl', 'Mumbai', 'QUALIFIED', 'Interested, documents being collected');
+
+-- ─── Commissions ───────────────────────────────────────────────────────
+INSERT OR REPLACE INTO commissions (id, partner_id, lead_id, product_id, amount_paise, payout_bps, status, paid_at)
+VALUES
+  ('c_1', 'pp_demo', 'ld_1', 'p_hdfc_pl', 750000, 150, 'PAID', '2026-06-28T10:00:00Z'),
+  ('c_2', 'pp_demo', 'ld_2', 'p_icici_hl', 1500000, 50, 'PAID', '2026-06-28T10:00:00Z'),
+  ('c_3', 'pp_demo', 'ld_3', 'p_hdfc_bl', 1000000, 100, 'APPROVED', NULL),
+  ('c_4', 'pp_demo', 'ld_4', 'p_axis_pl', 375000, 150, 'PENDING', NULL);
+
+-- ─── Documents ─────────────────────────────────────────────────────────
+INSERT OR REPLACE INTO documents (id, owner_user_id, tag, file_name, mime_type, size_bytes, storage_key, status)
+VALUES
+  ('doc_1', 'u_partner', 'KYC', 'pan_card.pdf', 'application/pdf', 1048576, 'kyc/pp_demo/pan_card.pdf', 'VERIFIED'),
+  ('doc_2', 'u_partner', 'KYC', 'gst_certificate.pdf', 'application/pdf', 2097152, 'kyc/pp_demo/gst_certificate.pdf', 'VERIFIED'),
+  ('doc_3', 'u_partner', 'BANK_STATEMENT', 'cancelled_cheque.pdf', 'application/pdf', 1572864, 'kyc/pp_demo/cancelled_cheque.pdf', 'VERIFIED');
 
 -- ─── Lenders ───────────────────────────────────────────────────────────
 INSERT OR REPLACE INTO lenders (id, name, slug) VALUES

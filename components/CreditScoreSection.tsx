@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 
 const benefits = [
   "Check Credit Score from All 4 Bureaus",
@@ -14,6 +15,7 @@ const stats = [
 ];
 
 const CreditScoreSection = () => {
+  const { config } = useUIConfigStore();
   return (
     <section className="py-16 bg-secondary/30">
       <div className="container max-w-6xl">
@@ -31,17 +33,17 @@ const CreditScoreSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-start">
+        <div className={`grid ${!config.sections?.hideCreditScoreForm ? 'md:grid-cols-2' : 'grid-cols-1 max-w-2xl mx-auto'} gap-8 items-start`}>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="space-y-4"
+            className={`space-y-4 ${config.sections?.hideCreditScoreForm ? 'text-center' : ''}`}
           >
             <h3 className="text-lg font-semibold text-foreground">
               Why Check Your Credit Score?
             </h3>
-            <div className="space-y-3">
+            <div className={`space-y-3 ${config.sections?.hideCreditScoreForm ? 'max-w-md mx-auto text-left' : ''}`}>
               {benefits.map((b) => (
                 <div
                   key={b}
@@ -110,61 +112,63 @@ const CreditScoreSection = () => {
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="bg-card rounded-2xl shadow-lg border border-border p-8"
-          >
-            <h3 className="text-xl font-bold text-foreground mb-6">
-              Let's Get Started
-            </h3>
+          {!config.sections?.hideCreditScoreForm && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-card rounded-2xl shadow-lg border border-border p-8"
+            >
+              <h3 className="text-xl font-bold text-foreground mb-6">
+                Let's Get Started
+              </h3>
 
-            <div className="space-y-4">
-              <div>
-                <input
-                  type="tel"
-                  placeholder="Mobile Number"
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                  maxLength={10}
-                />
-                <p className="text-xs text-muted-foreground mt-2">
-                  You will receive an OTP on mentioned number
+              <div className="space-y-4">
+                <div>
+                  <input
+                    type="tel"
+                    placeholder="Mobile Number"
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    maxLength={10}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    You will receive an OTP on mentioned number
+                  </p>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  By logging in, you agree to the following{" "}
+                  <a href="#" className="text-primary hover:underline">Terms of Use</a>{" "}
+                  and{" "}
+                  <a href="#" className="text-primary hover:underline">Privacy Policy</a>
                 </p>
+
+                <button className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                  Get Free Credit Score <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                By logging in, you agree to the following{" "}
-                <a href="#" className="text-primary hover:underline">Terms of Use</a>{" "}
-                and{" "}
-                <a href="#" className="text-primary hover:underline">Privacy Policy</a>
-              </p>
-
-              <button className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-                Get Free Credit Score <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-xs text-muted-foreground text-center mb-3">Powered by</p>
-              <div className="flex items-center justify-center gap-4">
-                {["CIBIL", "Experian", "Equifax", "CRIF"].map((name) => (
-                  <span
-                    key={name}
-                    className="text-xs font-semibold text-foreground/60 bg-secondary/50 px-3 py-1.5 rounded border border-border"
-                  >
-                    {name}
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="text-xs text-muted-foreground text-center mb-3">Powered by</p>
+                <div className="flex items-center justify-center gap-4">
+                  {["CIBIL", "Experian", "Equifax", "CRIF"].map((name) => (
+                    <span
+                      key={name}
+                      className="text-xs font-semibold text-foreground/60 bg-secondary/50 px-3 py-1.5 rounded border border-border"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-muted-foreground font-medium">
+                    5.7 Crore reports checked so far
                   </span>
-                ))}
+                </div>
               </div>
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground font-medium">
-                  5.7 Crore reports checked so far
-                </span>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
