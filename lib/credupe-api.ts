@@ -525,6 +525,79 @@ export const credupeApi = {
     },
   },
 
+  partnerOnboarding: {
+    start(input: { email: string; mobile: string; contactPerson: string }) {
+      return request<{ onboardingToken: string; expiresInSec: number }>(
+        "POST",
+        "/partner-onboarding/start",
+        input,
+        { auth: false }
+      );
+    },
+    requestOtp(input: { channel: "mobile" | "email"; destination: string; onboardingToken: string }) {
+      return request<{ channel: string; destination: string; expiresInSec: number; devOtp?: string }>(
+        "POST",
+        "/partner-onboarding/otp/request",
+        input,
+        { auth: false }
+      );
+    },
+    verifyOtp(input: { channel: "mobile" | "email"; destination: string; code: string; onboardingToken: string }) {
+      return request<{ onboardingToken: string; mobileVerified: boolean; emailVerified: boolean; bothVerified: boolean }>(
+        "POST",
+        "/partner-onboarding/otp/verify",
+        input,
+        { auth: false }
+      );
+    },
+    presignKyc(input: {
+      onboardingToken: string;
+      tag: string;
+      fileName: string;
+      mimeType?: string;
+      sizeBytes?: number;
+    }) {
+      return request<{
+        storageKey: string;
+        uploadUrl: string;
+        method: "PUT";
+        headers: Record<string, string>;
+        docId: string;
+      }>("POST", "/partner-onboarding/presign-kyc", input, { auth: false });
+    },
+    async finalize(input: {
+      onboardingToken: string;
+      businessName: string;
+      gstNumber?: string;
+      panNumber?: string;
+      city?: string;
+      state?: string;
+      pincode?: string;
+      address?: string;
+      password?: string;
+      bankName?: string;
+      accountHolder?: string;
+      accountNumber?: string;
+      ifsc?: string;
+      kycDocuments?: Array<{ tag: string; fileName: string; mimeType?: string; sizeBytes?: number; documentId?: string; storageKey?: string }>;
+    }) {
+      const res = await request<any>("POST", "/partner-onboarding/finalize", input, { auth: false });
+      credupeTokens.set(res.accessToken, res.refreshToken);
+      return res;
+    },
+  },
+
+  partner: {
+    me() { return request<any>("GET", "/partners/me"); },
+    update(patch: Record<string, any>) { return request<any>("PATCH", "/partners/me", patch); },
+    home() { return request<any>("GET", "/partner-dashboard/home"); },
+    earnings() { return request<any>("GET", "/partner-dashboard/earnings"); },
+    documents() { return request<any[]>("GET", "/partner-dashboard/documents"); },
+    leaderboard(metric: "disbursed" | "leads" | "commission" = "disbursed", limit = 25) {
+      return request<any>("GET", `/partner-dashboard/leaderboard?metric=${metric}&limit=${limit}`);
+    },
+  },
+
   uiConfig: {
     get() { return request<any>("GET", "/ui-config", undefined, { auth: false }); },
     patch(key: string, value: boolean) { return request<any>("PATCH", "/ui-config", { key, value }); },

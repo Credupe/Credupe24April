@@ -18,6 +18,11 @@ import {
 /* ────────────────── shared enum lists (used in CHECK constraints) ──────── */
 export const ROLES = ["CUSTOMER", "PARTNER", "ADMIN"] as const;
 export const KYC_STATUSES = ["PENDING", "VERIFIED", "REJECTED"] as const;
+export const PARTNER_TIERS = ["BRONZE", "SILVER", "GOLD", "PLATINUM"] as const;
+export const PARTNER_ONBOARDING_STEPS = [
+  "CONTACT", "MOBILE_VERIFIED", "EMAIL_VERIFIED", "BUSINESS_DETAILS",
+  "KYC_DOCS", "BANK_DETAILS", "AGREEMENT", "COMPLETE",
+] as const;
 export const EMPLOYMENT_TYPES = [
   "SALARIED", "SELF_EMPLOYED", "BUSINESS", "FREELANCER", "UNEMPLOYED", "STUDENT",
 ] as const;
@@ -117,18 +122,30 @@ export const customerProfiles = sqliteTable("customer_profiles", {
   updatedBy: text("updated_by"),
 });
 
-/* ─────────────────────────── Partner profile ──────────────────────────── */
 export const partnerProfiles = sqliteTable("partner_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  partnerCode: text("partner_code").notNull().unique(),
   businessName: text("business_name").notNull(),
   contactPerson: text("contact_person"),
+  email: text("email"),
+  mobile: text("mobile"),
   city: text("city"),
   state: text("state"),
   pincode: text("pincode"),
+  address: text("address"),
   gstNumber: text("gst_number"),
+  panNumber: text("pan_number"),
   panLast4: text("pan_last4"),
+  aadhaarLast4: text("aadhaar_last4"),
+  bankAccount: text("bank_account_json"),
+  tier: text("tier", { enum: PARTNER_TIERS }).notNull().default("BRONZE"),
+  onboardingStep: text("onboarding_step", { enum: PARTNER_ONBOARDING_STEPS }).notNull().default("CONTACT"),
   kycStatus: text("kyc_status", { enum: KYC_STATUSES }).notNull().default("PENDING"),
+  mobileVerifiedAt: text("mobile_verified_at"),
+  emailVerifiedAt: text("email_verified_at"),
+  agreementSignedAt: text("agreement_signed_at"),
+  activatedAt: text("activated_at"),
   parentPartnerId: text("parent_partner_id"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -397,6 +414,24 @@ export const uiConfigs = sqliteTable(
   {
     config: text("config").primaryKey(), // Using 'config' column to store the key/name as requested
     value: integer("value", { mode: "boolean" }).notNull(),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  }
+);
+
+/* ─────────────────────────── Commission Rules ─────────────────────────── */
+export const commissionRules = sqliteTable(
+  "commission_rules",
+  {
+    id: text("id").primaryKey(),
+    loanType: text("loan_type", { enum: LOAN_TYPES }).notNull().unique(),
+    ruleType: text("rule_type").notNull().default("PERCENT"), // "PERCENT" | "FLAT"
+    payoutBps: integer("payout_bps"), // e.g. 150 bps = 1.5% (percentage * 100)
+    flatAmountPaise: integer("flat_amount_paise"),
+    minAmountPaise: integer("min_amount_paise"),
+    maxAmountPaise: integer("max_amount_paise"),
+    notes: text("notes"),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   }

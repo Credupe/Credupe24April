@@ -25,6 +25,10 @@ export type AppEnv = {
     R2_ACCESS_KEY_ID?: string;
     R2_SECRET_ACCESS_KEY?: string;
     R2_BUCKET?: string;
+    // OTP / Resend configuration
+    ENV?: string;
+    RESEND_API_KEY?: string;
+    RESEND_FROM_EMAIL?: string;
   };
   Variables: {
     user?: { sub: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" };
