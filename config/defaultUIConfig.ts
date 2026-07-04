@@ -7,6 +7,8 @@ export const defaultUIConfig: UIConfig = {
     hideTwoWheelerLoan: false,
     hideGoldLoan: false,
     hideBusinessLoans: false,
+    hideHomeLoan: false,
+    hideLoanAgainstProperty: false,
     hideAllTabs: false,
   },
   sections: {
