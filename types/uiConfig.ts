@@ -5,6 +5,8 @@ export interface UIConfig {
     hideTwoWheelerLoan: boolean;
     hideGoldLoan: boolean;
     hideBusinessLoans: boolean;
+    hideHomeLoan: boolean;
+    hideLoanAgainstProperty: boolean;
     hideAllTabs: boolean;
   };
   sections: {

@@ -72,6 +72,12 @@ const Navbar = () => {
             if (sub.label === "Gold Loan" && config.navbar?.hideGoldLoan === true) {
               return false;
             }
+            if (sub.label === "Home Loan" && config.navbar?.hideHomeLoan === true) {
+              return false;
+            }
+            if (sub.label === "Loan Against Property" && config.navbar?.hideLoanAgainstProperty === true) {
+              return false;
+            }
             return true;
           }),
         };

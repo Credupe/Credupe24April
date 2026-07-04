@@ -123,6 +123,8 @@ INSERT OR REPLACE INTO ui_configs (config, value) VALUES
   ('navbar.hideTwoWheelerLoan', 0),
   ('navbar.hideGoldLoan', 0),
   ('navbar.hideBusinessLoans', 0),
+  ('navbar.hideHomeLoan', 0),
+  ('navbar.hideLoanAgainstProperty', 0),
   ('sections.hidePartnerStats', 0),
   ('sections.hideWallOfWin', 0),
   ('sections.hideBankingEcosystem', 0),
