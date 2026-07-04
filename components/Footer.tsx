@@ -67,6 +67,8 @@ const Footer = () => {
               if (link.label === "Two Wheeler Loan" && config.sections?.hideFooterTwoWheelerLoan) return false;
               if (link.label === "Business Loan" && config.sections?.hideFooterBusinessLoan) return false;
               if (link.label === "Gold Loan" && config.sections?.hideFooterGoldLoan) return false;
+              if (link.label === "Home Loan" && config.navbar?.hideHomeLoan) return false;
+              if (link.label === "Loan Against Property" && config.navbar?.hideLoanAgainstProperty) return false;
               return true;
             });
 

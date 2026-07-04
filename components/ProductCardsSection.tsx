@@ -25,6 +25,8 @@ const ProductCardsSection = () => {
     if (p.title === "Gold Loan" && config.sections?.hideProductGoldLoan) return false;
     if (p.title === "Business Loan" && config.sections?.hideProductBusinessLoan) return false;
     if (p.title === "Micro Loan" && config.sections?.hideProductMicroLoan) return false;
+    if (p.title === "Home Loan" && config.navbar?.hideHomeLoan) return false;
+    if (p.title === "Loan Against Property" && config.navbar?.hideLoanAgainstProperty) return false;
     return true;
   });
 

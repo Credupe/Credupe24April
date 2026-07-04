@@ -16,6 +16,8 @@ const DEFAULT_CONFIG = {
     hideTwoWheelerLoan: false,
     hideGoldLoan: false,
     hideBusinessLoans: false,
+    hideHomeLoan: false,
+    hideLoanAgainstProperty: false,
     hideAllTabs: false,
   },
   sections: {
