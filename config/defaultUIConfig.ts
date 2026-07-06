@@ -7,6 +7,8 @@ export const defaultUIConfig: UIConfig = {
     hideTwoWheelerLoan: false,
     hideGoldLoan: false,
     hideBusinessLoans: false,
+    hideHomeLoan: false,
+    hideLoanAgainstProperty: false,
     hideAllTabs: false,
   },
   sections: {
@@ -33,5 +35,8 @@ export const defaultUIConfig: UIConfig = {
     hideProductMicroLoan: false,
     hideAllFooterLinks: false,
     hideCreduAi: false,
+    hideHeroCtas: false,
+    hideCreditScoreForm: false,
+    hideFooterBottomLinks: false,
   },
 };

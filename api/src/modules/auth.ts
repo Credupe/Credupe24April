@@ -61,7 +61,13 @@ route.post("/register", async (c) => {
     await db.insert(customerProfiles).values({ id: newId("cp"), userId: id, firstName: firstName ?? null, lastName: lastName ?? null });
   } else if (role === "PARTNER") {
     const fallback = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "Partner";
-    await db.insert(partnerProfiles).values({ id: newId("pp"), userId: id, businessName: businessName ?? fallback });
+    const partnerCode = "CRD-PA" + Math.floor(10000 + Math.random() * 90000);
+    await db.insert(partnerProfiles).values({
+      id: newId("pp"),
+      userId: id,
+      partnerCode,
+      businessName: businessName ?? fallback,
+    });
   }
   return ok(c, await issueTokens(c, { id, email, role }), 201);
 });

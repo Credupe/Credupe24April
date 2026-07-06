@@ -1,8 +1,10 @@
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUIConfigStore } from "@/stores/uiConfigStore";
+import { useTheme } from "@/components/ThemeProvider";
 
-const logo = "/assets/credupe-logo.jpeg";
+const lightIcon = "/assets/credupe-icon.png";
+const darkIcon = "/assets/credupe-icon-darkmode.png";
 const footerLinks = {
   "Products": [
     { label: "Education Loan", href: "/education-loan" },
@@ -32,6 +34,7 @@ const footerLinks = {
 
 const Footer = () => {
   const { config } = useUIConfigStore();
+  const { theme } = useTheme();
 
   return (
     <footer className="bg-background border-t border-border">
@@ -39,7 +42,7 @@ const Footer = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <img src={logo} alt="CreduPe" className="h-9 w-auto object-contain" />
+              <img src={theme === "dark" ? darkIcon : lightIcon} alt="CreduPe" className="h-9 w-auto object-contain" />
               <span className="font-bold text-lg text-foreground">CreduPe</span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
@@ -64,6 +67,8 @@ const Footer = () => {
               if (link.label === "Two Wheeler Loan" && config.sections?.hideFooterTwoWheelerLoan) return false;
               if (link.label === "Business Loan" && config.sections?.hideFooterBusinessLoan) return false;
               if (link.label === "Gold Loan" && config.sections?.hideFooterGoldLoan) return false;
+              if (link.label === "Home Loan" && config.navbar?.hideHomeLoan) return false;
+              if (link.label === "Loan Against Property" && config.navbar?.hideLoanAgainstProperty) return false;
               return true;
             });
 
@@ -98,13 +103,15 @@ const Footer = () => {
           <p className="text-muted-foreground text-xs">
             © 2026 CreduPe. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs">
-            <Link to="/terms-and-conditions" className="text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</Link>
-            <span className="text-border">|</span>
-            <Link to="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
-            <span className="text-border">|</span>
-            <Link to="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
-          </div>
+          {!config.sections?.hideFooterBottomLinks && (
+            <div className="flex items-center gap-4 text-xs">
+              <Link to="/terms-and-conditions" className="text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</Link>
+              <span className="text-border">|</span>
+              <Link to="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+              <span className="text-border">|</span>
+              <Link to="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
+            </div>
+          )}
         </div>
       </div>
     </footer>
