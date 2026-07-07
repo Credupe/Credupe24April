@@ -73,7 +73,7 @@ export const SignupBusinessDetailsScreen: React.FC<Props> = ({ navigation, route
 
       // Navigate to KYC Documents screen after successful submission
       setTimeout(() => {
-        navigation.replace("SignupKycDocuments" as any);
+       navigation.replace("SignupPayoutAccount" as any);
       }, 500);
     } catch (error) {
       alert("Failed to submit business details. Please try again.");

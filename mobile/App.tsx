@@ -17,7 +17,7 @@ import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { QuoteBuilderScreen } from "./src/screens/QuoteBuilderScreen";
 import { QuoteResultsScreen } from "./src/screens/QuoteResultsScreen";
 import { KycScreen } from "./src/screens/KycScreen";
-import { PartnerHomeScreen } from "./src/screens/PartnerHomeScreen";
+import { PartnerHomeScreen } from "./src/screens/dashboard/partner/home/PartnerHomeScreen";
 import { LeadsScreen } from "./src/screens/LeadsScreen";
 import { LeadDetailScreen } from "./src/screens/LeadDetailScreen";
 import { NewLeadScreen } from "./src/screens/NewLeadScreen";
@@ -33,11 +33,12 @@ import { AdminProductsScreen } from "./src/screens/AdminProductsScreen";
 import { AdminProductEditScreen } from "./src/screens/AdminProductEditScreen";
 import { PublicQuoteScreen } from "./src/screens/PublicQuoteScreen";
 import { NotificationsScreen } from "./src/screens/NotificationsScreen";
-import { SignupSelectionScreen } from "./src/screens/auth/partner/SignupSelectionScreen";
+import { SignupSelectionScreen } from "./src/screens/dashboard/partner/kyc/SignupSelectionScreen";
+import { SignupBasicDetailsScreen } from "./src/screens/dashboard/partner/kyc/SignupBasicDetailsScreen";
 import { SignupContactDetailsScreen } from "./src/screens/auth/partner/SignupContactDetailsScreen";
 import { SignupVerificationScreen } from "./src/screens/auth/partner/SignupVerificationScreen";
 import { SignupBusinessDetailsScreen } from "./src/screens/auth/partner/SignupBusinessDetailsScreen";
-import { SignupKycDocumentsScreen } from "./src/screens/auth/partner/SignupKycDocumentsScreen";
+import { SignupKycDocumentsScreen } from "./src/screens/dashboard/partner/kyc/SignupKycDocumentsScreen";
 import { SignupPayoutAccountScreen } from "./src/screens/auth/partner/SignupPayoutAccountScreen";
 import { PartnerOnboardingSuccessScreen } from "./src/screens/auth/partner/PartnerOnboardingSuccessScreen";
 import { registerForPushNotifications } from "./src/lib/push";
@@ -46,10 +47,20 @@ import { getCachedUser, Lead, Lender, LoanProduct, Quote } from "./src/api/credu
 export type RootStackParamList = {
   Login: undefined;
   SignupSelection: undefined;
+  SignupBasicDetails: { businessType?: string };
   SignupContactDetails: { businessType?: string };
   SignupVerification: { name: string; mobile: string; email: string; businessType?: string };
   SignupBusinessDetails: undefined;
-  SignupKycDocuments: undefined;
+  SignupKycDocuments: {
+    businessType?: string;
+    basicDetails?: {
+      fullName: string;
+      month: string | null;
+      day: string | null;
+      year: string | null;
+      gender: "Male" | "Female" | "Other" | null;
+    };
+  };
   SignupPayoutAccount: undefined;
   PartnerOnboardingSuccess: undefined;
   PartnerHomeDirect: undefined;
@@ -215,6 +226,7 @@ const MainTabs: React.FC<MainTabsProps> = ({
               onOpenCommissions={onOpenCommissions}
               onNewLead={onNewLead}
               onBulkImport={onBulkImport}
+              onOpenKyc={onOpenKyc}
             />
           )}
         </Tabs.Screen>
@@ -350,7 +362,7 @@ const Root: React.FC = () => {
           <Stack.Screen name="Login">
             {({ navigation }) => (
               <LoginScreen
-                onSignup={() => navigation.navigate("SignupSelection")}
+                onSignup={() => navigation.navigate("SignupContactDetails")}
                 onAuthed={async () => {
                   const u = await getCachedUser();
                   if (u?.role) setRole(u.role);
@@ -360,13 +372,24 @@ const Root: React.FC = () => {
             )}
           </Stack.Screen>
           <Stack.Screen name="SignupSelection" component={SignupSelectionScreen} />
+          <Stack.Screen name="SignupBasicDetails" component={SignupBasicDetailsScreen} />
           <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
           <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
           <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
           <Stack.Screen name="SignupKycDocuments" component={SignupKycDocumentsScreen} />
           <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
           <Stack.Screen name="PartnerOnboardingSuccess" component={PartnerOnboardingSuccessScreen} />
-          <Stack.Screen name="PartnerHomeDirect" component={PartnerHomeScreen} />
+          <Stack.Screen name="PartnerHomeDirect">
+            {({ navigation }) => (
+              <PartnerHomeScreen
+                onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
+                onOpenCommissions={() => navigation.navigate("Commissions")}
+                onNewLead={() => navigation.navigate("NewLead")}
+                onBulkImport={() => navigation.navigate("BulkLeadsImport")}
+                onOpenKyc={() => navigation.navigate("SignupSelection")}
+              />
+            )}
+          </Stack.Screen>
           </>
         ) : (
           <>
@@ -376,7 +399,7 @@ const Root: React.FC = () => {
                   role={role}
                   onSignedOut={() => setAuthed(false)}
                   onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
-                  onOpenKyc={() => navigation.navigate("Kyc")}
+                  onOpenKyc={() => navigation.navigate("SignupSelection")}
                   onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
                   onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
                   onNewLead={() => navigation.navigate("NewLead")}

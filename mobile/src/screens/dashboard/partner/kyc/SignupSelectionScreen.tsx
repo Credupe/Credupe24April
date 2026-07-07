@@ -3,10 +3,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-import { SignupOptionsList } from "../../../components/SignupOptionsList";
-import { RootStackParamList } from "../../../../App";
-import { useTheme } from "../../../theme/ThemeProvider";
-import { radii, spacing, typography } from "../../../theme/colors";
+import { SignupOptionsList } from "../../../../components/SignupOptionsList";
+import { RootStackParamList } from "../../../../../App";
+import { useTheme } from "../../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../../theme/colors";
 
 type Props = NativeStackScreenProps<RootStackParamList, "SignupSelection">;
 
@@ -23,7 +23,7 @@ export const SignupSelectionScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleContinue = () => {
     if (!selectedOption) return;
-    navigation.navigate("SignupContactDetails", { businessType: selectedOption });
+    navigation.navigate("SignupBasicDetails", { businessType: selectedOption });
   };
 
   return (
@@ -34,7 +34,7 @@ export const SignupSelectionScreen: React.FC<Props> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Image source={require("../../../../assets/logo.png")} style={styles.logo} resizeMode="contain" />
+            <Image source={require("../../../../../assets/logo.png")} style={styles.logo} resizeMode="contain" />
             <Text style={[styles.title, typography.h1, { color: colors.text }]}>Create your account</Text>
             <Text style={[styles.subtitle, typography.body, { color: colors.textMuted }]}>Choose one business type to continue</Text>
           </View>
@@ -62,10 +62,7 @@ export const SignupSelectionScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={[styles.continueArrow, { color: colors.textInverted }]}>→</Text>
           </Pressable>
 
-          <View style={styles.signinRow}>
-            <Text style={[styles.signinText, { color: colors.textMuted }]}>Already have an account? </Text>
-            <Text style={[styles.signinLink, { color: colors.primary }]}>Sign in</Text>
-          </View>
+        
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -7,20 +7,22 @@ import {
   fetchBrokerageSummary,
   fetchPartnerAnalytics,
   getCachedUser,
-} from "../api/credupe";
-import { CredupeLogo } from "../components/CredupeLogo";
-import { inr } from "../lib/format";
-import { useTheme } from "../theme/ThemeProvider";
-import { radii, spacing, typography } from "../theme/colors";
+} from "../../../../api/credupe";
+import { CredupeLogo } from "../../../../components/CredupeLogo";
+import { KycPopup } from "../kyc/kycpopup";
+import { inr } from "../../../../lib/format";
+import { useTheme } from "../../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../../theme/colors";
 
 interface Props {
   onOpenLeads: (status?: string) => void;
   onOpenCommissions: () => void;
   onNewLead: () => void;
   onBulkImport: () => void;
+  onOpenKyc: () => void;
 }
 
-export const PartnerHomeScreen: React.FC<Props> = ({ onOpenLeads, onOpenCommissions, onNewLead, onBulkImport }) => {
+export const PartnerHomeScreen: React.FC<Props> = ({ onOpenLeads, onOpenCommissions, onNewLead, onBulkImport, onOpenKyc }) => {
   const { colors, mode, toggle } = useTheme();
   const [user, setUser] = useState<ApiUser | null>(null);
   const [brokerage, setBrokerage] = useState<BrokerageSummary | null>(null);
@@ -28,6 +30,9 @@ export const PartnerHomeScreen: React.FC<Props> = ({ onOpenLeads, onOpenCommissi
   const [totalLeads, setTotalLeads] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [dismissedKycPopup, setDismissedKycPopup] = useState(false);
+
+  const showKycPopup = !dismissedKycPopup && (user?.kycStatus == null || user?.kycStatus === "PENDING");
 
   const load = useCallback(async () => {
     const u = await getCachedUser();
@@ -151,6 +156,12 @@ export const PartnerHomeScreen: React.FC<Props> = ({ onOpenLeads, onOpenCommissi
           </>
         )}
       </ScrollView>
+      {showKycPopup ? (
+        <KycPopup
+          onCompleteKyc={onOpenKyc}
+          onSkip={() => setDismissedKycPopup(true)}
+        />
+      ) : null}
     </SafeAreaView>
   );
 };
