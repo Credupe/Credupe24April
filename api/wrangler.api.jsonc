@@ -2,7 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "credupe-prod-api",
   "routes": [
-    { "pattern": "api.credupe.com/*", "zone_name": "credupe.com" }
+    {
+      "pattern": "api.credupe.com/*",
+      "zone_name": "credupe.com"
+    }
   ],
   "main": "src/index.ts",
   "compatibility_date": "2025-09-23",
@@ -36,7 +39,10 @@
     "staging": {
       "name": "credupe-staging-api",
       "routes": [
-        { "pattern": "staging-api.credupe.com/*", "zone_name": "credupe.com" }
+        {
+          "pattern": "staging-api.credupe.com/*",
+          "zone_name": "credupe.com"
+        }
       ],
       "d1_databases": [
         {
@@ -58,6 +64,7 @@
         "API_PREFIX": "/api/v1",
         "JWT_ACCESS_TTL": "900",
         "JWT_REFRESH_TTL": "2592000",
+        "RESEND_FROM_EMAIL": "Credupe Staging <noreply+staging@credupe.com>",
         "BCRYPT_SALT_ROUNDS": "10",
         "CORS_ORIGINS": "https://staging.credupe.com,https://credupe-staging-web.credupe.workers.dev"
       }
@@ -65,7 +72,10 @@
     "production": {
       "name": "credupe-prod-api",
       "routes": [
-        { "pattern": "api.credupe.com/*", "zone_name": "credupe.com" }
+        {
+          "pattern": "api.credupe.com/*",
+          "zone_name": "credupe.com"
+        }
       ],
       "d1_databases": [
         {
@@ -87,6 +97,7 @@
         "API_PREFIX": "/api/v1",
         "JWT_ACCESS_TTL": "900",
         "JWT_REFRESH_TTL": "2592000",
+        "RESEND_FROM_EMAIL": "Credupe <noreply@credupe.com>",
         "BCRYPT_SALT_ROUNDS": "10",
         "CORS_ORIGINS": "https://credupe.com,https://www.credupe.com,https://credupe-prod-web.credupe.workers.dev"
       }
