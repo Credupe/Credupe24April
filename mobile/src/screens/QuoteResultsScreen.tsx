@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -15,6 +14,7 @@ import { useTheme } from "../theme/ThemeProvider";
 import { radii, spacing, typography } from "../theme/colors";
 import { applyFromQuote, Quote, QuoteOffer, shareQuote } from "../api/credupe";
 import { inr, pct } from "../lib/format";
+import Toast from "react-native-toast-message";
 
 interface Props {
   quote: Quote;
@@ -33,7 +33,11 @@ export const QuoteResultsScreen: React.FC<Props> = ({ quote, onBack, onApplied }
     const r = await shareQuote(quote.id);
     setSharing(false);
     if (!r.success || !r.data) {
-      Alert.alert("Could not create share link", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Could not create share link",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
     const base = process.env.EXPO_PUBLIC_BACKEND_URL ?? "";
@@ -58,12 +62,19 @@ export const QuoteResultsScreen: React.FC<Props> = ({ quote, onBack, onApplied }
       const r = await applyFromQuote(quote.id, offer);
       setApplyingId(null);
       if (!r.success || !r.data) {
-        Alert.alert("Could not apply", r.error?.message?.join("\n") ?? "Try again");
+        Toast.show({
+          type: "error",
+          text1: "Could not apply",
+          text2: r.error?.message?.join("\n") ?? "Try again",
+        });
         return;
       }
-      Alert.alert("Application created", `Reference: ${r.data.referenceNo}`, [
-        { text: "OK", onPress: () => onApplied?.(r.data!.referenceNo) },
-      ]);
+      Toast.show({
+        type: "success",
+        text1: "Application created",
+        text2: `Reference: ${r.data.referenceNo}`,
+      });
+      onApplied?.(r.data.referenceNo);
     },
     [quote, onApplied],
   );

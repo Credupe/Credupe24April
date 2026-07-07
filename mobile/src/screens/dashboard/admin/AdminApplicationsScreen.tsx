@@ -16,10 +16,10 @@ import {
   ApplicationStatus,
   fetchAdminApplications,
   transitionApplication,
-} from "../api/credupe";
-import { inr } from "../lib/format";
-import { useTheme } from "../theme/ThemeProvider";
-import { radii, spacing, typography } from "../theme/colors";
+} from "../../../api/credupe";
+import { inr } from "../../../lib/format";
+import { useTheme } from "../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../theme/colors";
 
 interface Props {
   initialStatus?: ApplicationStatus;

@@ -9,10 +9,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { fetchLoanProducts, LoanProduct } from "../api/credupe";
-import { inr, pct } from "../lib/format";
-import { useTheme } from "../theme/ThemeProvider";
-import { radii, spacing, typography } from "../theme/colors";
+import { fetchLoanProducts, LoanProduct } from "../../../api/credupe";
+import { inr, pct } from "../../../lib/format";
+import { useTheme } from "../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../theme/colors";
 
 interface Props {
   onBack: () => void;

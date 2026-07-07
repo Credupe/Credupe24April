@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,7 @@ import { CredupeLogo } from "../components/CredupeLogo";
 import { getApiConfig, loginEmail, requestOtp, verifyOtp } from "../api/credupe";
 import { useTheme } from "../theme/ThemeProvider";
 import { radii, spacing, typography } from "../theme/colors";
+import Toast from "react-native-toast-message";
 
 type Mode = "otp" | "email";
 
@@ -117,7 +117,7 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
 
   const send = useCallback(async () => {
     if (phone.length < 10) {
-      Alert.alert("Enter a 10-digit mobile number");
+      Toast.show({ type: "error", text1: "Enter a 10-digit mobile number" });
       return;
     }
     setLoading(true);
@@ -126,16 +126,21 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
     if (!r.success) {
       if (r.error?.code === "NETWORK") {
         const cfg = getApiConfig();
-        Alert.alert(
-          "Backend unreachable",
-          [
+        Toast.show({
+          type: "error",
+          text1: "Backend unreachable",
+          text2: [
             ...((r.error?.message ?? []).slice(0, 2)),
             `Current API: ${cfg.api}`,
           ].join("\n"),
-        );
+        });
         return;
       }
-      Alert.alert("Could not send OTP", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Could not send OTP",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
     setDevOtp(r.data?.devOtp ?? null);
@@ -149,16 +154,21 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
     if (!r.success) {
       if (r.error?.code === "NETWORK") {
         const cfg = getApiConfig();
-        Alert.alert(
-          "Backend unreachable",
-          [
+        Toast.show({
+          type: "error",
+          text1: "Backend unreachable",
+          text2: [
             ...((r.error?.message ?? []).slice(0, 2)),
             `Current API: ${cfg.api}`,
           ].join("\n"),
-        );
+        });
         return;
       }
-      Alert.alert("OTP invalid", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "OTP invalid",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
     onAuthed();
@@ -236,16 +246,21 @@ const EmailPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
     if (!r.success) {
       if (r.error?.code === "NETWORK") {
         const cfg = getApiConfig();
-        Alert.alert(
-          "Backend unreachable",
-          [
+        Toast.show({
+          type: "error",
+          text1: "Backend unreachable",
+          text2: [
             ...((r.error?.message ?? []).slice(0, 2)),
             `Current API: ${cfg.api}`,
           ].join("\n"),
-        );
+        });
         return;
       }
-      Alert.alert("Login failed", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Login failed",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
     onAuthed();

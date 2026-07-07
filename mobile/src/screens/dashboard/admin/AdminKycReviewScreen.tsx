@@ -11,9 +11,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AdminDocument, fetchAdminDocuments, verifyDocument } from "../api/credupe";
-import { useTheme } from "../theme/ThemeProvider";
-import { radii, spacing, typography } from "../theme/colors";
+import { AdminDocument, fetchAdminDocuments, verifyDocument } from "../../../api/credupe";
+import { useTheme } from "../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../theme/colors";
 
 interface Props {
   onBack?: () => void;
