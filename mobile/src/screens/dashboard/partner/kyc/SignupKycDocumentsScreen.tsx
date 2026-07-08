@@ -11,8 +11,8 @@ import {
   Text,
   View,
   ActivityIndicator,
-  Alert,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import * as DocumentPicker from "expo-document-picker";
 
@@ -131,7 +131,11 @@ export const SignupKycDocumentsScreen: React.FC<Props> = ({ navigation, route })
         const asset = result.assets[0];
 
         if (asset.size && asset.size > maxSize) {
-          Alert.alert("File too large", `Please select a file smaller than ${maxSize / (1024 * 1024)} MB`);
+          Toast.show({
+            type: "error",
+            text1: "File too large",
+            text2: `Please select a file smaller than ${maxSize / (1024 * 1024)} MB`,
+          });
           return;
         }
 
@@ -146,14 +150,22 @@ export const SignupKycDocumentsScreen: React.FC<Props> = ({ navigation, route })
         }));
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to pick document. Please try again.");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to pick document. Please try again.",
+      });
     }
   };
 
   const handleContinue = async () => {
     const pendingRequired = steps.find((step) => step.required && !documents[step.key]?.uri);
     if (pendingRequired) {
-      Alert.alert("Missing Document", `Please upload ${pendingRequired.title}`);
+      Toast.show({
+        type: "error",
+        text1: "Missing Document",
+        text2: `Please upload ${pendingRequired.title}`,
+      });
       return;
     }
 
@@ -173,7 +185,11 @@ export const SignupKycDocumentsScreen: React.FC<Props> = ({ navigation, route })
       setIsLoading(false);
       setShowKycCompleteModal(true);
     } catch (error) {
-      Alert.alert("Error", "Failed to upload documents. Please try again.");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to upload documents. Please try again.",
+      });
       setIsLoading(false);
     }
   };

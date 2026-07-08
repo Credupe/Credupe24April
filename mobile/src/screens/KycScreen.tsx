@@ -3,7 +3,6 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -12,6 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   CustomerProfile,
@@ -82,10 +82,18 @@ export const KycScreen: React.FC<Props> = ({ onBack }) => {
     const r = await patchMyProfile({ ...profile, monthlyIncome });
     setSaving(false);
     if (!r.success) {
-      Alert.alert("Could not save", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Could not save",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert("Saved", "Your KYC details have been updated.");
+    Toast.show({
+      type: "success",
+      text1: "Saved",
+      text2: "Your KYC details have been updated.",
+    });
     refresh();
   }, [profile, refresh]);
 
@@ -100,7 +108,11 @@ export const KycScreen: React.FC<Props> = ({ onBack }) => {
         if (slot.accept === "image") {
           const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (Platform.OS !== "web" && !perm.granted) {
-            Alert.alert("Permission needed", "Grant photo-library access to upload.");
+            Toast.show({
+              type: "error",
+              text1: "Permission needed",
+              text2: "Grant photo-library access to upload.",
+            });
             return;
           }
           const res = await ImagePicker.launchImageLibraryAsync({
@@ -142,10 +154,18 @@ export const KycScreen: React.FC<Props> = ({ onBack }) => {
           slot.tag,
         );
         if (!result.ok) {
-          Alert.alert("Upload failed", result.error ?? "Unknown error");
+          Toast.show({
+            type: "error",
+            text1: "Upload failed",
+            text2: result.error ?? "Unknown error",
+          });
           return;
         }
-        Alert.alert("Uploaded", `${slot.label} added to your KYC.`);
+        Toast.show({
+          type: "success",
+          text1: "Uploaded",
+          text2: `${slot.label} added to your KYC.`,
+        });
         refresh();
       } finally {
         setUploadingTag(null);

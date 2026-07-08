@@ -9,6 +9,8 @@ import { StatusBar } from "expo-status-bar";
 import * as Linking from "expo-linking";
 
 import { ThemeProvider, useTheme } from "./src/theme/ThemeProvider";
+import Toast from "react-native-toast-message";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LoginScreen } from "./src/screens/LoginScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { LoansScreen } from "./src/screens/LoansScreen";
@@ -41,6 +43,22 @@ import { SignupBusinessDetailsScreen } from "./src/screens/auth/partner/SignupBu
 import { SignupKycDocumentsScreen } from "./src/screens/dashboard/partner/kyc/SignupKycDocumentsScreen";
 import { SignupPayoutAccountScreen } from "./src/screens/auth/partner/SignupPayoutAccountScreen";
 import { PartnerOnboardingSuccessScreen } from "./src/screens/auth/partner/PartnerOnboardingSuccessScreen";
+import { ApplyPersonalLoanScreen } from "./src/screens/dashboard/partner/home/ApplyPersonalLoan/ApplyPersonalLoanScreen";
+import { ApplyBusinessLoanScreen } from "./src/screens/dashboard/partner/home/ApplyBusinessLoan/ApplyBusinessLoanScreen";
+import { ApplyHomeLoanScreen } from "./src/screens/dashboard/partner/home/ApplyHomeLoan/ApplyHomeLoanScreen";
+import { ApplyVehicleLoanScreen } from "./src/screens/dashboard/partner/home/ApplyVehicleLoan/ApplyVehicleLoanScreen";
+import { ApplyLAPScreen } from "./src/screens/dashboard/partner/home/ApplyLAP/ApplyLAPScreen";
+import { ApplyCreditCardScreen } from "./src/screens/dashboard/partner/home/ApplyCreditCard/ApplyCreditCardScreen";
+import { ExistingApplicationsScreen } from "./src/screens/dashboard/partner/home/ExistingApplications/ExistingApplicationsScreen";
+import { MyTeamScreen } from "./src/screens/dashboard/partner/home/MyTeam/MyTeamScreen";
+import { MyBrokerageScreen } from "./src/screens/dashboard/partner/home/MyBrokerage/MyBrokerageScreen";
+import { ApplyInsuranceScreen } from "./src/screens/dashboard/partner/home/ApplyInsurance/ApplyInsuranceScreen";
+import { InsuranceLoginScreen } from "./src/screens/dashboard/partner/home/InsuranceLogin/InsuranceLoginScreen";
+import { ReportsScreen } from "./src/screens/dashboard/partner/home/Reports/ReportsScreen";
+import { EligibilityScreen } from "./src/screens/dashboard/partner/home/Eligibility/EligibilityScreen";
+import { ReferEarnScreen } from "./src/screens/dashboard/partner/home/ReferEarn/ReferEarnScreen";
+import { UtilityToolScreen } from "./src/screens/dashboard/partner/home/UtilityTool/UtilityToolScreen";
+import { MoreScreen } from "./src/screens/dashboard/partner/home/More/MoreScreen";
 import { registerForPushNotifications } from "./src/lib/push";
 import { getCachedUser, Lead, Lender, LoanProduct, Quote } from "./src/api/credupe";
 
@@ -82,6 +100,22 @@ export type RootStackParamList = {
   AdminProductEdit: { product?: LoanProduct };
   PublicQuote: { slug: string };
   Notifications: undefined;
+  ApplyPersonalLoan: undefined;
+  ApplyBusinessLoan: undefined;
+  ApplyHomeLoan: undefined;
+  ApplyVehicleLoan: undefined;
+  ApplyLAP: undefined;
+  ApplyCreditCard: undefined;
+  ExistingApplications: undefined;
+  MyTeam: undefined;
+  MyBrokerage: undefined;
+  ApplyInsurance: undefined;
+  InsuranceLogin: undefined;
+  Reports: undefined;
+  Eligibility: undefined;
+  ReferEarn: undefined;
+  UtilityTool: undefined;
+  More: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -89,6 +123,8 @@ const Tabs = createBottomTabNavigator();
 
 const TabIcon: React.FC<{ glyph: string; focused: boolean }> = ({ glyph, focused }) => {
   const { colors } = useTheme();
+  const isVectorIcon = glyph.length > 1;
+
   return (
     <View
       style={{
@@ -100,9 +136,17 @@ const TabIcon: React.FC<{ glyph: string; focused: boolean }> = ({ glyph, focused
         backgroundColor: focused ? colors.primaryMuted : "transparent",
       }}
     >
-      <Text style={{ color: focused ? colors.tabActive : colors.tabInactive, fontSize: 18, fontWeight: "800" }}>
-        {glyph}
-      </Text>
+      {isVectorIcon ? (
+        <MaterialCommunityIcons
+          name={glyph as any}
+          size={20}
+          color={focused ? colors.tabActive : colors.tabInactive}
+        />
+      ) : (
+        <Text style={{ color: focused ? colors.tabActive : colors.tabInactive, fontSize: 18, fontWeight: "800" }}>
+          {glyph}
+        </Text>
+      )}
     </View>
   );
 };
@@ -208,18 +252,20 @@ const MainTabs: React.FC<MainTabsProps> = ({
           tabBarLabelStyle: { fontWeight: "700", fontSize: 11 },
           tabBarIcon: ({ focused }) => {
             const glyph =
-              route.name === "Dashboard"
-                ? "⌂"
-                : route.name === "Leads"
-                ? "▤"
-                : route.name === "Commissions"
-                ? "₹"
+              route.name === "Home"
+                ? (focused ? "view-grid" : "view-grid-outline")
+                : route.name === "Profile"
+                ? "account-circle-outline"
+                : route.name === "Utility Tool"
+                ? "cog-outline"
+                : route.name === "More"
+                ? "dots-vertical"
                 : "◉";
             return <TabIcon glyph={glyph} focused={focused} />;
           },
         })}
       >
-        <Tabs.Screen name="Dashboard">
+        <Tabs.Screen name="Home">
           {() => (
             <PartnerHomeScreen
               onOpenLeads={onOpenLeads}
@@ -230,14 +276,14 @@ const MainTabs: React.FC<MainTabsProps> = ({
             />
           )}
         </Tabs.Screen>
-        <Tabs.Screen name="Leads">
-          {() => <LeadsScreen onOpenLead={onOpenLead} onNewLead={onNewLead} />}
-        </Tabs.Screen>
-        <Tabs.Screen name="Commissions">
-          {() => <CommissionsScreen />}
-        </Tabs.Screen>
         <Tabs.Screen name="Profile">
           {() => <ProfileScreen onSignedOut={onSignedOut} onOpenKyc={onOpenKyc} onOpenNotifications={onOpenNotifications} />}
+        </Tabs.Screen>
+        <Tabs.Screen name="Utility Tool">
+          {() => <UtilityToolScreen />}
+        </Tabs.Screen>
+        <Tabs.Screen name="More">
+          {() => <MoreScreen />}
         </Tabs.Screen>
       </Tabs.Navigator>
     );
@@ -381,12 +427,22 @@ const Root: React.FC = () => {
           <Stack.Screen name="PartnerOnboardingSuccess" component={PartnerOnboardingSuccessScreen} />
           <Stack.Screen name="PartnerHomeDirect">
             {({ navigation }) => (
-              <PartnerHomeScreen
+              <MainTabs
+                role="PARTNER"
+                onSignedOut={() => setAuthed(false)}
+                onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
+                onOpenKyc={() => navigation.navigate("SignupSelection")}
                 onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
-                onOpenCommissions={() => navigation.navigate("Commissions")}
+                onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
                 onNewLead={() => navigation.navigate("NewLead")}
                 onBulkImport={() => navigation.navigate("BulkLeadsImport")}
-                onOpenKyc={() => navigation.navigate("SignupSelection")}
+                onOpenCommissions={() => navigation.navigate("Commissions")}
+                onOpenAdminApps={(status) => navigation.navigate("AdminApplications", { initialStatus: status })}
+                onOpenAdminKyc={() => navigation.navigate("AdminKycReview")}
+                onOpenAdminUsers={() => navigation.navigate("AdminUsers")}
+                onOpenAdminLenders={() => navigation.navigate("AdminLenders")}
+                onOpenAdminProducts={() => navigation.navigate("AdminProducts")}
+                onOpenNotifications={() => navigation.navigate("Notifications")}
               />
             )}
           </Stack.Screen>
@@ -528,6 +584,22 @@ const Root: React.FC = () => {
             </Stack.Screen>
           </>
         )}
+        <Stack.Screen name="ApplyPersonalLoan" component={ApplyPersonalLoanScreen} />
+        <Stack.Screen name="ApplyBusinessLoan" component={ApplyBusinessLoanScreen} />
+        <Stack.Screen name="ApplyHomeLoan" component={ApplyHomeLoanScreen} />
+        <Stack.Screen name="ApplyVehicleLoan" component={ApplyVehicleLoanScreen} />
+        <Stack.Screen name="ApplyLAP" component={ApplyLAPScreen} />
+        <Stack.Screen name="ApplyCreditCard" component={ApplyCreditCardScreen} />
+        <Stack.Screen name="ExistingApplications" component={ExistingApplicationsScreen} />
+        <Stack.Screen name="MyTeam" component={MyTeamScreen} />
+        <Stack.Screen name="MyBrokerage" component={MyBrokerageScreen} />
+        <Stack.Screen name="ApplyInsurance" component={ApplyInsuranceScreen} />
+        <Stack.Screen name="InsuranceLogin" component={InsuranceLoginScreen} />
+        <Stack.Screen name="Reports" component={ReportsScreen} />
+        <Stack.Screen name="Eligibility" component={EligibilityScreen} />
+        <Stack.Screen name="ReferEarn" component={ReferEarnScreen} />
+        <Stack.Screen name="UtilityTool" component={UtilityToolScreen} />
+        <Stack.Screen name="More" component={MoreScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -538,6 +610,7 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <Root />
+        <Toast />
       </ThemeProvider>
     </SafeAreaProvider>
   );

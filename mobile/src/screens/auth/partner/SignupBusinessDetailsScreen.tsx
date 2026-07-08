@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../App";
@@ -34,27 +35,27 @@ export const SignupBusinessDetailsScreen: React.FC<Props> = ({ navigation, route
 
   const handleContinue = async () => {
     if (!businessName.trim()) {
-      alert("Please enter your business/firm name");
+      Toast.show({ type: "error", text1: "Please enter your business/firm name" });
       return;
     }
     if (!panNumber.trim()) {
-      alert("Please enter PAN number");
+      Toast.show({ type: "error", text1: "Please enter PAN number" });
       return;
     }
     if (!city.trim()) {
-      alert("Please enter city");
+      Toast.show({ type: "error", text1: "Please enter city" });
       return;
     }
     if (!state.trim()) {
-      alert("Please enter state");
+      Toast.show({ type: "error", text1: "Please enter state" });
       return;
     }
     if (!pincode.trim() || pincode.length !== 6) {
-      alert("Please enter a valid 6-digit pincode");
+      Toast.show({ type: "error", text1: "Please enter a valid 6-digit pincode" });
       return;
     }
     if (!officeAddress.trim()) {
-      alert("Please enter office address");
+      Toast.show({ type: "error", text1: "Please enter office address" });
       return;
     }
 
@@ -76,7 +77,7 @@ export const SignupBusinessDetailsScreen: React.FC<Props> = ({ navigation, route
        navigation.replace("SignupPayoutAccount" as any);
       }, 500);
     } catch (error) {
-      alert("Failed to submit business details. Please try again.");
+      Toast.show({ type: "error", text1: "Failed to submit business details. Please try again." });
     } finally {
       setIsLoading(false);
     }

@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AdminDocument, fetchAdminDocuments, verifyDocument } from "../../../api/credupe";
 import { useTheme } from "../../../theme/ThemeProvider";
@@ -46,7 +47,11 @@ export const AdminKycReviewScreen: React.FC<Props> = ({ onBack }) => {
       const r = await verifyDocument(doc.id, status, reason);
       setBusyId(null);
       if (!r.success) {
-        Alert.alert("Action failed", r.error?.message?.join("\n") ?? "Try again");
+        Toast.show({
+          type: "error",
+          text1: "Action failed",
+          text2: r.error?.message?.join("\n") ?? "Try again",
+        });
         return;
       }
       load(filter);
