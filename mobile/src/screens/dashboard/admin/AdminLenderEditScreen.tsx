@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { createLender, Lender, updateLender } from "../../../api/credupe";
 import { useTheme } from "../../../theme/ThemeProvider";
@@ -35,7 +35,10 @@ export const AdminLenderEditScreen: React.FC<Props> = ({ lender, onBack, onSaved
   const [saving, setSaving] = useState(false);
 
   const submit = useCallback(async () => {
-    if (!name.trim()) return Alert.alert("Lender name is required");
+    if (!name.trim()) {
+      Toast.show({ type: "error", text1: "Lender name is required" });
+      return;
+    }
     setSaving(true);
     const payload = {
       name: name.trim(),
@@ -50,10 +53,18 @@ export const AdminLenderEditScreen: React.FC<Props> = ({ lender, onBack, onSaved
       : await updateLender(lender!.id, payload);
     setSaving(false);
     if (!r.success) {
-      Alert.alert("Save failed", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Save failed",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert(isNew ? "Lender created" : "Lender saved", "Changes applied.");
+    Toast.show({
+      type: "success",
+      text1: isNew ? "Lender created" : "Lender saved",
+      text2: "Changes applied.",
+    });
     onSaved();
   }, [name, slug, logoUrl, webhookUrl, active, integrationMode, isNew, lender, onSaved]);
 

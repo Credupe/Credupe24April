@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   AdminApplication,
@@ -58,7 +59,11 @@ export const AdminApplicationsScreen: React.FC<Props> = ({ initialStatus, onBack
     async (app: AdminApplication, to: ApplicationStatus) => {
       const r = await transitionApplication(app.id, to);
       if (!r.success) {
-        Alert.alert("Could not transition", r.error?.message?.join("\n") ?? "Try again");
+        Toast.show({
+          type: "error",
+          text1: "Could not transition",
+          text2: r.error?.message?.join("\n") ?? "Try again",
+        });
         return;
       }
       load(statusFilter);

@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../App";
@@ -51,7 +52,7 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
 
   const handleVerifyMobile = async () => {
     if (mobileOtp.length !== 6) {
-      alert("Please enter a valid 6-digit code");
+      Toast.show({ type: "error", text1: "Please enter a valid 6-digit code" });
       return;
     }
     setIsLoading(true);
@@ -61,7 +62,7 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
       // await verifyMobileOtp({ mobile, otp: mobileOtp });
       setMobileVerified(true);
     } catch (error) {
-      alert("Invalid OTP. Please try again.");
+      Toast.show({ type: "error", text1: "Invalid OTP. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +70,7 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
 
   const handleVerifyEmail = async () => {
     if (emailOtp.length !== 6) {
-      alert("Please enter a valid 6-digit code");
+      Toast.show({ type: "error", text1: "Please enter a valid 6-digit code" });
       return;
     }
     setIsLoading(true);
@@ -83,7 +84,7 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
         navigation.replace("SignupBusinessDetails" as any);
       }, 500);
     } catch (error) {
-      alert("Invalid OTP. Please try again.");
+      Toast.show({ type: "error", text1: "Invalid OTP. Please try again." });
     } finally {
       setIsLoading(false);
     }

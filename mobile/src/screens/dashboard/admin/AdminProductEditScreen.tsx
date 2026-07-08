@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   createLoanProduct,
@@ -64,17 +64,32 @@ export const AdminProductEditScreen: React.FC<Props> = ({ product, onBack, onSav
   const selectedLender = useMemo(() => lenders.find((l) => l.id === lenderId), [lenders, lenderId]);
 
   const submit = useCallback(async () => {
-    if (!name.trim()) return Alert.alert("Product name is required");
-    if (!lenderId) return Alert.alert("Pick a lender");
+    if (!name.trim()) {
+      Toast.show({ type: "error", text1: "Product name is required" });
+      return;
+    }
+    if (!lenderId) {
+      Toast.show({ type: "error", text1: "Pick a lender" });
+      return;
+    }
     const mn = Number(minAmount);
     const mx = Number(maxAmount);
     const tmn = Number(minTenure);
     const tmx = Number(maxTenure);
     const rmn = Number(minRate);
     const rmx = Number(maxRate);
-    if (!mn || !mx || mn > mx) return Alert.alert("Amount bands invalid (min ≤ max, both positive)");
-    if (!tmn || !tmx || tmn > tmx) return Alert.alert("Tenure bands invalid (min ≤ max, both positive)");
-    if (rmn == null || rmx == null || rmn > rmx) return Alert.alert("Interest-rate bands invalid (min ≤ max)");
+    if (!mn || !mx || mn > mx) {
+      Toast.show({ type: "error", text1: "Amount bands invalid (min ≤ max, both positive)" });
+      return;
+    }
+    if (!tmn || !tmx || tmn > tmx) {
+      Toast.show({ type: "error", text1: "Tenure bands invalid (min ≤ max, both positive)" });
+      return;
+    }
+    if (rmn == null || rmx == null || rmn > rmx) {
+      Toast.show({ type: "error", text1: "Interest-rate bands invalid (min ≤ max)" });
+      return;
+    }
 
     const payload = {
       lenderId,
@@ -96,10 +111,18 @@ export const AdminProductEditScreen: React.FC<Props> = ({ product, onBack, onSav
     const r = isNew ? await createLoanProduct(payload as any) : await updateLoanProduct(product!.id, payload as any);
     setSaving(false);
     if (!r.success) {
-      Alert.alert("Save failed", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Save failed",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert(isNew ? "Product created" : "Product saved", "Changes applied.");
+    Toast.show({
+      type: "success",
+      text1: isNew ? "Product created" : "Product saved",
+      text2: "Changes applied.",
+    });
     onSaved();
   }, [name, lenderId, loanType, minAmount, maxAmount, minTenure, maxTenure, minRate, maxRate, procFee, minIncome, minCibil, active, isNew, product, onSaved]);
 

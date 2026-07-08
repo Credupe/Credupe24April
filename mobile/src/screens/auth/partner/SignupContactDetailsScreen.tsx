@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../App";
@@ -31,15 +32,15 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
 
   const handleSendOTPs = () => {
     if (!name.trim()) {
-      alert("Please enter your full name");
+      Toast.show({ type: "error", text1: "Please enter your full name" });
       return;
     }
     if (!mobile.replace(/\D/g, "").match(/\d{10}/)) {
-      alert("Please enter a valid 10-digit mobile number");
+      Toast.show({ type: "error", text1: "Please enter a valid 10-digit mobile number" });
       return;
     }
     if (!email.includes("@")) {
-      alert("Please enter a valid email address");
+      Toast.show({ type: "error", text1: "Please enter a valid email address" });
       return;
     }
 

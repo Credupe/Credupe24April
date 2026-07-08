@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -10,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Lead, LEAD_STATUSES, LeadStatus, patchLead, scheduleLeadFollowUp } from "../api/credupe";
 import { inr } from "../lib/format";
@@ -32,13 +32,15 @@ export const LeadDetailScreen: React.FC<Props> = ({ lead, onBack, onUpdated }) =
   const [savingFu, setSavingFu] = useState(false);
 
   const callCustomer = useCallback(() => {
-    Linking.openURL(`tel:${lead.customerMobile}`).catch(() => Alert.alert("Could not open dialler"));
+    Linking.openURL(`tel:${lead.customerMobile}`).catch(() =>
+      Toast.show({ type: "error", text1: "Could not open dialler" }),
+    );
   }, [lead.customerMobile]);
 
   const whatsappCustomer = useCallback(() => {
     const msg = `Hi ${lead.customerName}, this is CreduPe. About your ${lead.loanType.replace(/_/g, " ").toLowerCase()} enquiry…`;
     Linking.openURL(`https://wa.me/91${lead.customerMobile}?text=${encodeURIComponent(msg)}`).catch(() =>
-      Alert.alert("Could not open WhatsApp"),
+      Toast.show({ type: "error", text1: "Could not open WhatsApp" }),
     );
   }, [lead]);
 
@@ -47,23 +49,45 @@ export const LeadDetailScreen: React.FC<Props> = ({ lead, onBack, onUpdated }) =
     const r = await patchLead(lead.id, { status, notes });
     setSavingStatus(false);
     if (!r.success) {
-      Alert.alert("Save failed", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Save failed",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert("Updated", "Lead status saved.");
+    Toast.show({
+      type: "success",
+      text1: "Updated",
+      text2: "Lead status saved.",
+    });
     onUpdated();
   }, [lead, status, notes, onUpdated]);
 
   const scheduleFu = useCallback(async () => {
-    if (!followUpDate) return Alert.alert("Pick a date/time for the follow-up (ISO format).");
+    if (!followUpDate) {
+      Toast.show({
+        type: "error",
+        text1: "Pick a date/time for the follow-up (ISO format).",
+      });
+      return;
+    }
     setSavingFu(true);
     const r = await scheduleLeadFollowUp(lead.id, followUpDate, followUpNote || undefined);
     setSavingFu(false);
     if (!r.success) {
-      Alert.alert("Schedule failed", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Schedule failed",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert("Scheduled", "Follow-up reminder created.");
+    Toast.show({
+      type: "success",
+      text1: "Scheduled",
+      text2: "Follow-up reminder created.",
+    });
     setFollowUpDate("");
     setFollowUpNote("");
   }, [lead, followUpDate, followUpNote]);

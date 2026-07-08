@@ -2,7 +2,6 @@ import * as DocumentPicker from "expo-document-picker";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { bulkCreateLeads } from "../api/credupe";
 import { parseLeadsCsv, SAMPLE_CSV } from "../lib/csv";
@@ -40,27 +40,40 @@ export const BulkLeadsImportScreen: React.FC<Props> = ({ onBack, onDone }) => {
       const txt = await (await fetch(res.assets[0].uri)).text();
       setCsv(txt);
     } catch (e: any) {
-      Alert.alert("Could not read file", String(e?.message ?? e));
+      Toast.show({
+        type: "error",
+        text1: "Could not read file",
+        text2: String(e?.message ?? e),
+      });
     }
   }, []);
 
   const submit = useCallback(async () => {
     if (!parsed?.valid.length) {
-      Alert.alert("Nothing to upload", "Paste a CSV with at least one valid row first.");
+      Toast.show({
+        type: "error",
+        text1: "Nothing to upload",
+        text2: "Paste a CSV with at least one valid row first.",
+      });
       return;
     }
     setSubmitting(true);
     const r = await bulkCreateLeads(parsed.valid);
     setSubmitting(false);
     if (!r.success || !r.data) {
-      Alert.alert("Upload failed", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Upload failed",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert(
-      "Imported",
-      `${r.data.created} of ${parsed.valid.length} valid rows created.\n${parsed.invalid.length ? `${parsed.invalid.length} rows skipped.` : ""}`,
-      [{ text: "OK", onPress: () => onDone(r.data!.created) }],
-    );
+    Toast.show({
+      type: "success",
+      text1: "Imported",
+      text2: `${r.data.created} of ${parsed.valid.length} valid rows created.\n${parsed.invalid.length ? `${parsed.invalid.length} rows skipped.` : ""}`,
+    });
+    onDone(r.data.created);
   }, [parsed, onDone]);
 
   return (
