@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ApiUser, fetchAdminFunnel, getCachedUser } from "../api/credupe";
-import { CredupeLogo } from "../components/CredupeLogo";
-import { useTheme } from "../theme/ThemeProvider";
-import { radii, spacing, typography } from "../theme/colors";
+import { ApiUser, fetchAdminFunnel, getCachedUser } from "../../../api/credupe";
+import { CredupeLogo } from "../../../components/CredupeLogo";
+import { useTheme } from "../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../theme/colors";
 
 interface Props {
   onOpenApplications: (status?: string) => void;

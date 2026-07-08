@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import { useTheme } from "../theme/ThemeProvider";
 import { radii, spacing, typography } from "../theme/colors";
 import { calcEmi, createQuote, Quote, QuoteInput } from "../api/credupe";
 import { inr, pct } from "../lib/format";
+import Toast from "react-native-toast-message";
 
 const LOAN_TYPES = [
   { key: "PERSONAL_LOAN", label: "Personal" },
@@ -51,8 +51,14 @@ export const QuoteBuilderScreen: React.FC<Props> = ({ initialLoanType, onQuoteCr
   const submit = useCallback(async () => {
     const a = Number(amount);
     const n = Number(tenure);
-    if (!a || a <= 0) return Alert.alert("Enter a valid amount");
-    if (!n || n <= 0) return Alert.alert("Enter a valid tenure (months)");
+    if (!a || a <= 0) {
+      Toast.show({ type: "error", text1: "Enter a valid amount" });
+      return;
+    }
+    if (!n || n <= 0) {
+      Toast.show({ type: "error", text1: "Enter a valid tenure (months)" });
+      return;
+    }
     const input: QuoteInput = {
       loanType,
       amount: a,
@@ -64,7 +70,11 @@ export const QuoteBuilderScreen: React.FC<Props> = ({ initialLoanType, onQuoteCr
     const r = await createQuote(input);
     setLoading(false);
     if (!r.success || !r.data) {
-      Alert.alert("No offers", r.error?.message?.join("\n") ?? "Try a different amount or tenure");
+      Toast.show({
+        type: "info",
+        text1: "No offers",
+        text2: r.error?.message?.join("\n") ?? "Try a different amount or tenure",
+      });
       return;
     }
     onQuoteCreated(r.data);

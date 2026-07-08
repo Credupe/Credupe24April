@@ -17,9 +17,9 @@ import {
   Lender,
   LoanProduct,
   updateLoanProduct,
-} from "../api/credupe";
-import { useTheme } from "../theme/ThemeProvider";
-import { radii, spacing, typography } from "../theme/colors";
+} from "../../../api/credupe";
+import { useTheme } from "../../../theme/ThemeProvider";
+import { radii, spacing, typography } from "../../../theme/colors";
 
 const LOAN_TYPES = [
   { key: "PERSONAL_LOAN", label: "Personal" },

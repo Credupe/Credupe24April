@@ -48,9 +48,7 @@ export const SignupPayoutAccountScreen: React.FC<Props> = ({ navigation }) => {
               <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
             </View>
 
-            <View style={styles.iconContainer}>
-              <Text style={styles.headerIcon}>💳</Text>
-            </View>
+            
 
             <Text style={[styles.title, { color: colors.text }]}>Payout account</Text>
 

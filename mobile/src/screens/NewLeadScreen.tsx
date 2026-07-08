@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { createLead } from "../api/credupe";
 import { useTheme } from "../theme/ThemeProvider";
 import { radii, spacing, typography } from "../theme/colors";
+import Toast from "react-native-toast-message";
 
 interface Props {
   onBack: () => void;
@@ -30,8 +31,14 @@ export const NewLeadScreen: React.FC<Props> = ({ onBack, onCreated }) => {
   const [saving, setSaving] = useState(false);
 
   const submit = useCallback(async () => {
-    if (!name.trim()) return Alert.alert("Customer name required");
-    if (mobile.length < 10) return Alert.alert("Enter a valid 10-digit mobile");
+    if (!name.trim()) {
+      Toast.show({ type: "error", text1: "Customer name required" });
+      return;
+    }
+    if (mobile.length < 10) {
+      Toast.show({ type: "error", text1: "Enter a valid 10-digit mobile" });
+      return;
+    }
     setSaving(true);
     const r = await createLead({
       customerName: name.trim(),
@@ -44,10 +51,18 @@ export const NewLeadScreen: React.FC<Props> = ({ onBack, onCreated }) => {
     });
     setSaving(false);
     if (!r.success || !r.data) {
-      Alert.alert("Could not create lead", r.error?.message?.join("\n") ?? "Try again");
+      Toast.show({
+        type: "error",
+        text1: "Could not create lead",
+        text2: r.error?.message?.join("\n") ?? "Try again",
+      });
       return;
     }
-    Alert.alert("Lead created", `Customer ${name} added to your inbox.`);
+    Toast.show({
+      type: "success",
+      text1: "Lead created",
+      text2: `Customer ${name} added to your inbox.`,
+    });
     onCreated();
   }, [name, mobile, email, loanType, amount, city, notes, onCreated]);
 
