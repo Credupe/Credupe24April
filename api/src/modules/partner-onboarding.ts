@@ -411,11 +411,11 @@ route.post("/finalize", async (c) => {
   const bankAccount =
     dto.bankName || dto.accountNumber
       ? {
-          accountHolder: dto.accountHolder || dto.businessName,
-          accountNumber: dto.accountNumber,
-          ifsc: dto.ifsc,
-          bankName: dto.bankName,
-        }
+        accountHolder: dto.accountHolder || dto.businessName,
+        accountNumber: dto.accountNumber,
+        ifsc: dto.ifsc,
+        bankName: dto.bankName,
+      }
       : null;
 
   const hasKycDocs = !!(dto.kycDocuments && dto.kycDocuments.length);

@@ -17,6 +17,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
 import { useTheme } from "../../../theme/ThemeProvider";
 import { radii, spacing, typography } from "../../../theme/colors";
+import { requestPartnerOtp, verifyPartnerOtp } from "../../../api/credupe";
 
 const logoImage = require("../../../../assets/logo.png");
 
@@ -32,7 +33,53 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
   const [emailVerified, setEmailVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { mobile, email } = route.params || {};
+  const { mobile, email, name, businessType, onboardingToken: initialOnboardingToken } = route.params || {};
+  const [onboardingToken, setOnboardingToken] = useState(initialOnboardingToken || "");
+  const [mobileDevOtp, setMobileDevOtp] = useState<string | null>(null);
+  const [emailDevOtp, setEmailDevOtp] = useState<string | null>(null);
+
+  const sendMobileOtp = async () => {
+    setIsLoading(true);
+    const r = await requestPartnerOtp(onboardingToken, "mobile", mobile);
+    setIsLoading(false);
+    if (r.success && r.data) {
+      setMobileResendTimer(21);
+      if (r.data.devOtp) {
+        setMobileDevOtp(r.data.devOtp);
+      }
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Error requesting OTP",
+        text2: r.error?.message?.join("\n") ?? "Failed to request mobile OTP",
+      });
+    }
+  };
+
+  const sendEmailOtp = async (token = onboardingToken) => {
+    setIsLoading(true);
+    const r = await requestPartnerOtp(token, "email", email);
+    setIsLoading(false);
+    if (r.success && r.data) {
+      setEmailResendTimer(60);
+      if (r.data.devOtp) {
+        setEmailDevOtp(r.data.devOtp);
+      }
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Error requesting OTP",
+        text2: r.error?.message?.join("\n") ?? "Failed to request email OTP",
+      });
+    }
+  };
+
+  // Initial OTP Request on Mount
+  useEffect(() => {
+    if (mobile) {
+      sendMobileOtp();
+    }
+  }, [mobile]);
 
   // Mobile OTP Timer
   useEffect(() => {
@@ -56,15 +103,21 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
       return;
     }
     setIsLoading(true);
-    // Call API to verify mobile OTP
-    try {
-      // TODO: Replace with actual API call
-      // await verifyMobileOtp({ mobile, otp: mobileOtp });
+    const r = await verifyPartnerOtp(onboardingToken, "mobile", mobile, mobileOtp);
+    setIsLoading(false);
+
+    if (r.success && r.data) {
       setMobileVerified(true);
-    } catch (error) {
-      Toast.show({ type: "error", text1: "Invalid OTP. Please try again." });
-    } finally {
-      setIsLoading(false);
+      const newToken = r.data.onboardingToken;
+      setOnboardingToken(newToken);
+      // Request Email OTP with updated token
+      await sendEmailOtp(newToken);
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Verification failed",
+        text2: r.error?.message?.join("\n") ?? "Invalid code. Please try again.",
+      });
     }
   };
 
@@ -74,31 +127,31 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
       return;
     }
     setIsLoading(true);
-    // Call API to verify email OTP
-    try {
-      // TODO: Replace with actual API call
-      // await verifyEmailOtp({ email, otp: emailOtp });
+    const r = await verifyPartnerOtp(onboardingToken, "email", email, emailOtp);
+    setIsLoading(false);
+
+    if (r.success && r.data) {
       setEmailVerified(true);
-      // Navigate to next screen after successful verification
+      const finalToken = r.data.onboardingToken;
       setTimeout(() => {
-        navigation.replace("SignupBusinessDetails" as any);
+        navigation.replace("SignupBusinessDetails" as any, { onboardingToken: finalToken });
       }, 500);
-    } catch (error) {
-      Toast.show({ type: "error", text1: "Invalid OTP. Please try again." });
-    } finally {
-      setIsLoading(false);
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Verification failed",
+        text2: r.error?.message?.join("\n") ?? "Invalid code. Please try again.",
+      });
     }
   };
 
   const handleResendMobileOtp = () => {
-    // TODO: Call API to resend mobile OTP
-    setMobileResendTimer(21);
+    sendMobileOtp();
     setMobileOtp("");
   };
 
   const handleResendEmailOtp = () => {
-    // TODO: Call API to resend email OTP
-    setEmailResendTimer(60);
+    sendEmailOtp();
     setEmailOtp("");
   };
 
@@ -167,6 +220,14 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
                     maxLength={6}
                   />
 
+                  {mobileDevOtp ? (
+                    <Pressable onPress={() => setMobileOtp(mobileDevOtp)}>
+                      <Text style={{ color: colors.textMuted, textAlign: "center", marginBottom: spacing.md, fontSize: 14 }}>
+                        DEV OTP: <Text style={{ color: colors.primary, fontWeight: "800" }}>{mobileDevOtp}</Text> (tap to fill)
+                      </Text>
+                    </Pressable>
+                  ) : null}
+
                   <Text style={styles.resendText}>
                     Resend in <Text style={styles.timer}>{mobileResendTimer}s</Text>
                   </Text>
@@ -228,6 +289,14 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
                     maxLength={6}
                     editable={mobileVerified}
                   />
+
+                  {emailDevOtp ? (
+                    <Pressable onPress={() => setEmailOtp(emailDevOtp)}>
+                      <Text style={{ color: colors.textMuted, textAlign: "center", marginBottom: spacing.md, fontSize: 14 }}>
+                        DEV OTP: <Text style={{ color: colors.primary, fontWeight: "800" }}>{emailDevOtp}</Text> (tap to fill)
+                      </Text>
+                    </Pressable>
+                  ) : null}
 
                   {mobileVerified && (
                     <>

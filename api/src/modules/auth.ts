@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { drizzle } from "drizzle-orm/d1";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import type { AppEnv } from "../env";
 import { users, refreshTokens, customerProfiles, partnerProfiles, otpCodes } from "../db/schema";
 import { ok, fail } from "../lib/envelope";
@@ -160,6 +160,119 @@ route.post("/otp/verify", async (c) => {
     user = { id, email: destination, role: "CUSTOMER" } as any;
   }
   return ok(c, await issueTokens(c, user));
+});
+
+route.post("/forgot-password", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const email: string = (body?.email ?? "").toLowerCase().trim();
+  if (!email) return fail(c, 400, "VALIDATION_ERROR", "email required");
+  
+  const db = drizzle(c.env.DB);
+  const user = (await db.select().from(users).where(eq(users.email, email)).limit(1))[0];
+  if (!user || !user.isActive) {
+    return fail(c, 404, "NOT_FOUND", "Account not found or inactive");
+  }
+
+  // Generate 6-digit reset code
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const codeHash = await sha256(code);
+
+  await db.insert(otpCodes).values({
+    id: newId("otp"),
+    userId: user.id,
+    channel: "email",
+    destination: email,
+    codeHash,
+    purpose: "reset",
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes TTL
+    attempts: 0,
+  });
+
+  // Try to send email via Resend if API key is configured
+  const isDev = !c.env.RESEND_API_KEY;
+  if (c.env.RESEND_API_KEY) {
+    const subject = "Reset your password - Credupe";
+    const html = `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <p>Dear User,</p>
+      <p>You requested a password reset code for your Credupe account.</p>
+      <p>Your password reset code is: <strong style="font-size: 20px; color: #4C5CD3; letter-spacing: 2px;">${code}</strong></p>
+      <p>This code will remain valid for the next 10 minutes. If you did not request this, you can safely ignore this email.</p>
+      <br/>
+      <p>Best regards,<br/>Credupe Support Team</p>
+      </body></html>`;
+
+    const fromAddress = c.env.RESEND_FROM_EMAIL ?? "Credupe Staging <noreply+staging@credupe.com>";
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${c.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: fromAddress,
+          to: [email],
+          subject,
+          html,
+        }),
+      });
+    } catch (err) {
+      console.error("[forgot-password-email-error]", err);
+    }
+  }
+
+  return ok(c, { email, expiresInSec: 600, ...(isDev ? { devOtp: code } : {}) });
+});
+
+route.post("/reset-password", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const email: string = (body?.email ?? "").toLowerCase().trim();
+  const code: string = (body?.code ?? "").trim();
+  const newPassword: string = body?.newPassword ?? "";
+
+  if (!email || !code || !newPassword) {
+    return fail(c, 400, "VALIDATION_ERROR", "email, code, and newPassword are required");
+  }
+  if (newPassword.length < 6) {
+    return fail(c, 400, "VALIDATION_ERROR", "Password must be at least 6 characters");
+  }
+
+  const db = drizzle(c.env.DB);
+  const user = (await db.select().from(users).where(eq(users.email, email)).limit(1))[0];
+  if (!user || !user.isActive) {
+    return fail(c, 404, "NOT_FOUND", "Account not found or inactive");
+  }
+
+  // Find valid OTP
+  const hash = await sha256(code);
+  const rows = await db.select().from(otpCodes)
+    .where(and(
+      eq(otpCodes.destination, email),
+      eq(otpCodes.codeHash, hash),
+      eq(otpCodes.purpose, "reset")
+    ))
+    .orderBy(desc(otpCodes.createdAt))
+    .limit(1);
+
+  const otp = rows[0];
+  if (!otp || otp.consumedAt || new Date(otp.expiresAt) < new Date()) {
+    return fail(c, 401, "INVALID_OTP", "Reset code is invalid or expired");
+  }
+
+  // Update attempts
+  if (otp.attempts >= 5) {
+    return fail(c, 401, "INVALID_OTP", "Too many attempts");
+  }
+  await db.update(otpCodes).set({ attempts: otp.attempts + 1 }).where(eq(otpCodes.id, otp.id));
+
+  // Update password
+  const passwordHash = await hashPassword(newPassword, Number(c.env.BCRYPT_SALT_ROUNDS || 10));
+  await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
+
+  // Mark OTP as consumed
+  await db.update(otpCodes).set({ consumedAt: new Date().toISOString() }).where(eq(otpCodes.id, otp.id));
+
+  return ok(c, { success: true });
 });
 
 export default route;

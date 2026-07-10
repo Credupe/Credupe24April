@@ -736,3 +736,118 @@ export async function markNotificationRead(id: string) {
 export async function markAllNotificationsRead() {
   return apiFetch<{ read: boolean }>("/notifications/read-all", { method: "POST" });
 }
+
+/* ─── Partner onboarding ────────────────────────────────────────────────── */
+
+export interface StartOnboardingResult {
+  onboardingToken: string;
+  expiresInSec: number;
+}
+
+export interface RequestOtpResult {
+  channel: "mobile" | "email";
+  destination: string;
+  expiresInSec: number;
+  devOtp?: string;
+}
+
+export interface VerifyOtpResult {
+  onboardingToken: string;
+  mobileVerified: boolean;
+  emailVerified: boolean;
+  bothVerified: boolean;
+}
+
+export interface FinalizePartnerInput {
+  onboardingToken: string;
+  businessName: string;
+  gstNumber?: string;
+  panNumber?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  address?: string;
+  password?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  ifsc?: string;
+}
+
+export interface FinalizePartnerResult {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: ApiUser;
+  partner: {
+    id: string;
+    partnerCode: string;
+    businessName: string;
+    onboardingStep: string;
+    tier: string;
+  };
+  generatedPassword?: string;
+}
+
+export async function startPartnerOnboarding(email: string, mobile: string, contactPerson: string) {
+  return rawFetch<StartOnboardingResult>("/partner-onboarding/start", {
+    method: "POST",
+    body: JSON.stringify({ email, mobile, contactPerson }),
+    skipAuth: true,
+  });
+}
+
+export async function requestPartnerOtp(onboardingToken: string, channel: "mobile" | "email", destination: string) {
+  return rawFetch<RequestOtpResult>("/partner-onboarding/otp/request", {
+    method: "POST",
+    body: JSON.stringify({ onboardingToken, channel, destination }),
+    skipAuth: true,
+  });
+}
+
+export async function verifyPartnerOtp(onboardingToken: string, channel: "mobile" | "email", destination: string, code: string) {
+  return rawFetch<VerifyOtpResult>("/partner-onboarding/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ onboardingToken, channel, destination, code }),
+    skipAuth: true,
+  });
+}
+
+export async function finalizePartnerOnboarding(input: FinalizePartnerInput) {
+  const r = await rawFetch<FinalizePartnerResult>("/partner-onboarding/finalize", {
+    method: "POST",
+    body: JSON.stringify(input),
+    skipAuth: true,
+  });
+  if (r.success && r.data) {
+    await writeTokens(r.data.accessToken, r.data.refreshToken);
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(r.data.user));
+  }
+  return r;
+}
+
+/* ─── Forgot/Reset Password ─────────────────────────────────────────────── */
+
+export interface ForgotPasswordResult {
+  email: string;
+  expiresInSec: number;
+  devOtp?: string;
+}
+
+export async function forgotPassword(email: string) {
+  return rawFetch<ForgotPasswordResult>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+    skipAuth: true,
+  });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string) {
+  return rawFetch<{ success: boolean }>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ email, code, newPassword }),
+    skipAuth: true,
+  });
+}
+
+

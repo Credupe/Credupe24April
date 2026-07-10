@@ -12,12 +12,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CredupeLogo } from "../components/CredupeLogo";
-import { getApiConfig, loginEmail, requestOtp, verifyOtp } from "../api/credupe";
+import { getApiConfig, loginEmail, requestOtp, verifyOtp, forgotPassword, resetPassword } from "../api/credupe";
 import { useTheme } from "../theme/ThemeProvider";
 import { radii, spacing, typography } from "../theme/colors";
 import Toast from "react-native-toast-message";
 
-type Mode = "otp" | "email";
+type Mode = "otp" | "email" | "forgot";
 
 export const LoginScreen: React.FC<{ onAuthed: () => void; onSignup?: () => void }> = ({ onAuthed, onSignup }) => {
   const { colors, mode, toggle } = useTheme();
@@ -52,14 +52,28 @@ export const LoginScreen: React.FC<{ onAuthed: () => void; onSignup?: () => void
           </View>
 
           {/* Segmented control */}
-          <View style={[styles.tabs, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <TabButton active={tab === "otp"} onPress={() => setTab("otp")} label="Mobile + OTP" />
-            <TabButton active={tab === "email"} onPress={() => setTab("email")} label="Email + Password" />
-          </View>
+          {tab !== "forgot" ? (
+            <View style={[styles.tabs, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <TabButton active={tab === "otp"} onPress={() => setTab("otp")} label="Mobile + OTP" />
+              <TabButton active={tab === "email"} onPress={() => setTab("email")} label="Email + Password" />
+            </View>
+          ) : (
+            <View style={{ marginBottom: spacing.lg }}>
+              <Text style={[typography.h2, { color: colors.text, textAlign: "center", fontWeight: "700", fontSize: 20 }]}>
+                Reset Password
+              </Text>
+            </View>
+          )}
 
-          {tab === "otp" ? <OtpPanel onAuthed={onAuthed} /> : <EmailPanel onAuthed={onAuthed} />}
+          {tab === "otp" ? (
+            <OtpPanel onAuthed={onAuthed} />
+          ) : tab === "email" ? (
+            <EmailPanel onAuthed={onAuthed} onForgotPassword={() => setTab("forgot")} />
+          ) : (
+            <ForgotPasswordPanel onCancel={() => setTab("email")} />
+          )}
 
-          {onSignup ? (
+          {onSignup && tab !== "forgot" ? (
             <Pressable
               onPress={onSignup}
               style={{ marginTop: spacing.lg }}
@@ -233,7 +247,7 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
 };
 
 /* ─── Email Panel ─── */
-const EmailPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
+const EmailPanel: React.FC<{ onAuthed: () => void; onForgotPassword: () => void }> = ({ onAuthed, onForgotPassword }) => {
   const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
@@ -289,6 +303,12 @@ const EmailPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
         style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text, fontSize: 16 }]}
         accessibilityLabel="password-input"
       />
+      <Pressable
+        onPress={onForgotPassword}
+        style={{ alignSelf: "flex-end", marginTop: spacing.xs, marginBottom: spacing.md }}
+      >
+        <Text style={{ color: colors.primary, fontSize: 13, fontWeight: "600" }}>Forgot Password?</Text>
+      </Pressable>
       <PrimaryButton label="Sign in" onPress={submit} loading={loading} testID="signin-btn" />
       <View style={{ alignItems: "center", marginTop: spacing.md, gap: 4 }}>
         <Text style={{ color: colors.textMuted, fontSize: 12 }}>
@@ -298,6 +318,126 @@ const EmailPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
           Customer: <Text style={{ color: colors.primary, fontWeight: "700" }}>customer@credupe.local</Text> / Customer@123
         </Text>
       </View>
+    </View>
+  );
+};
+
+/* ─── Forgot Password Panel ─── */
+const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) => {
+  const { colors } = useTheme();
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [stage, setStage] = useState<"request" | "reset">("request");
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleRequest = useCallback(async () => {
+    if (!email.trim() || !email.includes("@")) {
+      Toast.show({ type: "error", text1: "Enter a valid email address" });
+      return;
+    }
+    setLoading(true);
+    const r = await forgotPassword(email.trim().toLowerCase());
+    setLoading(false);
+    if (!r.success) {
+      Toast.show({
+        type: "error",
+        text1: "Request failed",
+        text2: r.error?.message?.join("\n") ?? "Unable to send reset code. Try again.",
+      });
+      return;
+    }
+    setDevOtp(r.data?.devOtp ?? null);
+    setStage("reset");
+    Toast.show({ type: "success", text1: "Reset code sent to your email" });
+  }, [email]);
+
+  const handleReset = useCallback(async () => {
+    if (code.length !== 6) {
+      Toast.show({ type: "error", text1: "Enter the 6-digit code" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      Toast.show({ type: "error", text1: "Password must be at least 6 characters" });
+      return;
+    }
+    setLoading(true);
+    const r = await resetPassword(email.trim().toLowerCase(), code.trim(), newPassword);
+    setLoading(false);
+    if (!r.success) {
+      Toast.show({
+        type: "error",
+        text1: "Reset failed",
+        text2: r.error?.message?.join("\n") ?? "Invalid code or reset failed.",
+      });
+      return;
+    }
+    Toast.show({ type: "success", text1: "Password reset successful. Please log in." });
+    onCancel();
+  }, [email, code, newPassword, onCancel]);
+
+  if (stage === "request") {
+    return (
+      <View style={{ width: "100%" }}>
+        <Text style={[typography.caption, { color: colors.textMuted, marginBottom: spacing.xs }]}>
+          Enter your email
+        </Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          placeholder="yourname@domain.com"
+          placeholderTextColor={colors.textMuted}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text, fontSize: 16 }]}
+        />
+        <PrimaryButton label="Send Reset Code" onPress={handleRequest} loading={loading} />
+        <Pressable onPress={onCancel} style={{ marginTop: spacing.sm, alignItems: "center" }}>
+          <Text style={{ color: colors.primary, fontWeight: "600" }}>Back to Login</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ width: "100%" }}>
+      <Text style={[typography.caption, { color: colors.textMuted, marginBottom: spacing.xs }]}>
+        6-Digit Verification Code
+      </Text>
+      <TextInput
+        value={code}
+        onChangeText={setCode}
+        keyboardType="number-pad"
+        maxLength={6}
+        placeholder="000000"
+        placeholderTextColor={colors.textMuted}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text, fontSize: 18, letterSpacing: 6, textAlign: "center" }]}
+      />
+      {devOtp ? (
+        <Pressable onPress={() => setCode(devOtp)} style={{ marginBottom: spacing.md }}>
+          <Text style={{ color: colors.textMuted, textAlign: "center", fontSize: 13 }}>
+            DEV OTP: <Text style={{ color: colors.primary, fontWeight: "800" }}>{devOtp}</Text> (tap to fill)
+          </Text>
+        </Pressable>
+      ) : null}
+      
+      <Text style={[typography.caption, { color: colors.textMuted, marginBottom: spacing.xs }]}>
+        New Password
+      </Text>
+      <TextInput
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry
+        placeholder="Choose new password"
+        placeholderTextColor={colors.textMuted}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text, fontSize: 16, marginBottom: spacing.lg }]}
+      />
+      
+      <PrimaryButton label="Reset Password" onPress={handleReset} loading={loading} />
+      <Pressable onPress={onCancel} style={{ marginTop: spacing.sm, alignItems: "center" }}>
+        <Text style={{ color: colors.primary, fontWeight: "600" }}>Back to Login</Text>
+      </Pressable>
     </View>
   );
 };

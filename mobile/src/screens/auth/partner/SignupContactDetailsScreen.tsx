@@ -17,6 +17,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
 import { useTheme } from "../../../theme/ThemeProvider";
 import { radii, spacing, typography } from "../../../theme/colors";
+import { startPartnerOnboarding } from "../../../api/credupe";
 
 const logoImage = require("../../../../assets/logo.png");
 
@@ -27,15 +28,17 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("+91 ");
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const selectedBusinessType = route.params?.businessType;
 
-  const handleSendOTPs = () => {
+  const handleSendOTPs = async () => {
     if (!name.trim()) {
       Toast.show({ type: "error", text1: "Please enter your full name" });
       return;
     }
-    if (!mobile.replace(/\D/g, "").match(/\d{10}/)) {
+    const cleanMobile = mobile.replace(/\D/g, "");
+    if (!cleanMobile.match(/\d{10}/)) {
       Toast.show({ type: "error", text1: "Please enter a valid 10-digit mobile number" });
       return;
     }
@@ -44,13 +47,28 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
       return;
     }
 
+    setIsLoading(true);
+    const r = await startPartnerOnboarding(email.trim().toLowerCase(), cleanMobile.slice(-10), name.trim());
+    setIsLoading(false);
+
+    if (!r.success || !r.data) {
+      Toast.show({
+        type: "error",
+        text1: "Signup failed",
+        text2: r.error?.message?.join("\n") ?? "Unable to initiate signup. Try again.",
+      });
+      return;
+    }
+
     navigation.navigate("SignupVerification" as any, {
       name,
-      mobile,
-      email,
+      mobile: cleanMobile.slice(-10),
+      email: email.trim(),
       businessType: selectedBusinessType,
+      onboardingToken: r.data.onboardingToken,
     });
   };
+
 
   const selectedLine = useMemo(() => {
     if (!selectedBusinessType) {
@@ -129,8 +147,12 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
               <Text style={styles.infoText}>We&apos;ll send OTPs to verify both the mobile number and email address.</Text>
             </View>
 
-            <Pressable style={[styles.primaryBtn, { backgroundColor: colors.primary }]} onPress={handleSendOTPs}>
-              <Text style={styles.primaryBtnText}>Send OTPs</Text>
+            <Pressable
+              style={[styles.primaryBtn, { backgroundColor: colors.primary, opacity: isLoading ? 0.6 : 1 }]}
+              onPress={handleSendOTPs}
+              disabled={isLoading}
+            >
+              <Text style={styles.primaryBtnText}>{isLoading ? "Sending..." : "Send OTPs"}</Text>
             </Pressable>
           </View>
 

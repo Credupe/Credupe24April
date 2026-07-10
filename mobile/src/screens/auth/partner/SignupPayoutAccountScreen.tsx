@@ -11,17 +11,19 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../App";
 import { useTheme } from "../../../theme/ThemeProvider";
 import { radii, spacing, typography } from "../../../theme/colors";
+import { finalizePartnerOnboarding } from "../../../api/credupe";
 
 const logoImage = require("../../../../assets/logo.png");
 
 type Props = NativeStackScreenProps<RootStackParamList, "SignupPayoutAccount">;
 
-export const SignupPayoutAccountScreen: React.FC<Props> = ({ navigation }) => {
+export const SignupPayoutAccountScreen: React.FC<Props> = ({ navigation, route }) => {
   const { colors } = useTheme();
   const [bankName, setBankName] = useState("");
   const [accountHolder, setAccountHolder] = useState("");
@@ -29,8 +31,60 @@ export const SignupPayoutAccountScreen: React.FC<Props> = ({ navigation }) => {
   const [ifscCode, setIfscCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleFinishOnboarding = () => {
-    navigation.replace("PartnerOnboardingSuccess");
+  const {
+    onboardingToken,
+    businessName,
+    gstNumber,
+    panNumber,
+    city,
+    state,
+    pincode,
+    address,
+  } = route.params || {};
+
+  const handleFinishOnboarding = async () => {
+    if (!bankName.trim()) {
+      Toast.show({ type: "error", text1: "Please enter bank name" });
+      return;
+    }
+    if (!accountNumber.trim()) {
+      Toast.show({ type: "error", text1: "Please enter account number" });
+      return;
+    }
+    if (!ifscCode.trim()) {
+      Toast.show({ type: "error", text1: "Please enter IFSC code" });
+      return;
+    }
+
+    setIsLoading(true);
+    const r = await finalizePartnerOnboarding({
+      onboardingToken,
+      businessName,
+      gstNumber,
+      panNumber,
+      city,
+      state,
+      pincode,
+      address,
+      bankName: bankName.trim(),
+      accountHolder: accountHolder.trim() || undefined,
+      accountNumber: accountNumber.trim(),
+      ifsc: ifscCode.trim().toUpperCase(),
+    });
+    setIsLoading(false);
+
+    if (r.success && r.data) {
+      navigation.replace("PartnerOnboardingSuccess", {
+        partnerCode: r.data.partner.partnerCode,
+        tempPassword: r.data.generatedPassword,
+      });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Onboarding failed",
+        text2: r.error?.message?.join("\n") ?? "Unable to finalize partner profile. Try again.",
+      });
+    }
   };
 
   return (

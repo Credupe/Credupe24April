@@ -68,7 +68,7 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
   const renderItem = useCallback(({ item }: { item: any }) => {
     return (
       <View style={styles.slideContainer}>
-        <Image source={item} style={styles.image} resizeMode="stretch" />
+        <Image source={item} style={styles.image} resizeMode="cover" />
       </View>
     );
   }, []);
@@ -118,5 +118,6 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+    borderRadius: 16,
   },
 });

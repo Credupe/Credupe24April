@@ -67,8 +67,8 @@ export type RootStackParamList = {
   SignupSelection: undefined;
   SignupBasicDetails: { businessType?: string };
   SignupContactDetails: { businessType?: string };
-  SignupVerification: { name: string; mobile: string; email: string; businessType?: string };
-  SignupBusinessDetails: undefined;
+  SignupVerification: { name: string; mobile: string; email: string; businessType?: string; onboardingToken: string };
+  SignupBusinessDetails: { onboardingToken: string };
   SignupKycDocuments: {
     businessType?: string;
     basicDetails?: {
@@ -79,8 +79,17 @@ export type RootStackParamList = {
       gender: "Male" | "Female" | "Other" | null;
     };
   };
-  SignupPayoutAccount: undefined;
-  PartnerOnboardingSuccess: undefined;
+  SignupPayoutAccount: {
+    onboardingToken: string;
+    businessName: string;
+    gstNumber?: string;
+    panNumber?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    address?: string;
+  };
+  PartnerOnboardingSuccess: { partnerCode: string; tempPassword?: string };
   PartnerHomeDirect: undefined;
   Main: undefined;
   QuoteBuilder: { loanType?: string };
@@ -417,21 +426,26 @@ const Root: React.FC = () => {
               />
             )}
           </Stack.Screen>
-          <Stack.Screen name="SignupSelection" component={SignupSelectionScreen} />
-          <Stack.Screen name="SignupBasicDetails" component={SignupBasicDetailsScreen} />
-          <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
-          <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
-          <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
-          <Stack.Screen name="SignupKycDocuments" component={SignupKycDocumentsScreen} />
-          <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
-          <Stack.Screen name="PartnerOnboardingSuccess" component={PartnerOnboardingSuccessScreen} />
+          <Stack.Screen name="PartnerOnboardingSuccess">
+            {({ navigation, route }) => (
+              <PartnerOnboardingSuccessScreen
+                navigation={navigation}
+                route={route}
+                onAuthed={async () => {
+                  const u = await getCachedUser();
+                  if (u?.role) setRole(u.role);
+                  setAuthed(true);
+                }}
+              />
+            )}
+          </Stack.Screen>
           <Stack.Screen name="PartnerHomeDirect">
             {({ navigation }) => (
               <MainTabs
                 role="PARTNER"
                 onSignedOut={() => setAuthed(false)}
                 onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
-                onOpenKyc={() => navigation.navigate("SignupSelection")}
+                onOpenKyc={() => navigation.navigate("SignupBasicDetails")}
                 onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
                 onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
                 onNewLead={() => navigation.navigate("NewLead")}
@@ -455,7 +469,13 @@ const Root: React.FC = () => {
                   role={role}
                   onSignedOut={() => setAuthed(false)}
                   onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
-                  onOpenKyc={() => navigation.navigate("SignupSelection")}
+                  onOpenKyc={() => {
+                    if (role === "PARTNER") {
+                      navigation.navigate("SignupBasicDetails");
+                    } else {
+                      navigation.navigate("Kyc");
+                    }
+                  }}
                   onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
                   onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
                   onNewLead={() => navigation.navigate("NewLead")}
@@ -584,6 +604,13 @@ const Root: React.FC = () => {
             </Stack.Screen>
           </>
         )}
+        <Stack.Screen name="SignupSelection" component={SignupSelectionScreen} />
+        <Stack.Screen name="SignupBasicDetails" component={SignupBasicDetailsScreen} />
+        <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
+        <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
+        <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
+        <Stack.Screen name="SignupKycDocuments" component={SignupKycDocumentsScreen} />
+        <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
         <Stack.Screen name="ApplyPersonalLoan" component={ApplyPersonalLoanScreen} />
         <Stack.Screen name="ApplyBusinessLoan" component={ApplyBusinessLoanScreen} />
         <Stack.Screen name="ApplyHomeLoan" component={ApplyHomeLoanScreen} />

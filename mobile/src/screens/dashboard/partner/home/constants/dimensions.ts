@@ -9,5 +9,5 @@ export const DIMENSIONS = {
   height,
   cardWidth: (width - 48) / 3, // Grid card width
   bannerWidth,
-  bannerHeight: Math.round(bannerWidth * 0.44), // Maintain a clean ~2.27:1 aspect ratio (160/360)
+  bannerHeight: Math.round(bannerWidth * 0.26), // Maintain a clean ~3.85:1 aspect ratio matching the banner images
 };
