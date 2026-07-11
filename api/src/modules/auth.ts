@@ -275,4 +275,14 @@ route.post("/reset-password", async (c) => {
   return ok(c, { success: true });
 });
 
+route.get("/dev-credentials", async (c) => {
+  if (c.env.DEV_ADMIN_EMAIL && c.env.DEV_ADMIN_PASSWORD) {
+    return ok(c, {
+      email: c.env.DEV_ADMIN_EMAIL,
+      password: c.env.DEV_ADMIN_PASSWORD,
+    });
+  }
+  return fail(c, 404, "NOT_FOUND", "Dev credentials not configured");
+});
+
 export default route;

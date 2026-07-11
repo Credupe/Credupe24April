@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 import { fetchLenders, Lender } from "../../../api/credupe";
 import { useTheme } from "../../../theme/ThemeProvider";
 import { radii, spacing, typography } from "../../../theme/colors";
@@ -15,6 +16,7 @@ export const AdminLendersScreen: React.FC<Props> = ({ onBack, onEdit, onCreate }
   const { colors } = useTheme();
   const [items, setItems] = useState<Lender[]>([]);
   const [loading, setLoading] = useState(true);
+  const isFocused = useIsFocused();
 
   const load = useCallback(async () => {
     const r = await fetchLenders();
@@ -23,8 +25,10 @@ export const AdminLendersScreen: React.FC<Props> = ({ onBack, onEdit, onCreate }
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (isFocused) {
+      load();
+    }
+  }, [isFocused, load]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>

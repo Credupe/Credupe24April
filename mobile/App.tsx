@@ -218,10 +218,10 @@ const MainTabs: React.FC<MainTabsProps> = ({
               route.name === "Console"
                 ? "⌂"
                 : route.name === "Apps"
-                ? "▤"
-                : route.name === "KYC"
-                ? "✓"
-                : "◉";
+                  ? "▤"
+                  : route.name === "KYC"
+                    ? "✓"
+                    : "◉";
             return <TabIcon glyph={glyph} focused={focused} />;
           },
         })}
@@ -264,12 +264,12 @@ const MainTabs: React.FC<MainTabsProps> = ({
               route.name === "Home"
                 ? (focused ? "view-grid" : "view-grid-outline")
                 : route.name === "Profile"
-                ? "account-circle-outline"
-                : route.name === "Utility Tool"
-                ? "cog-outline"
-                : route.name === "More"
-                ? "dots-vertical"
-                : "◉";
+                  ? "account-circle-outline"
+                  : route.name === "Utility Tool"
+                    ? "cog-outline"
+                    : route.name === "More"
+                      ? "dots-vertical"
+                      : "◉";
             return <TabIcon glyph={glyph} focused={focused} />;
           },
         })}
@@ -311,10 +311,10 @@ const MainTabs: React.FC<MainTabsProps> = ({
             route.name === "Home"
               ? "⌂"
               : route.name === "Loans"
-              ? "₹"
-              : route.name === "Applications"
-              ? "▤"
-              : "◉";
+                ? "₹"
+                : route.name === "Applications"
+                  ? "▤"
+                  : "◉";
           return <TabIcon glyph={glyph} focused={focused} />;
         },
       })}
@@ -414,52 +414,52 @@ const Root: React.FC = () => {
 
         {!authed ? (
           <>
-          <Stack.Screen name="Login">
-            {({ navigation }) => (
-              <LoginScreen
-                onSignup={() => navigation.navigate("SignupContactDetails")}
-                onAuthed={async () => {
-                  const u = await getCachedUser();
-                  if (u?.role) setRole(u.role);
-                  setAuthed(true);
-                }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="PartnerOnboardingSuccess">
-            {({ navigation, route }) => (
-              <PartnerOnboardingSuccessScreen
-                navigation={navigation}
-                route={route}
-                onAuthed={async () => {
-                  const u = await getCachedUser();
-                  if (u?.role) setRole(u.role);
-                  setAuthed(true);
-                }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="PartnerHomeDirect">
-            {({ navigation }) => (
-              <MainTabs
-                role="PARTNER"
-                onSignedOut={() => setAuthed(false)}
-                onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
-                onOpenKyc={() => navigation.navigate("SignupBasicDetails")}
-                onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
-                onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
-                onNewLead={() => navigation.navigate("NewLead")}
-                onBulkImport={() => navigation.navigate("BulkLeadsImport")}
-                onOpenCommissions={() => navigation.navigate("Commissions")}
-                onOpenAdminApps={(status) => navigation.navigate("AdminApplications", { initialStatus: status })}
-                onOpenAdminKyc={() => navigation.navigate("AdminKycReview")}
-                onOpenAdminUsers={() => navigation.navigate("AdminUsers")}
-                onOpenAdminLenders={() => navigation.navigate("AdminLenders")}
-                onOpenAdminProducts={() => navigation.navigate("AdminProducts")}
-                onOpenNotifications={() => navigation.navigate("Notifications")}
-              />
-            )}
-          </Stack.Screen>
+            <Stack.Screen name="Login">
+              {({ navigation }) => (
+                <LoginScreen
+                  onSignup={() => navigation.navigate("SignupContactDetails")}
+                  onAuthed={async () => {
+                    const u = await getCachedUser();
+                    if (u?.role) setRole(u.role);
+                    setAuthed(true);
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="PartnerOnboardingSuccess">
+              {({ navigation, route }) => (
+                <PartnerOnboardingSuccessScreen
+                  navigation={navigation}
+                  route={route}
+                  onAuthed={async () => {
+                    const u = await getCachedUser();
+                    if (u?.role) setRole(u.role);
+                    setAuthed(true);
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="PartnerHomeDirect">
+              {({ navigation }) => (
+                <MainTabs
+                  role="PARTNER"
+                  onSignedOut={() => setAuthed(false)}
+                  onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
+                  onOpenKyc={() => navigation.navigate("SignupBasicDetails")}
+                  onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
+                  onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
+                  onNewLead={() => navigation.navigate("NewLead")}
+                  onBulkImport={() => navigation.navigate("BulkLeadsImport")}
+                  onOpenCommissions={() => navigation.navigate("Commissions")}
+                  onOpenAdminApps={(status) => navigation.navigate("AdminApplications", { initialStatus: status })}
+                  onOpenAdminKyc={() => navigation.navigate("AdminKycReview")}
+                  onOpenAdminUsers={() => navigation.navigate("AdminUsers")}
+                  onOpenAdminLenders={() => navigation.navigate("AdminLenders")}
+                  onOpenAdminProducts={() => navigation.navigate("AdminProducts")}
+                  onOpenNotifications={() => navigation.navigate("Notifications")}
+                />
+              )}
+            </Stack.Screen>
           </>
         ) : (
           <>

@@ -245,6 +245,12 @@ export async function updateLoanProduct(id: string, patch: Partial<LoanProduct> 
   });
 }
 
+export async function deleteLoanProduct(id: string) {
+  return apiFetch<{ id: string; deleted: boolean }>(`/loan-products/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export interface LoanApplication {
   id: string;
   referenceNo: string;

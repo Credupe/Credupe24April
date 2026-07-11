@@ -1,2 +1,3 @@
+
 database = npm run db:studio
 start api = npm run dev

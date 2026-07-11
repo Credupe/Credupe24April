@@ -14,6 +14,7 @@ export const DASHBOARD_MENU: DashboardMenuItem[] = [
     iconType: "MaterialCommunityIcons",
     route: "ApplyPersonalLoan",
   },
+  /*
   {
     id: "apply_business_loan",
     title: "Apply Business Loan",
@@ -42,6 +43,7 @@ export const DASHBOARD_MENU: DashboardMenuItem[] = [
     iconType: "MaterialCommunityIcons",
     route: "ApplyLAP",
   },
+  */
   {
     id: "apply_credit_card",
     title: "Apply Credit Card",
@@ -49,6 +51,14 @@ export const DASHBOARD_MENU: DashboardMenuItem[] = [
     iconType: "MaterialCommunityIcons",
     route: "ApplyCreditCard",
   },
+  {
+    id: "apply_education_loan",
+    title: "Apply Education Loan",
+    icon: "school-outline",
+    iconType: "MaterialCommunityIcons",
+    route: "ApplyEducationLoan",
+  },
+  /*
   {
     id: "existing_applications",
     title: "Existing Applications",
@@ -105,4 +115,5 @@ export const DASHBOARD_MENU: DashboardMenuItem[] = [
     iconType: "MaterialCommunityIcons",
     route: "ReferEarn",
   },
+  */
 ];

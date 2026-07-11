@@ -1,13 +1,36 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  Animated,
+  Modal,
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  ArrowLeft,
+  User,
+  CalendarDays,
+  Mars,
+  Venus,
+  Transgender,
+  ChevronRight,
+  CheckCircle2,
+} from "lucide-react-native";
 
 import { RootStackParamList } from "../../../../../App";
 import { useTheme } from "../../../../theme/ThemeProvider";
-import { radii, spacing, typography } from "../../../../theme/colors";
+import { radii, spacing } from "../../../../theme/colors";
 
 type Props = NativeStackScreenProps<RootStackParamList, "SignupBasicDetails">;
+
 const MONTHS = [
   "January",
   "February",
@@ -28,10 +51,17 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 90 }, (_, i) => String(CURRENT_YEAR - i));
 
 const GENDERS: Array<"Male" | "Female" | "Other"> = ["Male", "Female", "Other"];
-const GENDER_ICONS: Record<"Male" | "Female" | "Other", string> = {
-  Male: "👨",
-  Female: "👩",
-  Other: "🧑",
+
+const FONT_FAMILY = Platform.select({
+  ios: "SF Pro Display",
+  android: "sans-serif-medium",
+  default: "System",
+});
+
+// Helper to format date of birth display
+const formatDate = (day: string | null, month: string | null, year: string | null) => {
+  if (!day || !month || !year) return "Select date of birth";
+  return `${day} ${month} ${year}`;
 };
 
 export const SignupBasicDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
@@ -42,7 +72,12 @@ export const SignupBasicDetailsScreen: React.FC<Props> = ({ navigation, route })
   const [day, setDay] = useState<string | null>(null);
   const [year, setYear] = useState<string | null>(null);
   const [gender, setGender] = useState<"Male" | "Female" | "Other" | null>(null);
-  const [openPicker, setOpenPicker] = useState<"month" | "day" | "year" | null>(null);
+  
+  // Custom Date Picker States
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+  const [tempDay, setTempDay] = useState("1");
+  const [tempMonth, setTempMonth] = useState("January");
+  const [tempYear, setTempYear] = useState("2000");
 
   const selectedBusinessType = route.params?.businessType;
 
@@ -51,9 +86,7 @@ export const SignupBasicDetailsScreen: React.FC<Props> = ({ navigation, route })
   }, [fullName, month, day, year, gender]);
 
   const handleNext = () => {
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
 
     navigation.navigate("SignupKycDocuments", {
       businessType: selectedBusinessType,
@@ -67,142 +100,544 @@ export const SignupBasicDetailsScreen: React.FC<Props> = ({ navigation, route })
     });
   };
 
-  const closePicker = () => setOpenPicker(null);
+  const openDatePicker = () => {
+    setTempDay(day || "1");
+    setTempMonth(month || "January");
+    setTempYear(year || "2000");
+    setShowCustomDatePicker(true);
+  };
+
+  const renderCustomDatePicker = () => {
+    if (!showCustomDatePicker) return null;
+
+    return (
+      <Modal
+        transparent
+        animationType="slide"
+        visible={showCustomDatePicker}
+        onRequestClose={() => setShowCustomDatePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setShowCustomDatePicker(false)} />
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Pressable onPress={() => setShowCustomDatePicker(false)} style={styles.modalHeaderBtn}>
+                <Text style={[styles.modalCancelText, { color: colors.textMuted }]}>Cancel</Text>
+              </Pressable>
+              <Text style={[styles.modalTitleText, { color: colors.text }]}>Date of Birth</Text>
+              <Pressable
+                onPress={() => {
+                  setDay(tempDay);
+                  setMonth(tempMonth);
+                  setYear(tempYear);
+                  setShowCustomDatePicker(false);
+                }}
+                style={styles.modalHeaderBtn}
+              >
+                <Text style={[styles.modalConfirmText, { color: colors.primary }]}>Done</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.pickerColumnsContainer}>
+              {/* Day Column */}
+              <View style={styles.pickerColumn}>
+                <Text style={styles.pickerColumnLabel}>Day</Text>
+                <ScrollView showsVerticalScrollIndicator={false} style={styles.pickerScroll}>
+                  {DAYS.map((d) => {
+                    const isSelected = tempDay === d;
+                    return (
+                      <Pressable
+                        key={d}
+                        onPress={() => setTempDay(d)}
+                        style={[
+                          styles.pickerItem,
+                          isSelected && { backgroundColor: colors.primaryMuted, borderRadius: 8 },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerItemText,
+                            { color: isSelected ? colors.primary : colors.text },
+                            isSelected && { fontWeight: "700" },
+                          ]}
+                        >
+                          {d}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* Month Column */}
+              <View style={styles.pickerColumn}>
+                <Text style={styles.pickerColumnLabel}>Month</Text>
+                <ScrollView showsVerticalScrollIndicator={false} style={styles.pickerScroll}>
+                  {MONTHS.map((m) => {
+                    const isSelected = tempMonth === m;
+                    return (
+                      <Pressable
+                        key={m}
+                        onPress={() => setTempMonth(m)}
+                        style={[
+                          styles.pickerItem,
+                          isSelected && { backgroundColor: colors.primaryMuted, borderRadius: 8 },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerItemText,
+                            { color: isSelected ? colors.primary : colors.text },
+                            isSelected && { fontWeight: "700" },
+                          ]}
+                        >
+                          {m.substring(0, 3)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* Year Column */}
+              <View style={styles.pickerColumn}>
+                <Text style={styles.pickerColumnLabel}>Year</Text>
+                <ScrollView showsVerticalScrollIndicator={false} style={styles.pickerScroll}>
+                  {YEARS.map((y) => {
+                    const isSelected = tempYear === y;
+                    return (
+                      <Pressable
+                        key={y}
+                        onPress={() => setTempYear(y)}
+                        style={[
+                          styles.pickerItem,
+                          isSelected && { backgroundColor: colors.primaryMuted, borderRadius: 8 },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerItemText,
+                            { color: isSelected ? colors.primary : colors.text },
+                            isSelected && { fontWeight: "700" },
+                          ]}
+                        >
+                          {y}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: "#FFFFFF" }]} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.safeArea} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScreenHeader onBack={navigation.goBack} currentStep={1} totalSteps={6} />
+        <ProgressStepper currentStep={1} totalSteps={6} />
+
         <ScrollView
-          contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}
+          contentContainerStyle={[styles.container, { backgroundColor: "#FFFFFF" }]}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View style={styles.headerWrap}>
-            <View style={styles.headerBar}>
-              <Pressable onPress={navigation.goBack} hitSlop={8} style={styles.backButton}>
-                <Text style={styles.backText}>‹</Text>
-              </Pressable>
-              <Text style={styles.headerTitle}>Basic details</Text>
-              <View style={styles.headerSpacer} />
+          <View style={styles.formCard}>
+            <Text style={styles.formTitle}>Tell us about yourself</Text>
+            <Text style={styles.formSubtitle}>We need a few basic details to set up your verified profile.</Text>
+
+            <View style={styles.inputSection}>
+              <CustomTextField
+                label="Name as per Aadhaar"
+                value={fullName}
+                onChangeText={setFullName}
+                placeholder="Enter your full name"
+                icon={<User size={22} color={colors.primary} />}
+              />
+            </View>
+
+            <View style={styles.inputSection}>
+              <DatePickerField
+                day={day}
+                month={month}
+                year={year}
+                onPress={openDatePicker}
+                icon={<CalendarDays size={22} color={colors.primary} />}
+              />
+            </View>
+
+            <View style={styles.genderSection}>
+              <Text style={[styles.genderTitle, { color: colors.text }]}>Select Gender</Text>
+              <View style={styles.genderRow}>
+                {GENDERS.map((item) => (
+                  <GenderCard
+                    key={item}
+                    label={item}
+                    isSelected={gender === item}
+                    onPress={() => setGender(item)}
+                  />
+                ))}
+              </View>
             </View>
           </View>
 
-          <View style={styles.progressRow}>
-            {Array.from({ length: 7 }).map((_, idx) => (
-              <View
-                key={idx}
-                style={[
-                  styles.progressBar,
-                  {
-                    backgroundColor: idx === 0 ? colors.primary : "#D7D7D7",
-                  },
-                ]}
-              />
-            ))}
-          </View>
-
-          <View style={styles.section}>
-            <Text style={[styles.label, { color: colors.text }]}>Name as per Aadhaar</Text>
-            <TextInput
-              value={fullName}
-              onChangeText={setFullName}
-              placeholder="Full Name"
-              placeholderTextColor={colors.textMuted}
-              style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+          <View style={styles.buttonWrap}>
+            <GradientButton
+              title="NEXT"
+              onPress={handleNext}
+              disabled={!isValid}
+              icon={<ChevronRight size={20} color="#FFFFFF" />}
             />
           </View>
-
-          <View style={styles.section}>
-            <Text style={[styles.question, { color: colors.text }]}>What’s your date of birth</Text>
-            <View style={styles.dobRow}>
-              <Selector
-                label={month ?? "Month"}
-                onPress={() => setOpenPicker(openPicker === "month" ? null : "month")}
-              />
-              <Selector
-                label={day ?? "Date"}
-                onPress={() => setOpenPicker(openPicker === "day" ? null : "day")}
-              />
-              <Selector
-                label={year ?? "Year"}
-                onPress={() => setOpenPicker(openPicker === "year" ? null : "year")}
-              />
-            </View>
-          </View>
-
-          {openPicker ? (
-            <View style={[styles.dropdown, { borderColor: colors.border }]}> 
-              <ScrollView nestedScrollEnabled style={styles.dropdownScroll}>
-                {(openPicker === "month" ? MONTHS : openPicker === "day" ? DAYS : YEARS).map((item) => (
-                  <Pressable
-                    key={item}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      if (openPicker === "month") setMonth(item);
-                      if (openPicker === "day") setDay(item);
-                      if (openPicker === "year") setYear(item);
-                      closePicker();
-                    }}
-                  >
-                    <Text style={[styles.dropdownText, { color: colors.text }]}>{item}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-          ) : null}
-
-          <View style={styles.section}>
-            <Text style={[styles.question, { color: colors.text }]}>Select Gender</Text>
-            <View style={styles.genderRow}>
-              {GENDERS.map((item) => {
-                const isSelected = gender === item;
-                return (
-                  <Pressable
-                    key={item}
-                    style={[
-                      styles.genderCard,
-                      {
-                        borderColor: isSelected ? colors.primary : colors.border,
-                        backgroundColor: isSelected ? "#F5F0FF" : "#FFFFFF",
-                      },
-                    ]}
-                    onPress={() => setGender(item)}
-                  >
-                    <Text style={styles.genderIconEmoji}>{GENDER_ICONS[item]}</Text>
-                    <Text style={[styles.genderText, { color: colors.text }]}>{item}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <Pressable
-            style={[
-              styles.nextBtn,
-              {
-                backgroundColor: colors.primary,
-                opacity: isValid ? 1 : 0.6,
-              },
-            ]}
-            disabled={!isValid}
-            onPress={handleNext}
-          >
-            <Text style={styles.nextBtnText}>NEXT</Text>
-          </Pressable>
         </ScrollView>
+        {renderCustomDatePicker()}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
-const Selector: React.FC<{ label: string; onPress: () => void }> = ({ label, onPress }) => {
+/* ==========================================
+   Reusable UI Components
+   ========================================== */
+
+// 1. ScreenHeader
+const ScreenHeader: React.FC<{
+  onBack: () => void;
+  currentStep: number;
+  totalSteps: number;
+}> = ({ onBack, currentStep, totalSteps }) => {
+  const { colors } = useTheme();
   return (
-    <Pressable style={styles.selector} onPress={onPress}>
-      <Text style={styles.selectorText}>{label}</Text>
-      <Text style={styles.selectorArrow}>▾</Text>
+    <View style={styles.headerContainer}>
+      <Pressable onPress={onBack} hitSlop={12} style={styles.headerBackBtn}>
+        <ArrowLeft size={24} color={colors.text} />
+      </Pressable>
+      <View style={styles.headerTitleWrap}>
+        <Text style={[styles.headerTitleText, { color: colors.text }]}>Basic Details</Text>
+        <Text style={[styles.headerSubtext, { color: colors.textMuted }]}>
+          Step {currentStep} of {totalSteps}
+        </Text>
+      </View>
+      <View style={styles.headerRightSpacer} />
+    </View>
+  );
+};
+
+// 2. ProgressStepper
+const ProgressStepper: React.FC<{
+  currentStep: number;
+  totalSteps: number;
+}> = ({ currentStep, totalSteps }) => {
+  const { colors } = useTheme();
+  const progressAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(progressAnim, {
+      toValue: (currentStep - 1) / (totalSteps - 1),
+      useNativeDriver: false,
+      tension: 40,
+      friction: 8,
+    }).start();
+  }, [currentStep, totalSteps]);
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0%", "100%"],
+  });
+
+  return (
+    <View style={styles.stepperContainer}>
+      <View style={[styles.stepperTrack, { backgroundColor: colors.border }]} />
+      <Animated.View
+        style={[
+          styles.stepperActiveLine,
+          {
+            backgroundColor: colors.primary,
+            width: progressWidth,
+          },
+        ]}
+      />
+      <View style={styles.stepperDotsContainer}>
+        {Array.from({ length: totalSteps }).map((_, index) => {
+          const isCompleted = index < currentStep - 1;
+          const isActive = index === currentStep - 1;
+
+          return (
+            <View
+              key={index}
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor: isActive
+                    ? colors.primary
+                    : isCompleted
+                    ? colors.primary
+                    : "#FFFFFF",
+                  borderColor: isActive || isCompleted ? colors.primary : colors.border,
+                  transform: [{ scale: isActive ? 1.25 : 1.0 }],
+                },
+              ]}
+            >
+              {isCompleted && (
+                <CheckCircle2 size={8} color="#FFFFFF" />
+              )}
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+};
+
+// 3. CustomTextField
+const CustomTextField: React.FC<{
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  icon?: React.ReactNode;
+}> = ({ label, value, onChangeText, placeholder, icon }) => {
+  const { colors } = useTheme();
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  const isActive = isFocused || value.length > 0;
+
+  return (
+    <Pressable
+      onPress={() => inputRef.current?.focus()}
+      style={[
+        styles.textFieldContainer,
+        {
+          borderColor: isFocused ? colors.primary : colors.border,
+          backgroundColor: "#FFFFFF",
+        },
+      ]}
+    >
+      {icon && <View style={styles.textFieldIcon}>{icon}</View>}
+      <View style={styles.textFieldContent}>
+        {isActive ? (
+          <View style={styles.inputActiveContainer}>
+            <Text style={[styles.textFieldLabelSmall, { color: isFocused ? colors.primary : colors.textMuted }]}>
+              {label}
+            </Text>
+            <TextInput
+              ref={inputRef}
+              value={value}
+              onChangeText={onChangeText}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder={placeholder}
+              placeholderTextColor={colors.textMuted}
+              style={[styles.textFieldInputActive, { color: colors.text }]}
+            />
+          </View>
+        ) : (
+          <View style={styles.inputInactiveContainer}>
+            <Text style={[styles.textFieldLabelLarge, { color: colors.textMuted }]}>
+              {label}
+            </Text>
+            <TextInput
+              ref={inputRef}
+              value={value}
+              onChangeText={onChangeText}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.textFieldInputHidden}
+            />
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 };
 
+// 4. DatePickerField
+const DatePickerField: React.FC<{
+  day: string | null;
+  month: string | null;
+  year: string | null;
+  onPress: () => void;
+  icon?: React.ReactNode;
+}> = ({ day, month, year, onPress, icon }) => {
+  const { colors } = useTheme();
+  const hasValue = Boolean(day && month && year);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.datePickerContainer,
+        {
+          borderColor: colors.border,
+          backgroundColor: "#FFFFFF",
+        },
+      ]}
+    >
+      {icon && <View style={styles.datePickerIcon}>{icon}</View>}
+      <View style={styles.datePickerContent}>
+        {hasValue ? (
+          <View style={styles.inputActiveContainer}>
+            <Text style={[styles.textFieldLabelSmall, { color: colors.textMuted }]}>
+              Date of Birth
+            </Text>
+            <Text style={[styles.datePickerValue, { color: colors.text }]}>
+              {formatDate(day, month, year)}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.inputInactiveContainer}>
+            <Text style={[styles.textFieldLabelLarge, { color: colors.textMuted }]}>
+              Date of Birth
+            </Text>
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+};
+
+// 5. GenderCard Selection
+const GenderCard: React.FC<{
+  label: "Male" | "Female" | "Other";
+  isSelected: boolean;
+  onPress: () => void;
+}> = ({ label, isSelected, onPress }) => {
+  const { colors } = useTheme();
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.spring(scaleValue, {
+      toValue: isSelected ? 1.05 : 1,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 6,
+    }).start();
+  }, [isSelected]);
+
+  const handlePressIn = () => {
+    Animated.timing(scaleValue, {
+      toValue: 0.95,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: isSelected ? 1.05 : 1,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 6,
+    }).start();
+  };
+
+  const getIcon = () => {
+    const size = 28;
+    const color = isSelected ? "#FFFFFF" : colors.primary;
+    switch (label) {
+      case "Male":
+        return <Mars size={size} color={color} />;
+      case "Female":
+        return <Venus size={size} color={color} />;
+      case "Other":
+        return <Transgender size={size} color={color} />;
+    }
+  };
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={{ flex: 1 }}
+    >
+      <Animated.View
+        style={[
+          styles.genderCardItem,
+          {
+            borderColor: isSelected ? colors.primary : colors.border,
+            backgroundColor: isSelected ? colors.primary : colors.primaryMuted,
+            transform: [{ scale: scaleValue }],
+          },
+        ]}
+      >
+        {getIcon()}
+        <Text
+          style={[
+            styles.genderCardText,
+            { color: isSelected ? "#FFFFFF" : colors.text },
+          ]}
+        >
+          {label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+// 6. GradientButton
+const GradientButton: React.FC<{
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  icon?: React.ReactNode;
+}> = ({ title, onPress, disabled, icon }) => {
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    if (disabled) return;
+    Animated.timing(scaleValue, {
+      toValue: 0.96,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    if (disabled) return;
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 6,
+    }).start();
+  };
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled}
+      style={styles.gradientButtonPressable}
+    >
+      <Animated.View style={{ transform: [{ scale: scaleValue }], width: "100%" }}>
+        <LinearGradient
+          colors={disabled ? ["#E5E7EB", "#D1D5DB"] : ["#8B5CF6", "#7C3AED"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.gradientButtonContainer, disabled && styles.gradientButtonDisabled]}
+        >
+          <View style={styles.gradientButtonContent}>
+            <Text style={[styles.gradientButtonText, disabled && styles.gradientButtonTextDisabled]}>
+              {title}
+            </Text>
+            {icon && <View style={styles.gradientButtonIcon}>{icon}</View>}
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+/* ==========================================
+   Styles System
+   ========================================== */
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -210,151 +645,326 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
+    paddingHorizontal: 24,
     paddingBottom: spacing.xl,
+    backgroundColor: "#FFFFFF",
   },
-  headerWrap: {
-    backgroundColor: "#111111",
-    paddingHorizontal: spacing.md,
-    paddingVertical: 14,
-  },
-  headerBar: {
+  // Header styles
+  headerContainer: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: "#FFFFFF",
   },
-  backButton: {
-    width: 32,
-    height: 32,
+  headerBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FAFAFC",
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: "#E5E7EB",
+    borderWidth: 1,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    paddingLeft: 16,
+  },
+  headerTitleText: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontFamily: FONT_FAMILY,
+  },
+  headerSubtext: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 2,
+    fontFamily: FONT_FAMILY,
+  },
+  headerRightSpacer: {
+    width: 40,
+  },
+  // Stepper styles
+  stepperContainer: {
+    height: 20,
+    marginHorizontal: 24,
+    marginVertical: 12,
     justifyContent: "center",
   },
-  backText: {
-    color: "#FFFFFF",
-    fontSize: 34,
-    lineHeight: 34,
-    fontWeight: "400",
+  stepperTrack: {
+    height: 2,
+    borderRadius: 1,
+    width: "100%",
+    position: "absolute",
   },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    color: "#FFFFFF",
-    fontSize: 31,
-    fontWeight: "700",
+  stepperActiveLine: {
+    height: 2,
+    borderRadius: 1,
+    position: "absolute",
   },
-  headerSpacer: {
-    width: 32,
-  },
-  progressRow: {
-    marginTop: 18,
-    marginBottom: 22,
-    paddingHorizontal: spacing.xl,
+  stepperDotsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
-  progressBar: {
-    width: 34,
-    height: 6,
-    borderRadius: radii.pill,
+  stepDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: 22,
+  // Form layout
+  formCard: {
+    marginTop: 12,
   },
-  label: {
-    ...typography.body,
-    fontSize: 33,
-    marginBottom: 10,
-    fontWeight: "500",
+  formTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#1B1B1F",
+    fontFamily: FONT_FAMILY,
+    marginBottom: 8,
   },
-  input: {
+  formSubtitle: {
+    fontSize: 15,
+    color: "#6B7280",
+    fontFamily: FONT_FAMILY,
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  inputSection: {
+    marginBottom: 20,
+  },
+  // Custom text field
+  textFieldContainer: {
+    height: 60,
+    borderRadius: 16,
     borderWidth: 1,
-    borderRadius: radii.md,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    fontSize: 32,
-  },
-  question: {
-    ...typography.h1,
-    fontSize: 46,
-    marginBottom: 14,
-    fontWeight: "600",
-  },
-  dobRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  selector: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#B8B8B8",
-    borderRadius: radii.md,
-    paddingHorizontal: 12,
-    paddingVertical: 14,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
-  selectorText: {
-    fontSize: 22,
-    color: "#3A3A3A",
+  textFieldIcon: {
+    marginRight: 12,
   },
-  selectorArrow: {
-    color: "#4B4B4B",
-    fontSize: 18,
-    lineHeight: 18,
+  textFieldContent: {
+    flex: 1,
+    justifyContent: "center",
   },
-  dropdown: {
-    marginHorizontal: spacing.lg,
-    borderWidth: 1,
-    borderRadius: radii.md,
-    maxHeight: 200,
-    backgroundColor: "#FFFFFF",
-    marginBottom: spacing.md,
+  inputActiveContainer: {
+    justifyContent: "center",
   },
-  dropdownScroll: {
-    maxHeight: 180,
+  inputInactiveContainer: {
+    justifyContent: "center",
   },
-  dropdownItem: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EFEFEF",
+  textFieldLabelSmall: {
+    fontSize: 12,
+    fontWeight: "600",
+    fontFamily: FONT_FAMILY,
+    marginBottom: 2,
   },
-  dropdownText: {
-    fontSize: 15,
+  textFieldLabelLarge: {
+    fontSize: 16,
     fontWeight: "500",
+    fontFamily: FONT_FAMILY,
+  },
+  textFieldInputActive: {
+    height: 24,
+    fontSize: 17,
+    fontWeight: "500",
+    fontFamily: FONT_FAMILY,
+    padding: 0,
+    borderWidth: 0,
+    ...Platform.select({
+      web: {
+        outlineStyle: "none",
+        outlineWidth: 0,
+      },
+    }),
+  } as any,
+  textFieldInputHidden: {
+    position: "absolute",
+    opacity: 0,
+    width: 0,
+    height: 0,
+  },
+  // Date Picker
+  datePickerContainer: {
+    height: 60,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  datePickerIcon: {
+    marginRight: 12,
+  },
+  datePickerContent: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  datePickerValue: {
+    fontSize: 17,
+    fontWeight: "500",
+    fontFamily: FONT_FAMILY,
+    marginTop: 2,
+  },
+  // Gender section
+  genderSection: {
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  genderTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    fontFamily: FONT_FAMILY,
+    marginBottom: 12,
   },
   genderRow: {
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: 12,
   },
-  genderCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: radii.md,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    minHeight: 118,
-  },
-  genderIconEmoji: {
-    fontSize: 38,
-    lineHeight: 42,
-    marginBottom: 8,
-  },
-  genderText: {
-    fontSize: 17,
-    fontWeight: "500",
-  },
-  nextBtn: {
-    marginTop: spacing.sm,
-    marginHorizontal: spacing.lg,
-    borderRadius: radii.pill,
+  genderCardItem: {
+    borderRadius: 18,
+    borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
+    minHeight: 104,
   },
-  nextBtnText: {
+  genderCardText: {
+    fontSize: 15,
+    fontWeight: "700",
+    fontFamily: FONT_FAMILY,
+    marginTop: 8,
+  },
+  // Button Wrap
+  buttonWrap: {
+    marginTop: spacing.xl,
+  },
+  // Gradient Button
+  gradientButtonPressable: {
+    width: "100%",
+    borderRadius: 30,
+    shadowColor: "#7C3AED",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  gradientButtonContainer: {
+    height: 58,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  gradientButtonDisabled: {
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  gradientButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  gradientButtonText: {
     color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "800",
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: FONT_FAMILY,
+    letterSpacing: 0.5,
+  },
+  gradientButtonTextDisabled: {
+    color: "#9CA3AF",
+  },
+  gradientButtonIcon: {
+    marginLeft: 8,
+  },
+  // Custom Date Picker Modal
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  modalBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 32,
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+  },
+  modalHeaderBtn: {
+    padding: 4,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: FONT_FAMILY,
+  },
+  modalConfirmText: {
+    fontSize: 16,
+    fontWeight: "700",
+    fontFamily: FONT_FAMILY,
+  },
+  modalTitleText: {
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: FONT_FAMILY,
+  },
+  pickerColumnsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    height: 240,
+    justifyContent: "space-between",
+  },
+  pickerColumn: {
+    flex: 1,
+    marginHorizontal: 4,
+    alignItems: "stretch",
+  },
+  pickerColumnLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 1.0,
+  },
+  pickerScroll: {
+    flex: 1,
+  },
+  pickerItem: {
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 2,
+  },
+  pickerItemText: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY,
   },
 });
