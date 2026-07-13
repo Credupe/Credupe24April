@@ -244,6 +244,15 @@ export const credupeApi = {
       const qs = new URLSearchParams(q as any).toString();
       return request<Paged<any>>("GET", `/leads${qs ? `?${qs}` : ""}`);
     },
+    createPublic(input: {
+      customerName: string;
+      customerMobile: string;
+      customerEmail?: string;
+      loanType: string;
+      partnerCode?: string;
+    }) {
+      return request<any>("POST", "/leads/public", input, { auth: false });
+    },
   },
 
   documents: {
@@ -601,6 +610,12 @@ export const credupeApi = {
   uiConfig: {
     get() { return request<any>("GET", "/ui-config", undefined, { auth: false }); },
     patch(key: string, value: boolean) { return request<any>("PATCH", "/ui-config", { key, value }); },
+  },
+
+  partnerPublic: {
+    getBusinessName(code: string) {
+      return request<{ businessName: string }>("GET", `/partners/public/${code}`, undefined, { auth: false });
+    },
   },
 
   health() { return request<any>("GET", "/health", undefined, { auth: false }); },

@@ -26,4 +26,14 @@ route.patch("/me", requireAuth, requireRole("PARTNER", "ADMIN"), async (c) => {
   return ok(c, { updated: true });
 });
 
+route.get("/public/:code", async (c) => {
+  const code = c.req.param("code");
+  const db = drizzle(c.env.DB);
+  const row = (await db.select({ businessName: partnerProfiles.businessName }).from(partnerProfiles).where(eq(partnerProfiles.partnerCode, code)).limit(1))[0];
+  if (!row) {
+    return ok(c, { businessName: "Credupe Techfin Pvt Ltd" });
+  }
+  return ok(c, { businessName: row.businessName });
+});
+
 export default route;

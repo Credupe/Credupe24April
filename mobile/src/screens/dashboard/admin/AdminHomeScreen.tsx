@@ -12,6 +12,7 @@ interface Props {
   onOpenUsers: () => void;
   onOpenLenders: () => void;
   onOpenProducts: () => void;
+  onOpenLeads: () => void;
 }
 
 const FUNNEL_ORDER = ["LEAD", "LOGIN", "DOC_PENDING", "UNDER_REVIEW", "APPROVED", "DISBURSED", "REJECTED", "CANCELLED"];
@@ -27,11 +28,12 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "primary"> 
   CANCELLED: "danger",
 };
 
-export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDocuments, onOpenUsers, onOpenLenders, onOpenProducts }) => {
+export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDocuments, onOpenUsers, onOpenLenders, onOpenProducts, onOpenLeads }) => {
   const { colors, mode, toggle } = useTheme();
   const [user, setUser] = useState<ApiUser | null>(null);
   const [total, setTotal] = useState(0);
   const [byStatus, setByStatus] = useState<Record<string, number>>({});
+  const [leadsCount, setLeadsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -42,6 +44,7 @@ export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDoc
     if (r.success && r.data) {
       setTotal(r.data.total);
       setByStatus(r.data.byStatus);
+      setLeadsCount((r.data as any).leadsCount ?? 0);
     }
     setLoading(false);
     setRefreshing(false);
@@ -95,6 +98,17 @@ export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDoc
               <Text style={{ color: colors.textMuted, fontSize: 13 }}>across every stage</Text>
             </View>
 
+            {/* Total leads hero */}
+            <Pressable
+              onPress={onOpenLeads}
+              style={[styles.heroCard, { backgroundColor: colors.cardElevated, borderColor: colors.primary, marginTop: spacing.md }]}
+              accessibilityLabel="admin-leads-hero"
+            >
+              <Text style={[typography.micro, { color: colors.textMuted }]}>B2B LEADS</Text>
+              <Text style={{ color: colors.primary, fontSize: 44, fontWeight: "800", marginTop: 2 }}>{leadsCount}</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>submitted via utility tool UTM links</Text>
+            </Pressable>
+
             {/* Funnel grid */}
             <Text style={[typography.micro, { color: colors.textMuted, marginTop: spacing.xxl, marginBottom: spacing.sm }]}>
               FUNNEL BY STATUS — TAP TO FILTER
@@ -130,6 +144,7 @@ export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDoc
             <LinkRow icon="⌥" label="Users" caption="All customers, partners & admins" onPress={onOpenUsers} testID="qa-users" />
             <LinkRow icon="◈" label="Lenders" caption="Partner-lender catalogue — tap to edit / add" onPress={onOpenLenders} testID="qa-lenders" />
             <LinkRow icon="₹" label="Loan products" caption="Amount, tenure, rate & eligibility bands" onPress={onOpenProducts} testID="qa-products" />
+            <LinkRow icon="✦" label="Leads" caption="Manage B2B lead forms & submissions" onPress={onOpenLeads} testID="qa-leads" />
           </>
         )}
       </ScrollView>

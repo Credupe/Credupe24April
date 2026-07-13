@@ -1,3 +1,5 @@
 
 database = npm run db:studio
 start api = npm run dev
+
+http://localhost:3000/mobile-utility-tool/credit-card?partner=CRD-PA00002

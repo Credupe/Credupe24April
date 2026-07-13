@@ -31,6 +31,7 @@ export type AppEnv = {
     ENV?: string;
     RESEND_API_KEY?: string;
     RESEND_FROM_EMAIL?: string;
+    NOTIFICATION_EMAIL?: string;
   };
   Variables: {
     user?: { sub: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" };

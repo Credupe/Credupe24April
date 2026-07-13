@@ -234,6 +234,7 @@ const MainTabs: React.FC<MainTabsProps> = ({
               onOpenUsers={onOpenAdminUsers}
               onOpenLenders={onOpenAdminLenders}
               onOpenProducts={onOpenAdminProducts}
+              onOpenLeads={() => onOpenLeads(undefined)}
             />
           )}
         </Tabs.Screen>
