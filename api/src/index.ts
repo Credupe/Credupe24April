@@ -67,6 +67,7 @@ v1.route("/customers", customers);
 v1.route("/partners", partners);
 v1.route("/lenders", lenders);
 v1.route("/loan-products", loanProducts);
+v1.route("/admin/loan-products", loanProducts);
 v1.route("/quotes", quotes);
 v1.route("/loan-applications", loanApplications);
 v1.route("/leads", leads);

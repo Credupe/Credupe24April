@@ -20,6 +20,8 @@ export type AppEnv = {
     JWT_REFRESH_SECRET: string;
     SEED_ADMIN_EMAIL?: string;
     SEED_ADMIN_PASSWORD?: string;
+    DEV_ADMIN_EMAIL?: string;
+    DEV_ADMIN_PASSWORD?: string;
     // R2 creds (optional; if set, storage module signs real URLs)
     R2_ACCOUNT_ID?: string;
     R2_ACCESS_KEY_ID?: string;
@@ -29,6 +31,7 @@ export type AppEnv = {
     ENV?: string;
     RESEND_API_KEY?: string;
     RESEND_FROM_EMAIL?: string;
+    NOTIFICATION_EMAIL?: string;
   };
   Variables: {
     user?: { sub: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" };
