@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, FlatList, View } from "react-native";
+import { StyleSheet, FlatList } from "react-native";
 import { DashboardCard } from "./DashboardCard";
 import { DashboardMenuItem } from "../data/dashboardMenu";
 
@@ -9,27 +9,12 @@ interface Props {
 }
 
 export const DashboardGrid: React.FC<Props> = React.memo(({ data, onCardPress }) => {
-  // Pad data array to a multiple of 3 to align last items nicely
-  const paddedData = [...data];
-  while (paddedData.length % 3 !== 0) {
-    paddedData.push({
-      id: `dummy-${paddedData.length}`,
-      title: "",
-      icon: "",
-      iconType: "MaterialCommunityIcons",
-      route: "",
-    });
-  }
-
   const renderItem = ({ item }: { item: DashboardMenuItem }) => {
-    if (item.id.startsWith("dummy")) {
-      return <View style={styles.dummyCard} />;
-    }
     return (
       <DashboardCard
         title={item.title}
-        iconName={item.icon}
-        iconType={item.iconType}
+        description={item.description}
+        iconName={item.iconName}
         onPress={() => onCardPress(item)}
       />
     );
@@ -37,10 +22,10 @@ export const DashboardGrid: React.FC<Props> = React.memo(({ data, onCardPress })
 
   return (
     <FlatList
-      data={paddedData}
+      data={data}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
-      numColumns={3}
+      numColumns={2}
       scrollEnabled={false} // Scrolling is handled by the parent ScrollView
       contentContainerStyle={styles.container}
       columnWrapperStyle={styles.columnWrapper}
@@ -50,18 +35,11 @@ export const DashboardGrid: React.FC<Props> = React.memo(({ data, onCardPress })
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 24,
   },
   columnWrapper: {
     justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  dummyCard: {
-    width: "32%",
-    aspectRatio: 0.88,
-    padding: 4,
-    backgroundColor: "transparent",
   },
 });

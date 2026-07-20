@@ -11,16 +11,22 @@ export default StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 32,
+    paddingBottom: 110, // Extra padding to avoid overlay by the floating bottom navigation
   },
-  menuContainer: {
-    paddingHorizontal: 12,
-    marginTop: 8,
+  sectionHeader: {
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 8,
   },
   sectionTitle: {
     ...THEME.typography.sectionTitle,
-    paddingHorizontal: 16,
-    marginTop: 16,
+  },
+  sectionSubtitle: {
+    ...THEME.typography.subtitle,
+    marginTop: 2,
+  },
+  menuContainer: {
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,

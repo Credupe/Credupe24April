@@ -22,6 +22,7 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import type { AppEnv } from "./env";
 import { ok, fail } from "./lib/envelope";
+import { processScheduledReport } from "./modules/leads-report";
 
 import health from "./modules/health";
 import auth from "./modules/auth";
@@ -89,4 +90,9 @@ app.onError((err, c) => {
   return fail(c, 500, "INTERNAL_ERROR", err instanceof Error ? err.message : String(err));
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(event: ScheduledEvent, env: any, ctx: ExecutionContext) {
+    ctx.waitUntil(processScheduledReport(env));
+  }
+};

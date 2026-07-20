@@ -8,6 +8,7 @@ import { ok, fail } from "../lib/envelope";
 import { hashPassword, verifyPassword } from "../lib/password";
 import { signJwt, verifyJwt } from "../lib/jwt";
 import { newId, sha256 } from "../lib/ids";
+import { sendOTP, verifyOTP } from "./sms";
 
 const route = new Hono<AppEnv>();
 
@@ -125,17 +126,84 @@ route.post("/otp/request", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const destination: string = body?.destination ?? "";
   if (!destination) return fail(c, 400, "VALIDATION_ERROR", "destination required");
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const isEmail = destination.includes("@");
+  const code = isEmail ? String(Math.floor(100000 + Math.random() * 900000)) : "123456";
   const db = drizzle(c.env.DB);
+
   await db.insert(otpCodes).values({
     id: newId("otp"),
-    channel: destination.includes("@") ? "email" : "mobile",
+    channel: isEmail ? "email" : "mobile",
     destination,
     codeHash: await sha256(code),
     purpose: "login",
     expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
   });
-  return ok(c, { destination, expiresInSec: 300, devOtp: code });
+
+  if (isEmail && c.env.RESEND_API_KEY) {
+    const subject = "Verify your email - Credupe";
+    const html = `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <p>Dear User,</p>
+      <p>Your verification code is: <strong style="font-size: 20px; color: #4C5CD3; letter-spacing: 2px;">${code}</strong></p>
+      <p>This code will remain valid for the next 5 minutes. If you did not request this, you can safely ignore this email.</p>
+      <br/>
+      <p>Best regards,<br/>Credupe Support Team</p>
+      </body></html>`;
+
+    const fromAddress = c.env.RESEND_FROM_EMAIL ?? "Credupe Staging <noreply+staging@credupe.com>";
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${c.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: fromAddress,
+          to: [destination],
+          subject,
+          html,
+        }),
+      });
+    } catch (err) {
+      console.error("[login-otp-email-error]", err);
+    }
+  }
+
+  if (!isEmail) {
+    const res = await sendOTP(destination, code, c.env, "login");
+    if (!res.success && c.env.ENV === "production") {
+      return fail(c, 500, "SMS_SEND_FAILED", res.error || "Failed to send SMS OTP");
+    }
+  }
+
+  const isDev = c.env.ENV !== "production";
+  return ok(c, { destination, expiresInSec: 300, ...(isDev ? { devOtp: code } : {}) });
+});
+
+route.post("/send-otp", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const phone = body?.phone ?? body?.destination ?? "";
+  if (!phone) return fail(c, 400, "VALIDATION_ERROR", "phone/destination required");
+
+  const code = "123456";
+  const db = drizzle(c.env.DB);
+
+  await db.insert(otpCodes).values({
+    id: newId("otp"),
+    channel: "mobile",
+    destination: phone,
+    codeHash: await sha256(code),
+    purpose: "login",
+    expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+  });
+
+  const res = await sendOTP(phone, code, c.env, "login");
+  if (!res.success) {
+    return fail(c, 500, "SMS_SEND_FAILED", res.error || "Failed to send SMS OTP");
+  }
+
+  const isDev = c.env.ENV !== "production";
+  return ok(c, { destination: phone, expiresInSec: 300, ...(isDev ? { devOtp: code } : {}) });
 });
 
 route.post("/otp/verify", async (c) => {
@@ -143,16 +211,27 @@ route.post("/otp/verify", async (c) => {
   const destination: string = body?.destination ?? "";
   const code: string = body?.code ?? "";
   if (!destination || !code) return fail(c, 400, "VALIDATION_ERROR", "destination & code required");
-  const db = drizzle(c.env.DB);
-  const rows = await db.select().from(otpCodes)
-    .where(and(eq(otpCodes.destination, destination), eq(otpCodes.codeHash, await sha256(code))))
-    .limit(1);
-  const otp = rows[0];
-  if (!otp || otp.consumedAt || new Date(otp.expiresAt) < new Date()) {
-    return fail(c, 401, "INVALID_OTP", "OTP invalid or expired");
+
+  const isEmail = destination.includes("@");
+  if (!isEmail) {
+    const verifyRes = await verifyOTP(destination, code, c.env, "login");
+    if (!verifyRes.success) {
+      return fail(c, 401, "INVALID_OTP", verifyRes.error || "OTP invalid or expired");
+    }
+  } else {
+    const db = drizzle(c.env.DB);
+    const rows = await db.select().from(otpCodes)
+      .where(and(eq(otpCodes.destination, destination), eq(otpCodes.codeHash, await sha256(code))))
+      .limit(1);
+    const otp = rows[0];
+    if (!otp || otp.consumedAt || new Date(otp.expiresAt) < new Date()) {
+      return fail(c, 401, "INVALID_OTP", "OTP invalid or expired");
+    }
+    await db.update(otpCodes).set({ consumedAt: new Date().toISOString() }).where(eq(otpCodes.id, otp.id));
   }
-  await db.update(otpCodes).set({ consumedAt: new Date().toISOString() }).where(eq(otpCodes.id, otp.id));
+
   // Find-or-create user keyed on destination
+  const db = drizzle(c.env.DB);
   let user = (await db.select().from(users).where(eq(users.email, destination)).limit(1))[0];
   if (!user) {
     const id = newId("u");

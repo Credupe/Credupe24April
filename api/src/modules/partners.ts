@@ -20,8 +20,23 @@ route.patch("/me", requireAuth, requireRole("PARTNER", "ADMIN"), async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const db = drizzle(c.env.DB);
   const patch: any = { updatedAt: new Date().toISOString(), updatedBy: user.sub };
-  const fields = ["businessName", "contactPerson", "city", "state", "pincode", "gstNumber", "panLast4"];
-  for (const f of fields) if (body[f] !== undefined) patch[f] = body[f];
+  const fields = [
+    "businessName", "contactPerson", "city", "state", "pincode", "gstNumber", 
+    "panLast4", "panNumber", "aadhaarLast4", "bankAccount", "tier", 
+    "onboardingStep", "kycStatus", "dob", "gender", "address"
+  ];
+  for (const f of fields) {
+    if (body[f] !== undefined) {
+      if (f === "bankAccount" && body[f] !== null) {
+        patch[f] = typeof body[f] === "object" ? JSON.stringify(body[f]) : body[f];
+      } else {
+        patch[f] = body[f];
+      }
+    }
+  }
+  if (body.panNumber !== undefined && body.panNumber !== null) {
+    patch.panLast4 = body.panNumber.slice(-4);
+  }
   await db.update(partnerProfiles).set(patch).where(eq(partnerProfiles.userId, user.sub));
   return ok(c, { updated: true });
 });

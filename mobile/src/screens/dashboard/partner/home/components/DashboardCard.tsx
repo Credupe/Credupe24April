@@ -1,79 +1,133 @@
-import React from "react";
-import { StyleSheet, Text, View, Pressable, Platform } from "react-native";
-import { MaterialCommunityIcons, FontAwesome, Ionicons } from "@expo/vector-icons";
+import React, { useRef } from "react";
+import { StyleSheet, Text, View, Pressable, Animated } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Wallet, CreditCard, GraduationCap, ChevronRight } from "lucide-react-native";
 import { COLORS } from "../constants/colors";
 import { DIMENSIONS } from "../constants/dimensions";
 import { THEME } from "../constants/theme";
 
 interface Props {
   title: string;
-  iconName: string;
-  iconType?: "MaterialCommunityIcons" | "FontAwesome" | "Ionicons";
+  description: string;
+  iconName: "Wallet" | "CreditCard" | "GraduationCap";
   onPress?: () => void;
 }
 
 export const DashboardCard: React.FC<Props> = React.memo(({
   title,
+  description,
   iconName,
-  iconType = "MaterialCommunityIcons",
   onPress,
 }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      tension: 120,
+      friction: 8,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 120,
+      friction: 8,
+    }).start();
+  };
+
   const renderIcon = () => {
-    switch (iconType) {
-      case "FontAwesome":
-        return <FontAwesome name={iconName as any} size={24} color={COLORS.primary} />;
-      case "Ionicons":
-        return <Ionicons name={iconName as any} size={24} color={COLORS.primary} />;
-      case "MaterialCommunityIcons":
-      default:
-        return <MaterialCommunityIcons name={iconName as any} size={24} color={COLORS.primary} />;
+    const iconProps = { size: 24, color: COLORS.white, strokeWidth: 2 };
+    switch (iconName) {
+      case "Wallet":
+        return <Wallet {...iconProps} />;
+      case "CreditCard":
+        return <CreditCard {...iconProps} />;
+      case "GraduationCap":
+        return <GraduationCap {...iconProps} />;
     }
   };
 
   return (
-    <View style={styles.cardOuter}>
+    <Animated.View style={[styles.cardOuter, { transform: [{ scale: scaleAnim }] }]}>
       <Pressable
         onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         style={styles.cardInner}
-        android_ripple={{ color: COLORS.primaryLight, borderless: false }}
+        android_ripple={{ color: "rgba(124, 58, 237, 0.08)", borderless: false }}
         accessibilityRole="button"
         accessibilityLabel={title}
       >
-        <View style={styles.iconContainer}>
-          {renderIcon()}
+        <View style={styles.cardHeader}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.secondary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.iconContainer}
+          >
+            {renderIcon()}
+          </LinearGradient>
+          <ChevronRight size={18} color={COLORS.textMuted} strokeWidth={2.5} />
         </View>
-        <Text style={THEME.typography.cardTitle} numberOfLines={2}>
-          {title}
-        </Text>
+
+        <View style={styles.textContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.description} numberOfLines={1}>
+            {description}
+          </Text>
+        </View>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 });
 
 const styles = StyleSheet.create({
   cardOuter: {
-    width: "32%",
-    aspectRatio: 0.88,
-    padding: 4,
+    width: DIMENSIONS.cardWidth,
+    height: 150,
+    marginBottom: 16,
   },
   cardInner: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 8,
+    borderRadius: 22,
+    padding: 20,
+    justifyContent: "space-between",
     borderWidth: 1,
     borderColor: COLORS.border,
-    ...THEME.shadowSoft,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   iconContainer: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: COLORS.greyLight,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
+  },
+  textContainer: {
+    marginTop: 8,
+  },
+  title: {
+    ...THEME.typography.cardTitle,
+    marginBottom: 4,
+  },
+  description: {
+    ...THEME.typography.subtitle,
+    fontSize: 12,
   },
 });

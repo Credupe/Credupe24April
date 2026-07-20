@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { AppEnv } from "../env";
-import { documents, DOCUMENT_TAGS, DOCUMENT_STATUSES } from "../db/schema";
+import { documents, DOCUMENT_TAGS, DOCUMENT_STATUSES, partnerProfiles, users, customerProfiles } from "../db/schema";
 import { ok, fail } from "../lib/envelope";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { newId } from "../lib/ids";
@@ -61,26 +61,135 @@ route.put("/_upload/:id", requireAuth, async (c) => {
 
 route.post("/register", requireAuth, async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const { docId, fileName, mimeType, sizeBytes, storageKey, tag = "OTHER", applicationId } = body as any;
+  const { docId, fileName, documentName, mimeType, sizeBytes, storageKey, tag = "OTHER", applicationId } = body as any;
   if (!fileName || !storageKey) return fail(c, 400, "VALIDATION_ERROR", "fileName and storageKey required");
   const user = c.get("user")!;
   const db = drizzle(c.env.DB);
+  
+  if (tag === "KYC") {
+    // Delete any old rejected KYC document with the same fileName for this user
+    await db.delete(documents).where(
+      and(
+        eq(documents.ownerUserId, user.sub),
+        eq(documents.tag, "KYC"),
+        eq(documents.status, "REJECTED"),
+        eq(documents.fileName, fileName)
+      )
+    );
+
+    // Reset partner profile's KYC status back to PENDING so they return to the admin queue
+    await db.update(partnerProfiles)
+      .set({ kycStatus: "PENDING", updatedAt: new Date().toISOString() })
+      .where(eq(partnerProfiles.userId, user.sub));
+  }
+
   const id = docId ?? newId("doc");
   await db.insert(documents).values({
     id, ownerUserId: user.sub,
     applicationId: applicationId ?? null,
     tag,
-    fileName, mimeType: mimeType ?? null, sizeBytes: sizeBytes ?? null,
+    fileName,
+    documentName: documentName || null,
+    mimeType: mimeType ?? null, sizeBytes: sizeBytes ?? null,
     storageKey, status: "UPLOADED",
   });
   return ok(c, { id }, 201);
 });
 
+export function getCleanDocumentName(fileName: string): string {
+  const lower = fileName.toLowerCase();
+  
+  // Custom mapping for historical test files
+  if (fileName === "s1.png") return "Aadhaar Card";
+  if (fileName === "s2.png") return "PAN Card";
+  if (fileName === "s3.png") return "Selfie / Passport Photo";
+  if (fileName === "s4.png") return "GST Certificate";
+  if (fileName === "s5.png") return "Cancelled Cheque";
+
+  if (lower.startsWith("pan") || lower.includes("pan_card") || lower.includes("pancard")) {
+    return "PAN Card";
+  }
+  if (lower.startsWith("aadhaar") || lower.includes("aadhaar_card") || lower.includes("adhar")) {
+    return "Aadhaar Card";
+  }
+  if (lower.includes("gst") || lower.includes("gst_registration") || lower.includes("gst_certificate")) {
+    return "GST Certificate";
+  }
+  if (lower.includes("cheque") || lower.includes("cancelled_cheque")) {
+    return "Cancelled Cheque";
+  }
+  if (lower.includes("photo_with_um") || lower.includes("representative")) {
+    return "Photo with Credupe Representative";
+  }
+  if (lower.includes("selfie") || lower.includes("passport_photo") || lower.includes("photograph")) {
+    return "Selfie / Passport Photo";
+  }
+  if (lower.includes("office_photo") || lower.includes("office")) {
+    return "Office Photo";
+  }
+  if (lower.includes("partnership_deed") || lower.includes("deed")) {
+    return "Partnership Deed";
+  }
+  if (lower.includes("authorization") || lower.includes("letter_of_authorization")) {
+    return "Letter of Authorization";
+  }
+  if (lower.includes("incorporation") || lower.includes("certificate_of_incorporation")) {
+    return "Certificate of Incorporation";
+  }
+  if (lower.includes("income") || lower.includes("payslip") || lower.includes("form_16")) {
+    return "Income Proof";
+  }
+  if (lower.includes("bank_statement") || lower.includes("statement")) {
+    return "Bank Statement";
+  }
+  
+  return fileName;
+}
+
 route.get("/mine", requireAuth, async (c) => {
   const user = c.get("user")!;
   const db = drizzle(c.env.DB);
   const rows = await db.select().from(documents).where(eq(documents.ownerUserId, user.sub));
-  return ok(c, { items: rows, total: rows.length });
+  const items = rows.map((r) => ({
+    ...r,
+    documentName: r.documentName || getCleanDocumentName(r.fileName),
+  }));
+  return ok(c, { items, total: items.length });
+});
+
+route.get("/", requireAuth, requireRole("ADMIN"), async (c) => {
+  const status = c.req.query("status");
+  const db = drizzle(c.env.DB);
+  
+  const rows = await db
+    .select({
+      id: documents.id,
+      ownerUserId: documents.ownerUserId,
+      applicationId: documents.applicationId,
+      tag: documents.tag,
+      fileName: documents.fileName,
+      documentName: documents.documentName,
+      mimeType: documents.mimeType,
+      sizeBytes: documents.sizeBytes,
+      storageKey: documents.storageKey,
+      status: documents.status,
+      rejectionReason: documents.rejectionReason,
+      createdAt: documents.createdAt,
+      updatedAt: documents.updatedAt,
+      ownerName: sql<string>`COALESCE(${partnerProfiles.contactPerson}, ${partnerProfiles.businessName}, ${customerProfiles.firstName} || ' ' || ${customerProfiles.lastName}, ${users.email}, ${documents.ownerUserId})`
+    })
+    .from(documents)
+    .leftJoin(users, eq(documents.ownerUserId, users.id))
+    .leftJoin(partnerProfiles, eq(users.id, partnerProfiles.userId))
+    .leftJoin(customerProfiles, eq(users.id, customerProfiles.userId))
+    .where(status && DOCUMENT_STATUSES.includes(status as any) ? eq(documents.status, status as any) : undefined);
+
+  const items = rows.map((r) => ({
+    ...r,
+    documentName: r.documentName || getCleanDocumentName(r.fileName),
+  }));
+
+  return ok(c, { items, total: items.length });
 });
 
 route.post("/:id/verify", requireAuth, requireRole("ADMIN"), async (c) => {
@@ -89,12 +198,79 @@ route.post("/:id/verify", requireAuth, requireRole("ADMIN"), async (c) => {
   const toStatus = body.status;
   if (!DOCUMENT_STATUSES.includes(toStatus)) return fail(c, 400, "VALIDATION_ERROR", "invalid status");
   const db = drizzle(c.env.DB);
+  
+  // 1. Get current document to know the owner and tag
+  const doc = (await db.select().from(documents).where(eq(documents.id, id)).limit(1))[0];
+  if (!doc) return fail(c, 404, "NOT_FOUND", "Document not found");
+
+  // 2. Update status of the document
   await db.update(documents).set({
     status: toStatus,
     rejectionReason: body.rejectionReason ?? null,
     updatedAt: new Date().toISOString(),
   }).where(eq(documents.id, id));
+
+  // 3. If tag is KYC, check if all KYC documents for this partner are verified
+  if (doc.tag === "KYC") {
+    const partner = (await db.select().from(partnerProfiles).where(eq(partnerProfiles.userId, doc.ownerUserId)).limit(1))[0];
+    if (partner) {
+      const kycDocs = await db.select().from(documents).where(
+        and(
+          eq(documents.ownerUserId, doc.ownerUserId),
+          eq(documents.tag, "KYC")
+        )
+      );
+
+      let allVerified = true;
+      let anyRejected = false;
+
+      for (const d of kycDocs) {
+        const currentStatus = d.id === id ? toStatus : d.status;
+        if (currentStatus === "REJECTED") anyRejected = true;
+        if (currentStatus !== "VERIFIED") allVerified = false;
+      }
+
+      let nextKycStatus: "PENDING" | "VERIFIED" | "REJECTED" = "PENDING";
+      if (anyRejected) {
+        nextKycStatus = "REJECTED";
+      } else if (allVerified && kycDocs.length > 0) {
+        nextKycStatus = "VERIFIED";
+      }
+
+      await db.update(partnerProfiles).set({
+        kycStatus: nextKycStatus,
+        updatedAt: new Date().toISOString(),
+      }).where(eq(partnerProfiles.userId, doc.ownerUserId));
+    }
+  }
+
   return ok(c, { id, status: toStatus });
+});
+
+route.get("/:id/view", requireAuth, async (c) => {
+  const id = c.req.param("id");
+  const db = drizzle(c.env.DB);
+  const doc = (await db.select().from(documents).where(eq(documents.id, id)).limit(1))[0];
+  if (!doc) return fail(c, 404, "NOT_FOUND", "Document not found");
+
+  const user = c.get("user")!;
+  if (user.role !== "ADMIN" && doc.ownerUserId !== user.sub) {
+    return fail(c, 403, "FORBIDDEN", "You do not have permission to view this document");
+  }
+
+  if (c.env.DOCS) {
+    const key = `docs/${doc.ownerUserId}/${doc.id}/uploaded.bin`;
+    const object = await c.env.DOCS.get(key);
+    if (!object) return fail(c, 404, "NOT_FOUND", "File not found in storage");
+    const body = await object.arrayBuffer();
+    return c.body(body, 200, {
+      "Content-Type": doc.mimeType ?? "application/octet-stream",
+      "Content-Disposition": `inline; filename="${doc.fileName}"`
+    });
+  }
+
+  // Fallback Mock Placeholder Image for Local Dev (when DOCS bucket is not configured)
+  return c.redirect("https://picsum.photos/800/800");
 });
 
 export default route;

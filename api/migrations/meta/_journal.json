@@ -29,6 +29,34 @@
       "when": 1782716075121,
       "tag": "0004_partner_onboarding",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783935488379,
+      "tag": "0004_parched_masked_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784010567734,
+      "tag": "0005_flippant_kabuki",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784351452604,
+      "tag": "0006_gray_stepford_cuckoos",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1784433601737,
+      "tag": "0007_shocking_shatterstar",
+      "breakpoints": true
     }
   ]
 }

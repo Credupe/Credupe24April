@@ -375,6 +375,43 @@ export async function patchMyProfile(patch: Partial<CustomerProfile>) {
   });
 }
 
+/* ─── Partner profile (KYC) ────────────────────────────────────────────── */
+
+export interface PartnerProfile {
+  id: string;
+  userId: string;
+  partnerCode: string;
+  businessName: string;
+  contactPerson?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  address?: string | null;
+  gstNumber?: string | null;
+  panNumber?: string | null;
+  panLast4?: string | null;
+  aadhaarLast4?: string | null;
+  bankAccount?: string | null;
+  tier?: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM";
+  onboardingStep?: string;
+  kycStatus?: "PENDING" | "VERIFIED" | "REJECTED";
+  dob?: string | null;
+  gender?: "Male" | "Female" | "Other" | null;
+}
+
+export async function fetchPartnerProfile() {
+  return apiFetch<{ profile: PartnerProfile | null }>("/partners/me");
+}
+
+export async function patchPartnerProfile(patch: Partial<PartnerProfile>) {
+  return apiFetch<{ updated: boolean }>("/partners/me", {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
 /* ─── Documents ───────────────────────────────────────────────────────── */
 
 export type DocumentTag = "KYC" | "INCOME" | "PROPERTY" | "BANK_STATEMENT" | "OTHER";
@@ -383,6 +420,7 @@ export interface MyDocument {
   id: string;
   tag: DocumentTag;
   fileName: string;
+  documentName?: string;
   mimeType: string | null;
   status: "UPLOADED" | "VERIFIED" | "REJECTED" | "PENDING";
   rejectionReason?: string | null;
@@ -415,6 +453,7 @@ export async function presignDocument(params: {
 export async function registerDocument(params: {
   docId: string;
   fileName: string;
+  documentName?: string;
   mimeType?: string;
   sizeBytes?: number;
   storageKey: string;
@@ -436,6 +475,7 @@ export async function uploadDocument(
   fileName: string,
   tag: DocumentTag = "KYC",
   applicationId?: string,
+  documentName?: string,
 ): Promise<{ ok: boolean; docId?: string; error?: string }> {
   const presign = await presignDocument({
     fileName,
@@ -464,6 +504,7 @@ export async function uploadDocument(
   const reg = await registerDocument({
     docId,
     fileName,
+    documentName,
     mimeType: blob.type || undefined,
     sizeBytes: blob.size,
     storageKey,
@@ -639,9 +680,11 @@ export async function transitionApplication(id: string, toStatus: ApplicationSta
 export interface AdminDocument {
   id: string;
   ownerUserId: string;
+  ownerName?: string;
   applicationId: string | null;
   tag: DocumentTag;
   fileName: string;
+  documentName?: string;
   mimeType: string | null;
   storageKey: string;
   sizeBytes: number | null;
@@ -657,6 +700,19 @@ export async function fetchAdminDocuments(params: { status?: string; tag?: Docum
   return apiFetch<{ items: AdminDocument[]; total: number }>(
     `/documents${qs ? `?${qs}` : ""}`,
   );
+}
+
+
+
+export function getDocumentViewUrl(id: string): string {
+  return `${API}/documents/${id}/view`;
+}
+
+export async function getDocumentViewHeaders(): Promise<Record<string, string>> {
+  const { access } = await readTokens();
+  return {
+    Authorization: access ? `Bearer ${access}` : "",
+  };
 }
 
 export async function verifyDocument(id: string, status: "VERIFIED" | "REJECTED", rejectionReason?: string) {
@@ -855,5 +911,17 @@ export async function resetPassword(email: string, code: string, newPassword: st
     skipAuth: true,
   });
 }
+
+export async function sendOtpDirect(phone: string) {
+  return rawFetch<{ destination: string; expiresInSec: number; devOtp?: string }>(
+    "/auth/send-otp",
+    {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+      skipAuth: true,
+    }
+  );
+}
+
 
 

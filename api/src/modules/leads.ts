@@ -26,6 +26,7 @@ async function sendLeadEmail(c: any, leadData: {
 }) {
   const apiKey = c.env.RESEND_API_KEY;
   const toEmail = c.env.NOTIFICATION_EMAIL || "av457508@gmail.com";
+  const toEmails = toEmail.split(",").map((e: string) => e.trim()).filter(Boolean);
   const fromEmail = c.env.RESEND_FROM_EMAIL || "Credupe <onboarding@resend.dev>";
   
   if (!apiKey) {
@@ -58,7 +59,7 @@ async function sendLeadEmail(c: any, leadData: {
       },
       body: JSON.stringify({
         from: fromEmail,
-        to: [toEmail],
+        to: toEmails,
         subject,
         html,
       }),
@@ -92,18 +93,19 @@ route.post("/", requireAuth, requireRole("PARTNER", "ADMIN"), async (c) => {
     productId: productId ?? null, city: city ?? null, notes: notes ?? null, status: "NEW",
   });
 
-  const partnerRow = (await db.select().from(partnerProfiles).where(eq(partnerProfiles.id, partnerId)).limit(1))[0];
-  const partnerCode = partnerRow?.partnerCode ?? null;
-  await sendLeadEmail(c, {
-    customerName,
-    customerMobile,
-    customerEmail,
-    loanType,
-    amount,
-    city,
-    partnerCode,
-    notes,
-  });
+  // Email sending is now handled by the daily scheduled task (processScheduledReport).
+  // const partnerRow = (await db.select().from(partnerProfiles).where(eq(partnerProfiles.id, partnerId)).limit(1))[0];
+  // const partnerCode = partnerRow?.partnerCode ?? null;
+  // await sendLeadEmail(c, {
+  //   customerName,
+  //   customerMobile,
+  //   customerEmail,
+  //   loanType,
+  //   amount,
+  //   city,
+  //   partnerCode,
+  //   notes,
+  // });
 
   return ok(c, { id, status: "NEW" }, 201);
 });
@@ -243,14 +245,15 @@ route.post("/public", async (c) => {
     notes: notesText,
   });
 
-  await sendLeadEmail(c, {
-    customerName,
-    customerMobile,
-    customerEmail,
-    loanType: mappedLoanType,
-    partnerCode,
-    notes: notesText,
-  });
+  // Email sending is now handled by the daily scheduled task (processScheduledReport).
+  // await sendLeadEmail(c, {
+  //   customerName,
+  //   customerMobile,
+  //   customerEmail,
+  //   loanType: mappedLoanType,
+  //   partnerCode,
+  //   notes: notesText,
+  // });
 
   return ok(c, { id, status: "NEW" }, 201);
 });

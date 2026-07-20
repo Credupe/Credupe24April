@@ -95,172 +95,189 @@ export default function UtilityLeadForm() {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-between font-sans antialiased text-slate-800">
       
       {/* Top Header Row */}
-      <header className="w-full max-w-xl px-6 py-4 flex items-center justify-between bg-white border-b border-slate-100 shadow-sm">
-        <div className="flex items-center gap-2" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-          <img src="/assets/credupe-icon.png" alt="Credupe" className="w-8 h-8 object-contain" onError={(e) => {
-            (e.target as HTMLElement).style.display = "none";
-          }} />
-          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-            Credupe
-          </span>
-        </div>
-        
-        {/* Partner Name Pill */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100/80 rounded-full border border-slate-200/50 shadow-sm max-w-[200px] sm:max-w-xs truncate">
-          <div className="w-4 h-4 bg-violet-600 rounded-full flex items-center justify-center text-[9px] text-white font-bold">
-            P
+      <header className="w-full bg-white border-b border-slate-100 shadow-sm flex justify-center">
+        <div className="w-full max-w-6xl px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+            <img src="/assets/credupe-icon.png" alt="Credupe" className="w-8 h-8 object-contain" onError={(e) => {
+              (e.target as HTMLElement).style.display = "none";
+            }} />
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+              Credupe
+            </span>
           </div>
-          <span className="text-xs font-semibold text-slate-600 truncate">
-            {partnerName}
-          </span>
+          
+          {/* Partner Name Pill */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100/80 rounded-full border border-slate-200/50 shadow-sm max-w-[200px] sm:max-w-xs truncate">
+            <div className="w-4 h-4 bg-violet-600 rounded-full flex items-center justify-center text-[9px] text-white font-bold">
+              P
+            </div>
+            <span className="text-xs font-semibold text-slate-600 truncate">
+              {partnerName}
+            </span>
+          </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="w-full max-w-xl flex-grow px-6 py-8 flex flex-col justify-start">
+      <main className="w-full max-w-6xl flex-grow px-6 py-8 md:py-16 flex flex-col md:grid md:grid-cols-12 md:gap-12 lg:gap-16 items-center md:items-start justify-center">
         
-        {/* Call to Action Titles */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 leading-snug sm:text-3xl">
-            Unlock the Benefits of the Perfect{" "}
-            <span className={`block sm:inline bg-gradient-to-r ${themeColor} bg-clip-text text-transparent`}>
-              {pageTitle.replace("Perfect ", "")}!
-            </span>
-          </h1>
-        </div>
-
-        {/* Product Visual Cards (matches mockup layout) */}
-        <div className="flex justify-center items-center py-4 mb-6">
-          {slug === "credit-card" ? (
-            <div className="relative w-56 h-36 flex items-center justify-center">
-              {/* Card 1: Black (back) */}
-              <div className="absolute w-44 h-28 bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col justify-between p-3 transform -rotate-12 translate-x-4 -translate-y-2 opacity-90">
-                <div className="flex justify-between items-start">
-                  <div className="w-6 h-5 bg-yellow-500/80 rounded" />
-                  <div className="w-8 h-4 bg-white/20 rounded" />
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono tracking-widest">•••• •••• •••• 9012</div>
-              </div>
-              {/* Card 2: Blue (middle) */}
-              <div className="absolute w-44 h-28 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-xl shadow-lg flex flex-col justify-between p-3 transform rotate-3 -translate-x-4 translate-y-1 opacity-95">
-                <div className="flex justify-between items-start">
-                  <div className="w-6 h-5 bg-yellow-500/80 rounded" />
-                  <div className="w-8 h-4 bg-white/25 rounded" />
-                </div>
-                <div className="text-[10px] text-white/90 font-mono tracking-widest">•••• •••• •••• 5678</div>
-              </div>
-              {/* Card 3: Pink (front) */}
-              <div className="absolute w-44 h-28 bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 rounded-xl shadow-2xl flex flex-col justify-between p-3 transform -rotate-6">
-                <div className="flex justify-between items-start">
-                  <div className="w-6 h-5 bg-yellow-400 rounded" />
-                  <div className="text-xs font-bold text-white tracking-widest italic font-serif">CREDIT CARD</div>
-                </div>
-                <div className="flex justify-between items-end">
-                  <div className="text-[10px] text-white/90 font-mono tracking-widest">•••• •••• •••• 1234</div>
-                  <div className="text-[8px] text-white/60 font-mono">08/30</div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100">
-              {iconComponent}
-            </div>
-          )}
-        </div>
-
-        {/* Lead Form Container */}
-        <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-100">
-          <div className="text-center mb-6">
-            <h2 className="text-lg font-bold text-slate-800">
-              Enter Your Details to Start Your Application!
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Quick, Easy, and Secure - Just a Few Steps Away.
-            </p>
+        {/* Left Column: Header, Dynamic Titles, Visual Cards, Security (Desktop) */}
+        <div className="w-full md:col-span-6 lg:col-span-7 flex flex-col justify-center md:justify-start text-center md:text-left space-y-6">
+          {/* Call to Action Titles */}
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 leading-snug sm:text-3xl lg:text-4xl">
+              Unlock the Benefits of the Perfect{" "}
+              <span className={`block md:inline bg-gradient-to-r ${themeColor} bg-clip-text text-transparent`}>
+                {pageTitle.replace("Perfect ", "")}!
+              </span>
+            </h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* Name Field */}
-            <div className="space-y-1">
-              <label htmlFor="name" className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 ml-1">
-                <User className="w-3.5 h-3.5" /> Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition"
-              />
-            </div>
-
-            {/* Mobile Number Field */}
-            <div className="space-y-1">
-              <label htmlFor="mobile" className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 ml-1">
-                <Phone className="w-3.5 h-3.5" /> Mobile Number
-              </label>
-              <input
-                id="mobile"
-                type="tel"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                placeholder="Enter 10-digit mobile number"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition"
-              />
-            </div>
-
-            {/* Email Field (Added Option) */}
-            <div className="space-y-1">
-              <label htmlFor="email" className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 ml-1">
-                <Mail className="w-3.5 h-3.5" /> Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition"
-              />
-            </div>
-
-            {errorMsg && (
-              <div className="text-xs text-rose-500 bg-rose-50 border border-rose-100 rounded-lg p-2.5 text-center font-medium">
-                {errorMsg}
+          {/* Product Visual Cards (matches mockup layout) */}
+          <div className="flex justify-center md:justify-start items-center py-4 md:py-6 md:pl-4">
+            {slug === "credit-card" ? (
+              <div className="relative w-56 h-36 flex items-center justify-center">
+                {/* Card 1: Black (back) */}
+                <div className="absolute w-44 h-28 bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col justify-between p-3 transform -rotate-12 translate-x-4 -translate-y-2 opacity-90">
+                  <div className="flex justify-between items-start">
+                    <div className="w-6 h-5 bg-yellow-500/80 rounded" />
+                    <div className="w-8 h-4 bg-white/20 rounded" />
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-mono tracking-widest">•••• •••• •••• 9012</div>
+                </div>
+                {/* Card 2: Blue (middle) */}
+                <div className="absolute w-44 h-28 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-xl shadow-lg flex flex-col justify-between p-3 transform rotate-3 -translate-x-4 translate-y-1 opacity-95">
+                  <div className="flex justify-between items-start">
+                    <div className="w-6 h-5 bg-yellow-500/80 rounded" />
+                    <div className="w-8 h-4 bg-white/25 rounded" />
+                  </div>
+                  <div className="text-[10px] text-white/90 font-mono tracking-widest">•••• •••• •••• 5678</div>
+                </div>
+                {/* Card 3: Pink (front) */}
+                <div className="absolute w-44 h-28 bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 rounded-xl shadow-2xl flex flex-col justify-between p-3 transform -rotate-6">
+                  <div className="flex justify-between items-start">
+                    <div className="w-6 h-5 bg-yellow-400 rounded" />
+                    <div className="text-xs font-bold text-white tracking-widest italic font-serif">CREDIT CARD</div>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div className="text-[10px] text-white/90 font-mono tracking-widest">•••• •••• •••• 1234</div>
+                    <div className="text-[8px] text-white/60 font-mono">08/30</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100">
+                {React.cloneElement(iconComponent, { className: iconComponent.props.className + " md:w-14 md:h-14" })}
               </div>
             )}
+          </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3.5 px-4 ${buttonColor} text-white font-bold rounded-xl text-sm transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2`}
-            >
-              {loading ? (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  Apply Now <ChevronRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
+          {/* Security / Consent Note - Desktop Only */}
+          <div className="hidden md:flex gap-2.5 px-3.5 py-3 bg-slate-100/50 border border-slate-200/20 rounded-xl items-start max-w-md">
+            <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+              Your information is 100% secure. We never share your details without your consent.
+            </p>
+          </div>
         </div>
 
-        {/* Security / Consent Note */}
-        <div className="mt-6 flex gap-2.5 px-3 py-2 bg-slate-100/50 border border-slate-200/20 rounded-xl items-start">
-          <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-            Your information is 100% secure. We never share your details without your consent.
-          </p>
+        {/* Right Column: Lead Form & Security (Mobile) */}
+        <div className="w-full md:col-span-6 lg:col-span-5 mt-8 md:mt-0 flex flex-col items-center">
+          <div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-100">
+            <div className="text-center mb-6">
+              <h2 className="text-lg md:text-xl font-bold text-slate-800">
+                Enter Your Details to Start Your Application!
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Quick, Easy, and Secure - Just a Few Steps Away.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              
+              {/* Name Field */}
+              <div className="space-y-1">
+                <label htmlFor="name" className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 ml-1">
+                  <User className="w-3.5 h-3.5" /> Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your full name"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition"
+                />
+              </div>
+
+              {/* Mobile Number Field */}
+              <div className="space-y-1">
+                <label htmlFor="mobile" className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 ml-1">
+                  <Phone className="w-3.5 h-3.5" /> Mobile Number
+                </label>
+                <input
+                  id="mobile"
+                  type="tel"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  placeholder="Enter 10-digit mobile number"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition"
+                />
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-1">
+                <label htmlFor="email" className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 ml-1">
+                  <Mail className="w-3.5 h-3.5" /> Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition"
+                />
+              </div>
+
+              {errorMsg && (
+                <div className="text-xs text-rose-500 bg-rose-50 border border-rose-100 rounded-lg p-2.5 text-center font-medium">
+                  {errorMsg}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-3.5 px-4 ${buttonColor} text-white font-bold rounded-xl text-sm transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2`}
+              >
+                {loading ? (
+                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Apply Now <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Security / Consent Note - Mobile Only */}
+          <div className="md:hidden mt-6 flex gap-2.5 px-3 py-2 bg-slate-100/50 border border-slate-200/20 rounded-xl items-start w-full">
+            <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+              Your information is 100% secure. We never share your details without your consent.
+            </p>
+          </div>
         </div>
       </main>
 
       {/* Footer Branding */}
-      <footer className="w-full max-w-xl py-6 text-center text-xs text-slate-400 font-medium">
-        © {new Date().getFullYear()} Credupe Techfin Pvt Ltd. All rights reserved.
+      <footer className="w-full py-6 text-center text-xs text-slate-400 font-medium border-t border-slate-100/50 mt-auto flex justify-center">
+        <div className="w-full max-w-6xl px-6">
+          © {new Date().getFullYear()} Credupe Techfin Pvt Ltd. All rights reserved.
+        </div>
       </footer>
 
       {/* Success Modal Popup (Image 3 layout) */}

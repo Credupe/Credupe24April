@@ -1,16 +1,55 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { StyleSheet, View, Image, FlatList, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  Pressable,
+  ImageBackground,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 import { DIMENSIONS } from "../constants/dimensions";
+import { COLORS } from "../constants/colors";
 import { THEME } from "../constants/theme";
 import { PaginationDots } from "./PaginationDots";
 
-// Dynamically list assets based on the directory contents of assets/kyc_image.
-// Because React Native / Metro require static paths for bundling,
-// these are the required paths mapped to their dynamic indices.
-const SLIDER_IMAGES = [
-  require("../../../../../../assets/kyc_image/s1.png"),
-  require("../../../../../../assets/kyc_image/s2.png"),
-  require("../../../../../../assets/kyc_image/s3.png"),
+interface SlideItem {
+  title: string;
+  subtitle: string;
+  buttonText: string;
+  route: string;
+  imageUrl: string;
+  gradientColors: [string, string, ...string[]];
+}
+
+const BANNER_SLIDES: SlideItem[] = [
+  {
+    title: "Earn More with Every Referral",
+    subtitle: "Refer friends and earn exciting rewards.",
+    buttonText: "Start Referring",
+    route: "ReferEarn",
+    imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80",
+    gradientColors: ["rgba(0, 0, 0, 0.15)", "rgba(0, 0, 0, 0.65)"],
+  },
+  {
+    title: "Instant Loan Processing",
+    subtitle: "Fast approval with trusted lenders.",
+    buttonText: "Apply Now",
+    route: "ApplyPersonalLoan",
+    imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
+    gradientColors: ["rgba(0, 0, 0, 0.15)", "rgba(0, 0, 0, 0.65)"],
+  },
+  {
+    title: "Grow Your Income",
+    subtitle: "Track referrals and earnings easily.",
+    buttonText: "Explore",
+    route: "More",
+    imageUrl: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=800&q=80",
+    gradientColors: ["rgba(0, 0, 0, 0.15)", "rgba(0, 0, 0, 0.65)"],
+  },
 ];
 
 interface Props {
@@ -21,19 +60,20 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const timerRef = useRef<any>(null);
+  const navigation = useNavigation<any>();
 
   const startAutoPlay = useCallback(() => {
     stopAutoPlay();
     timerRef.current = setInterval(() => {
       if (flatListRef.current) {
-        const nextIndex = (activeIndex + 1) % SLIDER_IMAGES.length;
+        const nextIndex = (activeIndex + 1) % BANNER_SLIDES.length;
         flatListRef.current.scrollToIndex({
           index: nextIndex,
           animated: true,
         });
         setActiveIndex(nextIndex);
       }
-    }, 4000); // Auto scroll every 4 seconds
+    }, 3000); // Auto scroll every 3 seconds as requested
   }, [activeIndex]);
 
   const stopAutoPlay = useCallback(() => {
@@ -53,7 +93,7 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
     const width = event.nativeEvent.layoutMeasurement.width || DIMENSIONS.bannerWidth;
     if (width > 0) {
       const newIndex = Math.round(contentOffset / width);
-      if (newIndex >= 0 && newIndex < SLIDER_IMAGES.length) {
+      if (newIndex >= 0 && newIndex < BANNER_SLIDES.length) {
         setActiveIndex(newIndex);
       }
     }
@@ -65,19 +105,54 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
     index,
   }), []);
 
-  const renderItem = useCallback(({ item }: { item: any }) => {
+  const handleSlidePress = useCallback((item: SlideItem) => {
+    try {
+      if (item.route) {
+        navigation.navigate(item.route);
+      }
+    } catch (e) {
+      console.warn("Failed to navigate from banner slide:", e);
+    }
+  }, [navigation]);
+
+  const renderItem = useCallback(({ item, index }: { item: SlideItem; index: number }) => {
     return (
-      <View style={styles.slideContainer}>
-        <Image source={item} style={styles.image} resizeMode="cover" />
-      </View>
+      <Pressable
+        onPress={() => handleSlidePress(item)}
+        style={styles.slideContainer}
+      >
+        <ImageBackground
+          source={{ uri: item.imageUrl }}
+          style={styles.imageBackground}
+          imageStyle={styles.imageStyle}
+        >
+          <LinearGradient
+            colors={item.gradientColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientContainer}
+          >
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.subtitle}>{item.subtitle}</Text>
+              
+              <View style={styles.buttonWrapper}>
+                <View style={styles.button}>
+                  <Text style={styles.buttonText}>{item.buttonText}</Text>
+                </View>
+              </View>
+            </View>
+          </LinearGradient>
+        </ImageBackground>
+      </Pressable>
     );
-  }, []);
+  }, [handleSlidePress]);
 
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={SLIDER_IMAGES}
+        data={BANNER_SLIDES}
         renderItem={renderItem}
         horizontal
         pagingEnabled
@@ -92,7 +167,7 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
         keyExtractor={(_, index) => index.toString()}
         style={styles.flatList}
       />
-      <PaginationDots count={SLIDER_IMAGES.length} activeIndex={activeIndex} />
+      <PaginationDots count={BANNER_SLIDES.length} activeIndex={activeIndex} />
     </View>
   );
 });
@@ -102,22 +177,69 @@ const styles = StyleSheet.create({
     marginTop: 16,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 20,
   },
   flatList: {
     width: DIMENSIONS.bannerWidth,
     height: DIMENSIONS.bannerHeight,
-    borderRadius: 16,
+    borderRadius: 24,
     ...THEME.shadow,
   },
   slideContainer: {
     width: DIMENSIONS.bannerWidth,
     height: DIMENSIONS.bannerHeight,
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: "hidden",
   },
-  image: {
+  imageBackground: {
+    flex: 1,
     width: "100%",
     height: "100%",
-    borderRadius: 16,
+  },
+  imageStyle: {
+    borderRadius: 24,
+  },
+  gradientContainer: {
+    flex: 1,
+    padding: 24,
+    justifyContent: "center",
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: COLORS.white,
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 13,
+    fontWeight: "400",
+    color: "rgba(255, 255, 255, 0.85)",
+    marginBottom: 16,
+  },
+  buttonWrapper: {
+    alignSelf: "flex-start",
+  },
+  button: {
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  buttonText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.primary,
   },
 });

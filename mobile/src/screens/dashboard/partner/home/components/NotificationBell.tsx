@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Pressable } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Bell } from "lucide-react-native";
 import { COLORS } from "../constants/colors";
 
 interface Props {
@@ -10,9 +10,17 @@ interface Props {
 
 export const NotificationBell: React.FC<Props> = React.memo(({ onPress, badgeCount = 1 }) => {
   return (
-    <Pressable style={styles.container} onPress={onPress} accessibilityLabel="notification-bell">
+    <Pressable
+      style={({ pressed }) => [
+        styles.container,
+        pressed && styles.pressed
+      ]}
+      onPress={onPress}
+      accessibilityLabel="notification-bell"
+      accessibilityRole="button"
+    >
       <View style={styles.iconWrapper}>
-        <MaterialCommunityIcons name="bell-outline" size={24} color={COLORS.text} />
+        <Bell size={22} color={COLORS.text} strokeWidth={2} />
         {badgeCount > 0 && (
           <View style={styles.badge}>
             <View style={styles.badgeDot} />
@@ -25,19 +33,30 @@ export const NotificationBell: React.FC<Props> = React.memo(({ onPress, badgeCou
 
 const styles = StyleSheet.create({
   container: {
-    padding: 6,
-    borderRadius: 20,
+    padding: 10,
+    borderRadius: 16,
     backgroundColor: COLORS.white,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
+  pressed: {
+    opacity: 0.8,
+    scale: 0.96,
+  } as any,
   iconWrapper: {
     position: "relative",
   },
   badge: {
     position: "absolute",
-    right: 1,
-    top: 1,
+    right: -2,
+    top: -2,
     backgroundColor: COLORS.redBadge,
     width: 8,
     height: 8,
