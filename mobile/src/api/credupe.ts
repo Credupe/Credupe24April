@@ -670,6 +670,21 @@ export async function fetchAdminApplications(status?: ApplicationStatus) {
   return apiFetch<{ items: AdminApplication[]; total: number }>(`/loan-applications${qs}`);
 }
 
+export async function fetchApplicationDetails(id: string) {
+  return apiFetch<{
+    id: string;
+    referenceNo: string;
+    loanType: string;
+    amount: number;
+    tenureMonths: number;
+    status: string;
+    formData: Record<string, any> | null;
+    createdAt: string;
+    updatedAt: string;
+    history: any[];
+  }>(`/loan-applications/${id}`);
+}
+
 export async function transitionApplication(id: string, toStatus: ApplicationStatus, note?: string) {
   return apiFetch<{ id: string; status: ApplicationStatus }>(
     `/loan-applications/${id}/transition`,
