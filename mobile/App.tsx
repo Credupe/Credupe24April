@@ -51,6 +51,7 @@ import { ApplyHomeLoanScreen } from "./src/screens/dashboard/partner/home/ApplyH
 import { ApplyVehicleLoanScreen } from "./src/screens/dashboard/partner/home/ApplyVehicleLoan/ApplyVehicleLoanScreen";
 import { ApplyLAPScreen } from "./src/screens/dashboard/partner/home/ApplyLAP/ApplyLAPScreen";
 import { ApplyCreditCardScreen } from "./src/screens/dashboard/partner/home/ApplyCreditCard/ApplyCreditCardScreen";
+import { ApplyEducationLoanScreen } from "./src/screens/dashboard/partner/home/ApplyEducationLoan/ApplyEducationLoanScreen";
 import { ExistingApplicationsScreen } from "./src/screens/dashboard/partner/home/ExistingApplications/ExistingApplicationsScreen";
 import { MyTeamScreen } from "./src/screens/dashboard/partner/home/MyTeam/MyTeamScreen";
 import { MyBrokerageScreen } from "./src/screens/dashboard/partner/home/MyBrokerage/MyBrokerageScreen";
@@ -118,6 +119,7 @@ export type RootStackParamList = {
   ApplyVehicleLoan: undefined;
   ApplyLAP: undefined;
   ApplyCreditCard: undefined;
+  ApplyEducationLoan: undefined;
   ExistingApplications: undefined;
   MyTeam: undefined;
   MyBrokerage: undefined;
@@ -648,6 +650,7 @@ const Root: React.FC = () => {
         <Stack.Screen name="ApplyVehicleLoan" component={ApplyVehicleLoanScreen} />
         <Stack.Screen name="ApplyLAP" component={ApplyLAPScreen} />
         <Stack.Screen name="ApplyCreditCard" component={ApplyCreditCardScreen} />
+        <Stack.Screen name="ApplyEducationLoan" component={ApplyEducationLoanScreen} />
         <Stack.Screen name="ExistingApplications" component={ExistingApplicationsScreen} />
         <Stack.Screen name="MyTeam" component={MyTeamScreen} />
         <Stack.Screen name="MyBrokerage" component={MyBrokerageScreen} />
