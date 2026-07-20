@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
+
 const cardBlue = "/assets/cards/card-blue.jpeg";
 const cardPurple = "/assets/cards/card-purple.jpeg";
 const cardPlatinum = "/assets/cards/card-platinum.png";
@@ -10,6 +12,12 @@ const cards = [
 ];
 
 const CreditCardBanner = () => {
+  const { config } = useUIConfigStore();
+
+  if (config.sections?.hideCreditCardSection) {
+    return null;
+  }
+
   return (
     <section className="py-20 bg-background">
       <div className="container">

@@ -53,6 +53,9 @@ const Navbar = () => {
       if (item.label === "Business Loans" && config.navbar?.hideBusinessLoans === true) {
         return false;
       }
+      if (item.label === "Credit Cards" && config.navbar?.hideCreditCard === true) {
+        return false;
+      }
       return true;
     })
     .map((item) => {
