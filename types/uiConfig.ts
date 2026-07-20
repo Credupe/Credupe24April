@@ -7,6 +7,7 @@ export interface UIConfig {
     hideBusinessLoans: boolean;
     hideHomeLoan: boolean;
     hideLoanAgainstProperty: boolean;
+    hideCreditCard: boolean;
     hideAllTabs: boolean;
   };
   sections: {
@@ -14,10 +15,12 @@ export interface UIConfig {
     hideWallOfWin: boolean;
     hideBankingEcosystem: boolean;
     hideStatsSection: boolean;
+    hideCreditCardSection: boolean;
     hideFooterCarLoan: boolean;
     hideFooterTwoWheelerLoan: boolean;
     hideFooterBusinessLoan: boolean;
     hideFooterGoldLoan: boolean;
+    hideFooterCreditCard: boolean;
     hideAboutUsCompanyStats: boolean;
     hideAboutUsStats: boolean;
     hideAboutUsFounders: boolean;
