@@ -23,14 +23,12 @@
       "migrations_dir": "migrations"
     }
   ],
-  /*
   "r2_buckets": [
     {
       "binding": "DOCS",
       "bucket_name": "credupe-docs"
     }
   ],
-  */
   "vars": {
     "API_PREFIX": "/api/v1",
     "JWT_ACCESS_TTL": "900",
@@ -55,14 +53,12 @@
           "migrations_dir": "migrations"
         }
       ],
-      /*
       "r2_buckets": [
         {
           "binding": "DOCS",
           "bucket_name": "credupe-docs-staging"
         }
       ],
-      */
       "vars": {
         "API_PREFIX": "/api/v1",
         "JWT_ACCESS_TTL": "900",
@@ -88,14 +84,12 @@
           "migrations_dir": "migrations"
         }
       ],
-      /*
       "r2_buckets": [
         {
           "binding": "DOCS",
           "bucket_name": "credupe-docs"
         }
       ],
-      */
       "vars": {
         "API_PREFIX": "/api/v1",
         "JWT_ACCESS_TTL": "900",

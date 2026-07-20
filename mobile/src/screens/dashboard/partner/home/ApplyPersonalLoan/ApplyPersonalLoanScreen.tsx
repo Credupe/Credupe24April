@@ -11,6 +11,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -101,7 +102,7 @@ export const ApplyPersonalLoanScreen: React.FC<Props> = ({ navigation }) => {
       console.warn("Could not fetch partner profile, using default:", e);
     }
 
-    const utmLink = `https://credupe.com/apply/personal-loan?bank=${bank.slug}&partner=${partnerCode}`;
+    const utmLink = `https://credupe.com/mobile/personal-loan?bank=${bank.slug}&partner=${partnerCode}`;
 
     try {
       let success = false;
@@ -109,6 +110,7 @@ export const ApplyPersonalLoanScreen: React.FC<Props> = ({ navigation }) => {
         if (navigator.clipboard) {
           await navigator.clipboard.writeText(utmLink);
           success = true;
+          window.open(utmLink, "_blank");
         }
       } else {
         try {
@@ -128,6 +130,9 @@ export const ApplyPersonalLoanScreen: React.FC<Props> = ({ navigation }) => {
           text1: "UTM Copied!",
           text2: `${bank.name} UTM copied to clipboard.`,
         });
+        if (Platform.OS !== "web") {
+          await Linking.openURL(utmLink);
+        }
       } else {
         await Share.share({
           message: `Apply for Personal Loan with ${bank.name} here: ${utmLink}`,

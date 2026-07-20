@@ -11,6 +11,7 @@ import {
   View,
   Modal,
   Image,
+  Linking,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -265,14 +266,35 @@ export const AdminKycReviewScreen: React.FC<Props> = ({ onBack }) => {
 
               <View style={styles.imageContainer}>
                 {selectedDoc && (
-                  <Image
-                    source={{
-                      uri: getDocumentViewUrl(selectedDoc.id),
-                      headers: headers,
-                    }}
-                    style={styles.docImage}
-                    resizeMode="contain"
-                  />
+                  selectedDoc.mimeType === "application/pdf" ||
+                  selectedDoc.fileName.toLowerCase().endsWith(".pdf") ? (
+                    <View style={styles.pdfFallbackContainer}>
+                      <Text style={styles.pdfText}>PDF Document</Text>
+                      <Text style={styles.pdfSubtext}>
+                        This document is a PDF and cannot be previewed directly as an image.
+                      </Text>
+                      <Pressable
+                        onPress={async () => {
+                          const h = await getDocumentViewHeaders();
+                          const token = h.Authorization ? h.Authorization.replace("Bearer ", "") : "";
+                          const url = `${getDocumentViewUrl(selectedDoc.id)}?token=${token}`;
+                          Linking.openURL(url);
+                        }}
+                        style={styles.openPdfBtn}
+                      >
+                        <Text style={styles.openPdfBtnText}>Open PDF in Browser</Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Image
+                      source={{
+                        uri: getDocumentViewUrl(selectedDoc.id),
+                        headers: headers,
+                      }}
+                      style={styles.docImage}
+                      resizeMode="contain"
+                    />
+                  )
                 )}
               </View>
 
@@ -539,5 +561,35 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "800",
     fontSize: 15,
+  },
+  pdfFallbackContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  pdfText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "800",
+    marginBottom: 8,
+  },
+  pdfSubtext: {
+    color: "#9CA3AF",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  openPdfBtn: {
+    backgroundColor: "#6D28D9",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  openPdfBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 14,
   },
 });
