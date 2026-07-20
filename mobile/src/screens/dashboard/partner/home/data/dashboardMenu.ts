@@ -14,13 +14,13 @@ export const DASHBOARD_MENU: DashboardMenuItem[] = [
     iconName: "Wallet",
     route: "ApplyPersonalLoan",
   },
-  {
-    id: "apply_credit_card",
-    title: "Credit Card",
-    description: "Best offers",
-    iconName: "CreditCard",
-    route: "ApplyCreditCard",
-  },
+  // {
+  //   id: "apply_credit_card",
+  //   title: "Credit Card",
+  //   description: "Best offers",
+  //   iconName: "CreditCard",
+  //   route: "ApplyCreditCard",
+  // },
   {
     id: "apply_education_loan",
     title: "Education Loan",

@@ -12,6 +12,7 @@ import {
   getCachedUser,
   fetchPartnerProfile,
   PartnerProfile,
+  submitFeedback,
 } from "../../../../api/credupe";
 import { RootStackParamList } from "../../../../../App";
 import { Header, BannerCarousel, DashboardGrid } from "./components";
@@ -19,6 +20,11 @@ import { DASHBOARD_MENU, DashboardMenuItem } from "./data/dashboardMenu";
 import { KycPopup } from "../kyc/kycpopup";
 import { COLORS } from "./constants/colors";
 import styles from "./PartnerHome.styles";
+import { FeedbackModal } from "../../../../components/feedback/FeedbackModal";
+import * as Device from "expo-device";
+import { Platform } from "react-native";
+import Toast from "react-native-toast-message";
+
 
 interface Props {
   onOpenLeads: (status?: string) => void;
@@ -44,6 +50,10 @@ export const PartnerHomeScreen: React.FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dismissedKycPopup, setDismissedKycPopup] = useState(false);
+
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const hasShownFeedback = useRef(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -84,6 +94,54 @@ export const PartnerHomeScreen: React.FC<Props> = ({
       }).start();
     }
   }, [loading, fadeAnim]);
+
+  useEffect(() => {
+    if (!loading && !hasShownFeedback.current) {
+      hasShownFeedback.current = true;
+      const timer = setTimeout(() => {
+        setShowFeedback(true);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  const handleFeedbackSubmit = async (rating: number) => {
+    setFeedbackLoading(true);
+    try {
+      const device = `${Device.brand || ""} ${Device.modelName || ""}`.trim() || "Unknown Device";
+      const platform = Platform.OS;
+      const appVersion = "1.0.0";
+
+      const res = await submitFeedback(rating, {
+        device,
+        platform,
+        appVersion,
+      });
+
+      if (res.success) {
+        setShowFeedback(false);
+        Toast.show({
+          type: "success",
+          text1: "Thank You!",
+          text2: "We appreciate your feedback.",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Submission Failed",
+          text2: res.error?.message?.join("\n") || "Failed to submit feedback. Please try again.",
+        });
+      }
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Network Error",
+        text2: err?.message || "Please check your internet connection.",
+      });
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
 
   const handleCardPress = useCallback((item: DashboardMenuItem) => {
     navigation.navigate(item.route as any);
@@ -140,6 +198,14 @@ export const PartnerHomeScreen: React.FC<Props> = ({
             onSkip={() => setDismissedKycPopup(true)}
           />
         ) : null}
+
+        {/* Rating feedback modal */}
+        <FeedbackModal
+          visible={showFeedback}
+          loading={feedbackLoading}
+          onClose={() => setShowFeedback(false)}
+          onSubmit={handleFeedbackSubmit}
+        />
       </Animated.View>
     </SafeAreaView>
   );

@@ -57,6 +57,13 @@
       "when": 1784433601737,
       "tag": "0007_shocking_shatterstar",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1784529790279,
+      "tag": "0008_needy_vermin",
+      "breakpoints": true
     }
   ]
 }

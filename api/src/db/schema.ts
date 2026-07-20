@@ -473,3 +473,25 @@ export const smsLogs = sqliteTable(
   })
 );
 
+/* ─────────────────────────── User Feedback ───────────────────────────── */
+export const userFeedback = sqliteTable(
+  "user_feedback",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    ratingLabel: text("rating_label").notNull(),
+    ipAddress: text("ip_address"),
+    device: text("device"),
+    platform: text("platform"),
+    appVersion: text("app_version"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (t) => ({
+    userIdx: index("idx_user_feedback_user").on(t.userId),
+    ratingIdx: index("idx_user_feedback_rating").on(t.rating),
+  })
+);
+
+

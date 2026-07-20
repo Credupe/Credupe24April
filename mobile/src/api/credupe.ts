@@ -923,5 +923,63 @@ export async function sendOtpDirect(phone: string) {
   );
 }
 
+/* ─── Feedback Endpoints ────────────────────────────────────────────────── */
+
+export interface UserFeedback {
+  id: string;
+  userId: string;
+  rating: number;
+  ratingLabel: string;
+  ipAddress?: string;
+  device?: string;
+  platform?: string;
+  appVersion?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubmitFeedbackResult {
+  success: boolean;
+  message: string;
+}
+
+export async function submitFeedback(
+  rating: number,
+  details?: { device?: string; platform?: string; appVersion?: string }
+) {
+  return apiFetch<SubmitFeedbackResult>("/feedback", {
+    method: "POST",
+    body: JSON.stringify({ rating, ...details }),
+  });
+}
+
+export async function fetchMyFeedback() {
+  return apiFetch<{ items: UserFeedback[]; total: number }>("/feedback/my");
+}
+
+export async function fetchAdminFeedback(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  rating?: number;
+  ratingLabel?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+} = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== "")
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch<{
+    items: (UserFeedback & { userEmail: string; userRole: string })[];
+    total: number;
+    totalPages: number;
+  }>(`/admin/feedback${qs ? `?${qs}` : ""}`);
+}
+
+
 
 
