@@ -32,6 +32,18 @@ export type AppEnv = {
     RESEND_API_KEY?: string;
     RESEND_FROM_EMAIL?: string;
     NOTIFICATION_EMAIL?: string;
+    DAILY_LEADS_REPORT_TIME?: string;
+    DAILY_LEADS_REPORT_TIMEZONE?: string;
+    // SMS provider configurations
+    BIRD_API_KEY?: string;
+    PLIVO_AUTH_ID?: string;
+    PLIVO_AUTH_TOKEN?: string;
+    TELNYX_API_KEY?: string;
+    TELNYX_SENDER?: string;
+    TWILIO_ACCOUNT_SID?: string;
+    TWILIO_AUTH_TOKEN?: string;
+    TWILIO_SENDER?: string;
+    INFOBIP_API_KEY?: string;
   };
   Variables: {
     user?: { sub: string; email: string; role: "CUSTOMER" | "PARTNER" | "ADMIN" };

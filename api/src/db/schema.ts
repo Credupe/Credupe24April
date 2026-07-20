@@ -139,6 +139,8 @@ export const partnerProfiles = sqliteTable("partner_profiles", {
   panLast4: text("pan_last4"),
   aadhaarLast4: text("aadhaar_last4"),
   bankAccount: text("bank_account_json"),
+  dob: text("dob"),
+  gender: text("gender"),
   tier: text("tier", { enum: PARTNER_TIERS }).notNull().default("BRONZE"),
   onboardingStep: text("onboarding_step", { enum: PARTNER_ONBOARDING_STEPS }).notNull().default("CONTACT"),
   kycStatus: text("kyc_status", { enum: KYC_STATUSES }).notNull().default("PENDING"),
@@ -271,6 +273,7 @@ export const leads = sqliteTable(
     deletedAt: text("deleted_at"),
     createdBy: text("created_by"),
     updatedBy: text("updated_by"),
+    reportedAt: text("reported_at"),
   },
   (t) => ({ partnerStatusIdx: index("idx_leads_partner_status").on(t.partnerId, t.status) }),
 );
@@ -316,6 +319,7 @@ export const documents = sqliteTable(
     applicationId: text("application_id").references(() => loanApplications.id, { onDelete: "cascade" }),
     tag: text("tag", { enum: DOCUMENT_TAGS }).notNull().default("OTHER"),
     fileName: text("file_name").notNull(),
+    documentName: text("document_name"),
     mimeType: text("mime_type"),
     sizeBytes: integer("size_bytes"),
     storageKey: text("storage_key").notNull(),
@@ -419,6 +423,16 @@ export const uiConfigs = sqliteTable(
   }
 );
 
+/* ─────────────────────────── System State ─────────────────────────────── */
+export const systemStates = sqliteTable(
+  "system_states",
+  {
+    key: text("key").primaryKey(),
+    value: text("value").notNull(),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  }
+);
+
 /* ─────────────────────────── Commission Rules ─────────────────────────── */
 export const commissionRules = sqliteTable(
   "commission_rules",
@@ -436,3 +450,48 @@ export const commissionRules = sqliteTable(
     updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   }
 );
+
+/* ─────────────────────────── SMS Logs ────────────────────────────────── */
+export const smsLogs = sqliteTable(
+  "sms_logs",
+  {
+    id: text("id").primaryKey(),
+    phone: text("phone").notNull(),
+    country: text("country").notNull(),
+    provider: text("provider").notNull(),
+    status: text("status").notNull(), // "SUCCESS" | "FAILED"
+    purpose: text("purpose").notNull(),
+    messageId: text("message_id"),
+    error: text("error"),
+    responseTime: integer("response_time"), // in milliseconds
+    cost: integer("cost"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (t) => ({
+    phoneIdx: index("idx_sms_logs_phone").on(t.phone),
+    createdIdx: index("idx_sms_logs_created").on(t.createdAt),
+  })
+);
+
+/* ─────────────────────────── User Feedback ───────────────────────────── */
+export const userFeedback = sqliteTable(
+  "user_feedback",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    ratingLabel: text("rating_label").notNull(),
+    ipAddress: text("ip_address"),
+    device: text("device"),
+    platform: text("platform"),
+    appVersion: text("app_version"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (t) => ({
+    userIdx: index("idx_user_feedback_user").on(t.userId),
+    ratingIdx: index("idx_user_feedback_rating").on(t.rating),
+  })
+);
+
+

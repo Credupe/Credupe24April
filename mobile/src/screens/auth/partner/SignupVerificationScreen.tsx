@@ -21,7 +21,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../App";
 import { useTheme } from "../../../theme/ThemeProvider";
-import { requestPartnerOtp, verifyPartnerOtp } from "../../../api/credupe";
+import { requestPartnerOtp, verifyPartnerOtp, sendOtpDirect } from "../../../api/credupe";
 
 const logoImage = require("../../../../assets/logo.png");
 
@@ -216,6 +216,28 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
     sendMobileOtp();
     setMobileOtp(Array(6).fill(""));
     mobileRefs.current[0]?.focus();
+  };
+
+  const handleTestSmsEngine = async () => {
+    setIsLoading(true);
+    const r = await sendOtpDirect(mobile);
+    setIsLoading(false);
+    if (r.success) {
+      Toast.show({
+        type: "success",
+        text1: "SMS Engine Triggered",
+        text2: "SMS requested via global router. Check SMS logs!",
+      });
+      if (r.data?.devOtp) {
+        setMobileDevOtp(r.data.devOtp);
+      }
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "SMS Engine Failed",
+        text2: r.error?.message?.join("\n") ?? "Failover triggered. All providers failed.",
+      });
+    }
   };
 
   const handleResendEmailOtp = () => {
@@ -441,25 +463,9 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
                       })}
                   </View>
 
-                  {/* Dev OTP Box */}
-                  {mobileDevOtp ? (
-                    <Pressable
-                      style={styles.devOtpContainer}
-                      onPress={() => {
-                        const digits = mobileDevOtp.slice(0, 6).split("");
-                        const newOtp = [...mobileOtp];
-                        for (let i = 0; i < 6; i++) {
-                          newOtp[i] = digits[i] || "";
-                        }
-                        setMobileOtp(newOtp);
-                        mobileRefs.current[5]?.focus();
-                      }}
-                    >
-                      <Text style={[styles.devOtpText, { color: isDark ? "#94A3B8" : "#64748B" }]}>
-                        DEV OTP: <Text style={styles.devOtpHighlight}>{mobileDevOtp}</Text> (tap to fill)
-                      </Text>
-                    </Pressable>
-                  ) : null}
+
+
+
 
                   {/* Timer & Resend */}
                   <View style={styles.timerContainer}>
@@ -618,25 +624,7 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
                       })}
                   </View>
 
-                  {/* Dev OTP Box */}
-                  {emailDevOtp ? (
-                    <Pressable
-                      style={styles.devOtpContainer}
-                      onPress={() => {
-                        const digits = emailDevOtp.slice(0, 6).split("");
-                        const newOtp = [...emailOtp];
-                        for (let i = 0; i < 6; i++) {
-                          newOtp[i] = digits[i] || "";
-                        }
-                        setEmailOtp(newOtp);
-                        emailRefs.current[5]?.focus();
-                      }}
-                    >
-                      <Text style={[styles.devOtpText, { color: isDark ? "#94A3B8" : "#64748B" }]}>
-                        DEV OTP: <Text style={styles.devOtpHighlight}>{emailDevOtp}</Text> (tap to fill)
-                      </Text>
-                    </Pressable>
-                  ) : null}
+
 
                   {/* Timer & Resend */}
                   <View style={styles.timerContainer}>

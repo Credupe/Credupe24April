@@ -9,6 +9,7 @@ import { ok, fail } from "../lib/envelope";
 import { hashPassword } from "../lib/password";
 import { signJwt } from "../lib/jwt";
 import { newId, sha256 } from "../lib/ids";
+import { sendOTP } from "./sms";
 
 const route = new Hono<AppEnv>();
 const ONBOARDING_AUDIENCE = "partner-onboarding";
@@ -217,8 +218,8 @@ route.post("/otp/request", async (c) => {
     return fail(c, 400, "VALIDATION_ERROR", "Email mismatch with onboarding session");
   }
 
-  // Generate 6-digit OTP (static for mobile, dynamic for email)
-  const code = channel === "mobile" ? "123456" : String(Math.floor(100000 + Math.random() * 900000));
+  // Generate 6-digit OTP
+  const code = channel === "email" ? String(Math.floor(100000 + Math.random() * 900000)) : "123456";
   const codeHash = await sha256(code);
 
   const db = drizzle(c.env.DB);
@@ -232,12 +233,18 @@ route.post("/otp/request", async (c) => {
     attempts: 0,
   });
 
-  // Mobile is always mocked; email only uses mock bypass if RESEND_API_KEY is not configured
-  const isDev = channel === "mobile"
-    ? c.env.ENV === "development"
-    : !c.env.RESEND_API_KEY;
+  const isDev = c.env.ENV !== "production";
 
-  if (channel === "email" && c.env.RESEND_API_KEY) {
+  console.log("[partner-otp] channel:", channel, "destination:", destination);
+  console.log("[partner-otp] RESEND_API_KEY exists:", !!c.env.RESEND_API_KEY, "val length:", c.env.RESEND_API_KEY?.length);
+  console.log("[partner-otp] RESEND_FROM_EMAIL:", c.env.RESEND_FROM_EMAIL);
+
+  if (channel === "mobile") {
+    const res = await sendOTP(destination, code, c.env, "partner-onboarding");
+    if (!res.success && c.env.ENV === "production") {
+      return fail(c, 500, "SMS_SEND_FAILED", res.error || "Failed to send SMS OTP");
+    }
+  } else if (channel === "email" && c.env.RESEND_API_KEY) {
     const subject = "Verify your email - Credupe Partner Program";
     const html = `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <p>Dear Partner,</p>

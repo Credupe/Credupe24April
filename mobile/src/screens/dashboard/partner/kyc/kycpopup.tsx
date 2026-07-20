@@ -16,6 +16,7 @@ import {
   BadgeCheck,
   CircleCheck,
   ArrowRight,
+  X,
 } from "lucide-react-native";
 
 import { useTheme } from "../../../../theme/ThemeProvider";
@@ -126,6 +127,15 @@ export const KycPopup: React.FC<KycPopupProps> = ({ onCompleteKyc, onSkip }) => 
           },
         ]}
       >
+        {/* Close Button at top right */}
+        <Pressable
+          style={styles.closeButton}
+          onPress={onSkip}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+        >
+          <X size={18} color="#6B7280" />
+        </Pressable>
+
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.cardScrollContent}
@@ -153,11 +163,11 @@ export const KycPopup: React.FC<KycPopupProps> = ({ onCompleteKyc, onSkip }) => 
               <View style={styles.illustrationContent}>
                 <View style={styles.iconContainer}>
                   <View style={styles.glowBgCircle} />
-                  <ShieldCheck size={72} color="#7C3AED" style={styles.shieldIcon} />
-                  <BadgeCheck size={28} color="#10B981" style={styles.checkBadgeIcon} />
+                  <ShieldCheck size={56} color="#7C3AED" style={styles.shieldIcon} />
+                  <BadgeCheck size={22} color="#10B981" style={styles.checkBadgeIcon} />
                 </View>
-                <Sparkles size={24} color="#A78BFA" style={styles.sparkleIconLeft} />
-                <Sparkles size={20} color="#FDBA74" style={styles.sparkleIconRight} />
+                <Sparkles size={20} color="#A78BFA" style={styles.sparkleIconLeft} />
+                <Sparkles size={16} color="#FDBA74" style={styles.sparkleIconRight} />
               </View>
             </LinearGradient>
           </Animated.View>
@@ -183,7 +193,7 @@ export const KycPopup: React.FC<KycPopupProps> = ({ onCompleteKyc, onSkip }) => 
                   ]}
                 >
                   <View style={styles.checkCircleIconWrap}>
-                    <CircleCheck size={20} color="#10B981" />
+                    <CircleCheck size={18} color="#10B981" />
                   </View>
                   <Text style={styles.benefitText}>{item}</Text>
                 </Animated.View>
@@ -206,14 +216,9 @@ export const KycPopup: React.FC<KycPopupProps> = ({ onCompleteKyc, onSkip }) => 
                 style={styles.primaryButtonGradient}
               >
                 <Text style={styles.primaryButtonText}>Complete KYC</Text>
-                <ArrowRight size={20} color="#FFFFFF" />
+                <ArrowRight size={18} color="#FFFFFF" />
               </LinearGradient>
             </Animated.View>
-          </Pressable>
-
-          {/* Skip Button */}
-          <Pressable style={styles.skipButton} onPress={onSkip}>
-            <Text style={styles.skipButtonText}>Skip for now</Text>
           </Pressable>
         </ScrollView>
       </Animated.View>
@@ -263,11 +268,23 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 12,
     overflow: "hidden",
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    padding: 6,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardScrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 36,
+    paddingBottom: 20,
     alignItems: "stretch",
   },
   logo: {
@@ -279,25 +296,25 @@ const styles = StyleSheet.create({
   title: {
     color: "#111827",
     textAlign: "center",
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: "800",
     fontFamily: FONT_FAMILY,
   },
   subtitle: {
-    marginTop: 12,
+    marginTop: 8,
     color: "#6B7280",
     textAlign: "center",
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "500",
     fontFamily: FONT_FAMILY,
   },
   // Illustration styles
   illustrationCard: {
-    marginTop: 24,
-    height: 140,
-    borderRadius: 20,
+    marginTop: 16,
+    height: 100,
+    borderRadius: 16,
     overflow: "hidden",
   },
   illustrationGradient: {
@@ -313,104 +330,92 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     position: "relative",
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     alignItems: "center",
     justifyContent: "center",
   },
   glowBgCircle: {
     position: "absolute",
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: "rgba(124, 58, 237, 0.12)",
   },
   shieldIcon: {
     shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   checkBadgeIcon: {
     position: "absolute",
-    bottom: -2,
-    right: -2,
+    bottom: -1,
+    right: -1,
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: 11,
     overflow: "hidden",
   },
   sparkleIconLeft: {
     position: "absolute",
-    left: "20%",
-    top: "25%",
+    left: "22%",
+    top: "22%",
   },
   sparkleIconRight: {
     position: "absolute",
-    right: "20%",
-    bottom: "25%",
+    right: "22%",
+    bottom: "22%",
   },
   // Benefits styles
   benefitsContainer: {
-    marginTop: 20,
-    gap: 10,
+    marginTop: 16,
+    gap: 8,
   },
   benefitCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F5F3FF",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
   checkCircleIconWrap: {
-    marginRight: 12,
+    marginRight: 10,
   },
   benefitText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "500",
     color: "#111827",
     fontFamily: FONT_FAMILY,
   },
   // Button styles
   primaryButtonPressable: {
-    marginTop: 28,
+    marginTop: 20,
     width: "100%",
-    borderRadius: 30,
+    borderRadius: 25,
     shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
   primaryButtonGradient: {
-    height: 58,
-    borderRadius: 30,
+    height: 50,
+    borderRadius: 25,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
   primaryButtonText: {
     color: "#FFFFFF",
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "700",
     fontFamily: FONT_FAMILY,
     letterSpacing: 0.5,
-    marginRight: 8,
-  },
-  skipButton: {
-    marginTop: 20,
-    marginBottom: 8,
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  skipButtonText: {
-    color: "#6B7280",
-    fontSize: 15,
-    fontWeight: "500",
-    fontFamily: FONT_FAMILY,
+    marginRight: 6,
   },
 });

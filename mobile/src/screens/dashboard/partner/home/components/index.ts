@@ -4,3 +4,4 @@ export * from "./PaginationDots";
 export * from "./BannerCarousel";
 export * from "./DashboardCard";
 export * from "./DashboardGrid";
+export * from "./SearchBar";

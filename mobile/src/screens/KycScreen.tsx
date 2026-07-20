@@ -152,6 +152,8 @@ export const KycScreen: React.FC<Props> = ({ onBack }) => {
           blob,
           asset.name ?? "upload.bin",
           slot.tag,
+          undefined,
+          slot.label,
         );
         if (!result.ok) {
           Toast.show({
@@ -386,7 +388,7 @@ const UploadRow: React.FC<{
       <View style={{ flex: 1 }}>
         <Text style={{ color: colors.text, fontWeight: "700" }}>{slot.label}</Text>
         <Text style={{ color: colors.textMuted, fontSize: 12 }}>
-          {doc ? doc.fileName : slot.caption}
+          {doc ? (doc.documentName || doc.fileName) : slot.caption}
         </Text>
       </View>
       {busy ? (

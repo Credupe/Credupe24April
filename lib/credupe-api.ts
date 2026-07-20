@@ -224,6 +224,16 @@ export const credupeApi = {
     }) {
       return request<any>("POST", "/loan-applications", input);
     },
+    createPublic(input: {
+      loanType: string;
+      amount: number;
+      tenureMonths: number;
+      lenderId?: string;
+      formData: Record<string, any>;
+      partnerCode?: string;
+    }) {
+      return request<any>("POST", "/loan-applications/public", input, { auth: false });
+    },
     mine(q: { page?: number; pageSize?: number; status?: ApplicationStatus } = {}) {
       const qs = new URLSearchParams(q as any).toString();
       return request<Paged<any>>("GET", `/loan-applications/mine${qs ? `?${qs}` : ""}`);
@@ -231,6 +241,15 @@ export const credupeApi = {
     get(id: string) { return request<any>("GET", `/loan-applications/${id}`); },
     cancel(id: string, note?: string) {
       return request<any>("POST", `/loan-applications/${id}/transition`, { toStatus: "CANCELLED", note });
+    },
+  },
+
+  lenders: {
+    get(slug: string) {
+      return request<any>("GET", `/lenders/${encodeURIComponent(slug)}`, undefined, { auth: false });
+    },
+    list(activeOnly = true) {
+      return request<{ items: any[], total: number }>("GET", `/lenders?active=${activeOnly}`, undefined, { auth: false });
     },
   },
 

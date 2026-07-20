@@ -28,6 +28,8 @@ import {
 import { RootStackParamList } from "../../../../../App";
 import { useTheme } from "../../../../theme/ThemeProvider";
 import { radii, spacing } from "../../../../theme/colors";
+import { fetchPartnerProfile, PartnerProfile } from "../../../../api/credupe";
+import { ActivityIndicator } from "react-native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "SignupBasicDetails">;
 
@@ -80,6 +82,42 @@ export const SignupBasicDetailsScreen: React.FC<Props> = ({ navigation, route })
   const [tempYear, setTempYear] = useState("2000");
 
   const selectedBusinessType = route.params?.businessType;
+
+  const [loading, setLoading] = useState(true);
+  const [partnerProfile, setPartnerProfile] = useState<PartnerProfile | null>(null);
+  const [isKycComplete, setIsKycComplete] = useState(false);
+
+  useEffect(() => {
+    fetchPartnerProfile()
+      .then((res) => {
+        if (res.success && res.data?.profile) {
+          const profile = res.data.profile;
+          setPartnerProfile(profile);
+          if (profile.kycStatus === "VERIFIED" || profile.kycStatus === "REJECTED" || profile.onboardingStep === "COMPLETE") {
+            setIsKycComplete(true);
+          }
+          if (profile.contactPerson) {
+            setFullName(profile.contactPerson);
+          }
+          if (profile.gender === "Male" || profile.gender === "Female" || profile.gender === "Other") {
+            setGender(profile.gender);
+          }
+          if (profile.dob) {
+            const parts = profile.dob.split("-");
+            if (parts.length === 3) {
+              setYear(parts[0]);
+              const mIdx = parseInt(parts[1], 10) - 1;
+              if (mIdx >= 0 && mIdx < 12) setMonth(MONTHS[mIdx]);
+              setDay(String(parseInt(parts[2], 10)));
+            }
+          }
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, []);
 
   const isValid = useMemo(() => {
     return Boolean(fullName.trim()) && Boolean(month) && Boolean(day) && Boolean(year) && Boolean(gender);
@@ -234,6 +272,111 @@ export const SignupBasicDetailsScreen: React.FC<Props> = ({ navigation, route })
       </Modal>
     );
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: "#FFFFFF", justifyContent: "center", alignItems: "center" }]} edges={["top", "bottom"]}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  if (isKycComplete) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: "#FFFFFF" }]} edges={["top", "bottom"]}>
+        <View style={styles.headerContainer}>
+          <Pressable onPress={navigation.goBack} hitSlop={12} style={styles.headerBackBtn}>
+            <ArrowLeft size={24} color={colors.text} />
+          </Pressable>
+          <View style={styles.headerTitleWrap}>
+            <Text style={[styles.headerTitleText, { color: colors.text }]}>KYC &amp; Documents</Text>
+            <Text style={[styles.headerSubtext, { color: colors.textMuted }]}>Verification Complete</Text>
+          </View>
+          <View style={styles.headerRightSpacer} />
+        </View>
+
+        <ScrollView
+          contentContainerStyle={[styles.container, { backgroundColor: "#FFFFFF", justifyContent: "center", alignItems: "stretch", paddingBottom: 40 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.completeCard}>
+            <View style={styles.completeIconContainer}>
+              <View style={styles.completeGlowBgCircle} />
+              <CheckCircle2 size={64} color="#10B981" />
+            </View>
+
+            <Text style={styles.completeTitle}>KYC Complete</Text>
+            <Text style={styles.completeSubtitle}>
+              Your KYC verification is complete. Your account has been verified, enabling full partner access.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={styles.infoList}>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Business Name</Text>
+                <Text style={[styles.infoValue, { color: colors.text }]}>{partnerProfile?.businessName || "N/A"}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Partner Code</Text>
+                <Text style={[styles.infoValue, { color: colors.text }]}>{partnerProfile?.partnerCode || "N/A"}</Text>
+              </View>
+              {partnerProfile?.contactPerson ? (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Contact Person</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{partnerProfile.contactPerson}</Text>
+                </View>
+              ) : null}
+              {partnerProfile?.panLast4 ? (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>PAN Card</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>******{partnerProfile.panLast4}</Text>
+                </View>
+              ) : null}
+              {partnerProfile?.aadhaarLast4 ? (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Aadhaar Card</Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>********{partnerProfile.aadhaarLast4}</Text>
+                </View>
+              ) : null}
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Status</Text>
+                <View style={[
+                  styles.verifiedBadge,
+                  partnerProfile?.kycStatus === "VERIFIED" ? styles.badgeSuccess :
+                  partnerProfile?.kycStatus === "REJECTED" ? styles.badgeDanger :
+                  styles.badgeWarning
+                ]}>
+                  <Text style={[
+                    styles.verifiedBadgeText,
+                    partnerProfile?.kycStatus === "VERIFIED" ? styles.textSuccess :
+                    partnerProfile?.kycStatus === "REJECTED" ? styles.textDanger :
+                    styles.textWarning
+                  ]}>{partnerProfile?.kycStatus || "PENDING"}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.buttonWrap}>
+            <GradientButton
+              title="BACK TO DASHBOARD"
+              onPress={() => {
+                if (navigation.getState().routeNames.includes("Main")) {
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: "Main" as never }],
+                  });
+                } else {
+                  navigation.goBack();
+                }
+              }}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: "#FFFFFF" }]} edges={["top", "bottom"]}>
@@ -966,5 +1109,102 @@ const styles = StyleSheet.create({
   pickerItemText: {
     fontSize: 16,
     fontFamily: FONT_FAMILY,
+  },
+  completeCard: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 24,
+    padding: 24,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginTop: 20,
+  },
+  completeIconContainer: {
+    position: "relative",
+    width: 80,
+    height: 80,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  completeGlowBgCircle: {
+    position: "absolute",
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: "rgba(16, 185, 129, 0.1)",
+  },
+  completeTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#111827",
+    fontFamily: FONT_FAMILY,
+    marginBottom: 8,
+  },
+  completeSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    fontFamily: FONT_FAMILY,
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    width: "100%",
+    marginBottom: 20,
+  },
+  infoList: {
+    width: "100%",
+    gap: 12,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  verifiedBadge: {
+    backgroundColor: "#EAFBF0",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#1E9E52",
+  },
+  verifiedBadgeText: {
+    color: "#1E9E52",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  badgeSuccess: {
+    backgroundColor: "#EAFBF0",
+    borderColor: "#1E9E52",
+  },
+  badgeWarning: {
+    backgroundColor: "#FFF9E6",
+    borderColor: "#F5A623",
+  },
+  badgeDanger: {
+    backgroundColor: "#FCE8E6",
+    borderColor: "#E74C3C",
+  },
+  textSuccess: {
+    color: "#1E9E52",
+  },
+  textWarning: {
+    color: "#F5A623",
+  },
+  textDanger: {
+    color: "#E74C3C",
   },
 });

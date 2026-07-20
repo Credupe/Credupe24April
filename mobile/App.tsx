@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, View, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer, DefaultTheme, DarkTheme, LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -11,6 +11,7 @@ import * as Linking from "expo-linking";
 import { ThemeProvider, useTheme } from "./src/theme/ThemeProvider";
 import Toast from "react-native-toast-message";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { House, User, Link2, Menu, DollarSign, FileText, ShieldCheck } from "lucide-react-native";
 import { LoginScreen } from "./src/screens/LoginScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { LoansScreen } from "./src/screens/LoansScreen";
@@ -41,6 +42,7 @@ import { SignupContactDetailsScreen } from "./src/screens/auth/partner/SignupCon
 import { SignupVerificationScreen } from "./src/screens/auth/partner/SignupVerificationScreen";
 import { SignupBusinessDetailsScreen } from "./src/screens/auth/partner/SignupBusinessDetailsScreen";
 import { SignupKycDocumentsScreen } from "./src/screens/dashboard/partner/kyc/SignupKycDocumentsScreen";
+import { PartnerKycStatusScreen } from "./src/screens/dashboard/partner/kyc/PartnerKycStatusScreen";
 import { SignupPayoutAccountScreen } from "./src/screens/auth/partner/SignupPayoutAccountScreen";
 import { PartnerOnboardingSuccessScreen } from "./src/screens/auth/partner/PartnerOnboardingSuccessScreen";
 import { ApplyPersonalLoanScreen } from "./src/screens/dashboard/partner/home/ApplyPersonalLoan/ApplyPersonalLoanScreen";
@@ -49,6 +51,7 @@ import { ApplyHomeLoanScreen } from "./src/screens/dashboard/partner/home/ApplyH
 import { ApplyVehicleLoanScreen } from "./src/screens/dashboard/partner/home/ApplyVehicleLoan/ApplyVehicleLoanScreen";
 import { ApplyLAPScreen } from "./src/screens/dashboard/partner/home/ApplyLAP/ApplyLAPScreen";
 import { ApplyCreditCardScreen } from "./src/screens/dashboard/partner/home/ApplyCreditCard/ApplyCreditCardScreen";
+import { ApplyEducationLoanScreen } from "./src/screens/dashboard/partner/home/ApplyEducationLoan/ApplyEducationLoanScreen";
 import { ExistingApplicationsScreen } from "./src/screens/dashboard/partner/home/ExistingApplications/ExistingApplicationsScreen";
 import { MyTeamScreen } from "./src/screens/dashboard/partner/home/MyTeam/MyTeamScreen";
 import { MyBrokerageScreen } from "./src/screens/dashboard/partner/home/MyBrokerage/MyBrokerageScreen";
@@ -60,7 +63,7 @@ import { ReferEarnScreen } from "./src/screens/dashboard/partner/home/ReferEarn/
 import { UtilityToolScreen } from "./src/screens/dashboard/partner/home/UtilityTool/UtilityToolScreen";
 import { MoreScreen } from "./src/screens/dashboard/partner/home/More/MoreScreen";
 import { registerForPushNotifications } from "./src/lib/push";
-import { getCachedUser, Lead, Lender, LoanProduct, Quote } from "./src/api/credupe";
+import { getCachedUser, fetchPartnerProfile, Lead, Lender, LoanProduct, Quote } from "./src/api/credupe";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -95,6 +98,7 @@ export type RootStackParamList = {
   QuoteBuilder: { loanType?: string };
   QuoteResults: { quote: Quote };
   Kyc: undefined;
+  PartnerKycStatus: undefined;
   Leads: { initialStatus?: string };
   LeadDetail: { lead: Lead };
   NewLead: undefined;
@@ -115,6 +119,7 @@ export type RootStackParamList = {
   ApplyVehicleLoan: undefined;
   ApplyLAP: undefined;
   ApplyCreditCard: undefined;
+  ApplyEducationLoan: undefined;
   ExistingApplications: undefined;
   MyTeam: undefined;
   MyBrokerage: undefined;
@@ -130,32 +135,23 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator();
 
-const TabIcon: React.FC<{ glyph: string; focused: boolean }> = ({ glyph, focused }) => {
-  const { colors } = useTheme();
-  const isVectorIcon = glyph.length > 1;
-
+const TabIcon: React.FC<{ icon: React.ComponentType<any>; focused: boolean }> = ({ icon: IconComponent, focused }) => {
   return (
     <View
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: focused ? colors.primaryMuted : "transparent",
+        backgroundColor: focused ? "#7C3AED" : "transparent",
       }}
     >
-      {isVectorIcon ? (
-        <MaterialCommunityIcons
-          name={glyph as any}
-          size={20}
-          color={focused ? colors.tabActive : colors.tabInactive}
-        />
-      ) : (
-        <Text style={{ color: focused ? colors.tabActive : colors.tabInactive, fontSize: 18, fontWeight: "800" }}>
-          {glyph}
-        </Text>
-      )}
+      <IconComponent
+        size={20}
+        color={focused ? "#FFFFFF" : "#6B7280"}
+        strokeWidth={2}
+      />
     </View>
   );
 };
@@ -197,12 +193,25 @@ const MainTabs: React.FC<MainTabsProps> = ({
 }) => {
   const { colors } = useTheme();
   const tabBarStyle = {
-    backgroundColor: colors.tabBg,
-    borderTopColor: colors.border,
-    height: 64,
-    paddingBottom: 8,
-    paddingTop: 6,
+    position: "absolute" as const,
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 30,
+    height: 72,
+    paddingBottom: Platform.OS === "ios" ? 14 : 14,
+    paddingTop: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 4,
+    borderTopWidth: 0,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   };
+
 
   if (role === "ADMIN") {
     return (
@@ -210,19 +219,19 @@ const MainTabs: React.FC<MainTabsProps> = ({
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle,
-          tabBarActiveTintColor: colors.tabActive,
-          tabBarInactiveTintColor: colors.tabInactive,
-          tabBarLabelStyle: { fontWeight: "700", fontSize: 11 },
+          tabBarActiveTintColor: "#7C3AED",
+          tabBarInactiveTintColor: "#6B7280",
+          tabBarLabelStyle: { fontWeight: "600", fontSize: 11, marginTop: 4 },
           tabBarIcon: ({ focused }) => {
-            const glyph =
+            const icon =
               route.name === "Console"
-                ? "⌂"
+                ? House
                 : route.name === "Apps"
-                  ? "▤"
+                  ? FileText
                   : route.name === "KYC"
-                    ? "✓"
-                    : "◉";
-            return <TabIcon glyph={glyph} focused={focused} />;
+                    ? ShieldCheck
+                    : User;
+            return <TabIcon icon={icon} focused={focused} />;
           },
         })}
       >
@@ -257,21 +266,21 @@ const MainTabs: React.FC<MainTabsProps> = ({
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle,
-          tabBarActiveTintColor: colors.tabActive,
-          tabBarInactiveTintColor: colors.tabInactive,
-          tabBarLabelStyle: { fontWeight: "700", fontSize: 11 },
+          tabBarActiveTintColor: "#7C3AED",
+          tabBarInactiveTintColor: "#6B7280",
+          tabBarLabelStyle: { fontWeight: "600", fontSize: 11, marginTop: 4 },
           tabBarIcon: ({ focused }) => {
-            const glyph =
+            const icon =
               route.name === "Home"
-                ? (focused ? "view-grid" : "view-grid-outline")
+                ? House
                 : route.name === "Profile"
-                  ? "account-circle-outline"
+                  ? User
                   : route.name === "Utility Tool"
-                    ? "cog-outline"
+                    ? Link2
                     : route.name === "More"
-                      ? "dots-vertical"
-                      : "◉";
-            return <TabIcon glyph={glyph} focused={focused} />;
+                      ? Menu
+                      : User;
+            return <TabIcon icon={icon} focused={focused} />;
           },
         })}
       >
@@ -304,19 +313,19 @@ const MainTabs: React.FC<MainTabsProps> = ({
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle,
-        tabBarActiveTintColor: colors.tabActive,
-        tabBarInactiveTintColor: colors.tabInactive,
-        tabBarLabelStyle: { fontWeight: "700", fontSize: 11 },
+        tabBarActiveTintColor: "#7C3AED",
+        tabBarInactiveTintColor: "#6B7280",
+        tabBarLabelStyle: { fontWeight: "600", fontSize: 11, marginTop: 4 },
         tabBarIcon: ({ focused }) => {
-          const glyph =
+          const icon =
             route.name === "Home"
-              ? "⌂"
+              ? House
               : route.name === "Loans"
-                ? "₹"
+                ? DollarSign
                 : route.name === "Applications"
-                  ? "▤"
-                  : "◉";
-          return <TabIcon glyph={glyph} focused={focused} />;
+                  ? FileText
+                  : User;
+          return <TabIcon icon={icon} focused={focused} />;
         },
       })}
     >
@@ -446,7 +455,18 @@ const Root: React.FC = () => {
                   role="PARTNER"
                   onSignedOut={() => setAuthed(false)}
                   onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
-                  onOpenKyc={() => navigation.navigate("SignupBasicDetails")}
+                  onOpenKyc={async () => {
+                    try {
+                      const res = await fetchPartnerProfile();
+                      if (res.success && res.data?.profile?.onboardingStep === "COMPLETE") {
+                        navigation.navigate("PartnerKycStatus");
+                      } else {
+                        navigation.navigate("SignupSelection");
+                      }
+                    } catch {
+                      navigation.navigate("SignupSelection");
+                    }
+                  }}
                   onOpenLeads={(status) => navigation.navigate("Leads", { initialStatus: status })}
                   onOpenLead={(lead) => navigation.navigate("LeadDetail", { lead })}
                   onNewLead={() => navigation.navigate("NewLead")}
@@ -470,9 +490,18 @@ const Root: React.FC = () => {
                   role={role}
                   onSignedOut={() => setAuthed(false)}
                   onSelectCategory={(loanType) => navigation.navigate("QuoteBuilder", { loanType })}
-                  onOpenKyc={() => {
+                  onOpenKyc={async () => {
                     if (role === "PARTNER") {
-                      navigation.navigate("SignupBasicDetails");
+                      try {
+                        const res = await fetchPartnerProfile();
+                        if (res.success && res.data?.profile?.onboardingStep === "COMPLETE") {
+                          navigation.navigate("PartnerKycStatus");
+                        } else {
+                          navigation.navigate("SignupSelection");
+                        }
+                      } catch {
+                        navigation.navigate("SignupSelection");
+                      }
                     } else {
                       navigation.navigate("Kyc");
                     }
@@ -511,6 +540,9 @@ const Root: React.FC = () => {
             </Stack.Screen>
             <Stack.Screen name="Kyc">
               {({ navigation }) => <KycScreen onBack={() => navigation.goBack()} />}
+            </Stack.Screen>
+            <Stack.Screen name="PartnerKycStatus">
+              {() => <PartnerKycStatusScreen />}
             </Stack.Screen>
             <Stack.Screen name="Leads">
               {({ navigation, route }) => (
@@ -618,6 +650,7 @@ const Root: React.FC = () => {
         <Stack.Screen name="ApplyVehicleLoan" component={ApplyVehicleLoanScreen} />
         <Stack.Screen name="ApplyLAP" component={ApplyLAPScreen} />
         <Stack.Screen name="ApplyCreditCard" component={ApplyCreditCardScreen} />
+        <Stack.Screen name="ApplyEducationLoan" component={ApplyEducationLoanScreen} />
         <Stack.Screen name="ExistingApplications" component={ExistingApplicationsScreen} />
         <Stack.Screen name="MyTeam" component={MyTeamScreen} />
         <Stack.Screen name="MyBrokerage" component={MyBrokerageScreen} />
