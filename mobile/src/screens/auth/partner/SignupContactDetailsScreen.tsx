@@ -550,12 +550,6 @@ const styles = StyleSheet.create({
   },
   inputContainerFocused: {
     borderColor: "#6D28D9",
-    borderWidth: 1.5,
-    shadowColor: "#6D28D9",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 2,
   },
   inputIcon: {
     marginRight: 12,

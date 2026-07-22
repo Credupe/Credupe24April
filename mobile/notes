@@ -3,3 +3,14 @@ database = npm run db:studio
 start api = npm run dev
 
 http://localhost:3000/mobile-utility-tool/credit-card?partner=CRD-PA00002
+
+
+npx eas build --platform android --profile previewbf
+
+npx expo start
+
+mobile test 
+           $env:ANDROID_HOME="C:\Users\ASUS\AppData\Local\Android\Sdk"; $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"; $env:Path += ";C:\Program Files\Android\Android Studio\jbr\bin"; npm run android
+
+api mobile test 
+          npx wrangler dev --config wrangler.api.jsonc --ip 0.0.0.0

@@ -563,37 +563,24 @@ const CustomTextField: React.FC<{
     >
       {icon && <View style={styles.textFieldIcon}>{icon}</View>}
       <View style={styles.textFieldContent}>
-        {isActive ? (
-          <View style={styles.inputActiveContainer}>
-            <Text style={[styles.textFieldLabelSmall, { color: isFocused ? colors.primary : colors.textMuted }]}>
-              {label}
-            </Text>
-            <TextInput
-              ref={inputRef}
-              value={value}
-              onChangeText={onChangeText}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder={placeholder}
-              placeholderTextColor={colors.textMuted}
-              style={[styles.textFieldInputActive, { color: colors.text }]}
-            />
-          </View>
-        ) : (
-          <View style={styles.inputInactiveContainer}>
-            <Text style={[styles.textFieldLabelLarge, { color: colors.textMuted }]}>
-              {label}
-            </Text>
-            <TextInput
-              ref={inputRef}
-              value={value}
-              onChangeText={onChangeText}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              style={styles.textFieldInputHidden}
-            />
-          </View>
+        {isActive && (
+          <Text style={[styles.textFieldLabelSmall, { color: isFocused ? colors.primary : colors.textMuted }]}>
+            {label}
+          </Text>
         )}
+        <TextInput
+          ref={inputRef}
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={isActive ? placeholder : label}
+          placeholderTextColor={colors.textMuted}
+          style={[
+            isActive ? styles.textFieldInputActive : styles.textFieldInputInactiveText,
+            { color: colors.text }
+          ]}
+        />
       </View>
     </Pressable>
   );
@@ -915,11 +902,13 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY,
   },
   textFieldInputActive: {
-    height: 24,
+    height: Platform.OS === "android" ? 32 : 24,
     fontSize: 17,
     fontWeight: "500",
     fontFamily: FONT_FAMILY,
     padding: 0,
+    paddingVertical: 0,
+    textAlignVertical: "center",
     borderWidth: 0,
     ...Platform.select({
       web: {
@@ -928,12 +917,22 @@ const styles = StyleSheet.create({
       },
     }),
   } as any,
-  textFieldInputHidden: {
-    position: "absolute",
-    opacity: 0,
-    width: 0,
-    height: 0,
-  },
+  textFieldInputInactiveText: {
+    height: 40,
+    fontSize: 16,
+    fontWeight: "500",
+    fontFamily: FONT_FAMILY,
+    padding: 0,
+    paddingVertical: 0,
+    textAlignVertical: "center",
+    borderWidth: 0,
+    ...Platform.select({
+      web: {
+        outlineStyle: "none",
+        outlineWidth: 0,
+      },
+    }),
+  } as any,
   // Date Picker
   datePickerContainer: {
     height: 60,
