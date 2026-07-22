@@ -294,47 +294,30 @@ const FloatingInput: React.FC<{
           <Text style={[styles.textFieldPrefix, { color: colors.text }]}>{prefix}</Text>
         )}
         <View style={styles.textFieldContent}>
-          {isActive ? (
-            <View style={styles.inputActiveContainer}>
-              <Text style={[styles.textFieldLabelSmall, { color: isFocused ? colors.primary : colors.textMuted }]}>
-                {label}
-              </Text>
-              <TextInput
-                ref={inputRef}
-                value={value}
-                onChangeText={onChangeText}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder={placeholder}
-                placeholderTextColor={colors.textMuted}
-                secureTextEntry={secureTextEntry}
-                keyboardType={keyboardType}
-                autoCapitalize={autoCapitalize}
-                maxLength={maxLength}
-                testID={testID}
-                accessibilityLabel={accessibilityLabel}
-                style={[styles.textFieldInputActive, { color: colors.text }]}
-              />
-            </View>
-          ) : (
-            <View style={styles.inputInactiveContainer}>
-              <Text style={[styles.textFieldLabelLarge, { color: colors.textMuted }]}>
-                {label}
-              </Text>
-              <TextInput
-                ref={inputRef}
-                value={value}
-                onChangeText={onChangeText}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                secureTextEntry={secureTextEntry}
-                keyboardType={keyboardType}
-                autoCapitalize={autoCapitalize}
-                maxLength={maxLength}
-                style={styles.textFieldInputHidden}
-              />
-            </View>
+          {isActive && (
+            <Text style={[styles.textFieldLabelSmall, { color: isFocused ? colors.primary : colors.textMuted }]}>
+              {label}
+            </Text>
           )}
+          <TextInput
+            ref={inputRef}
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder={isActive ? placeholder : label}
+            placeholderTextColor={colors.textMuted}
+            secureTextEntry={secureTextEntry}
+            keyboardType={keyboardType}
+            autoCapitalize={autoCapitalize}
+            maxLength={maxLength}
+            testID={testID}
+            accessibilityLabel={accessibilityLabel}
+            style={[
+              isActive ? styles.textFieldInputActive : styles.textFieldInputInactiveText,
+              { color: colors.text }
+            ]}
+          />
         </View>
         {rightIcon && <View style={styles.textFieldRightIcon}>{rightIcon}</View>}
       </Pressable>
@@ -1048,11 +1031,13 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY,
   },
   textFieldInputActive: {
-    height: 24,
+    height: Platform.OS === "android" ? 30 : 24,
     fontSize: 16,
     fontWeight: "500",
     fontFamily: FONT_FAMILY,
     padding: 0,
+    paddingVertical: 0,
+    textAlignVertical: "center",
     borderWidth: 0,
     ...Platform.select({
       web: {
@@ -1061,12 +1046,22 @@ const styles = StyleSheet.create({
       },
     }),
   } as any,
-  textFieldInputHidden: {
-    position: "absolute",
-    opacity: 0,
-    width: 0,
-    height: 0,
-  },
+  textFieldInputInactiveText: {
+    height: 40,
+    fontSize: 16,
+    fontWeight: "500",
+    fontFamily: FONT_FAMILY,
+    padding: 0,
+    paddingVertical: 0,
+    textAlignVertical: "center",
+    borderWidth: 0,
+    ...Platform.select({
+      web: {
+        outlineStyle: "none",
+        outlineWidth: 0,
+      },
+    }),
+  } as any,
   // Custom Reset Pass Header
   resetHeaderContainer: {
     marginBottom: 16,
