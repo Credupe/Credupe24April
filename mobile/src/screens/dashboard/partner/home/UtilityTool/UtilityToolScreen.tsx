@@ -28,12 +28,12 @@ interface UtilityLinkItem {
 }
 
 const UTILITIES_DATA: UtilityLinkItem[] = [
-  {
-    id: "credit-card",
-    title: "Credit Card Lead Form UTM Link",
-    slug: "credit-card",
-    productName: "Credit Card",
-  },
+  // {
+  //   id: "credit-card",
+  //   title: "Credit Card Lead Form UTM Link",
+  //   slug: "credit-card",
+  //   productName: "Credit Card",
+  // },
   {
     id: "personal-loan",
     title: "Personal Loan Lead Form UTM Link",
@@ -203,9 +203,9 @@ export const UtilityToolScreen: React.FC = () => {
                   <Text style={styles.cardSubtitle}>Generate and share your lead form instantly.</Text>
                 </View>
               </View>
-              
+
               <View style={styles.separator} />
-              
+
               <View style={styles.buttonRow}>
                 {/* Copy Button */}
                 <Pressable
