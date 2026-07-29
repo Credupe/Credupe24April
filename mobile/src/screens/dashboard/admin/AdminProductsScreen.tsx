@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 import { fetchLoanProducts, LoanProduct } from "../../../api/credupe";
 import { inr, pct } from "../../../lib/format";
 import { useTheme } from "../../../theme/ThemeProvider";
@@ -27,18 +28,28 @@ export const AdminProductsScreen: React.FC<Props> = ({ onBack, onEdit, onCreate 
   const { colors } = useTheme();
   const [items, setItems] = useState<LoanProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<LoanTypeFilter>("ALL");
+  const isFocused = useIsFocused();
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const r = await fetchLoanProducts({ limit: 200 });
-    setItems(r.success && r.data?.items ? r.data.items : []);
+    if (!r.success) {
+      setError(r.error?.message?.join("\n") ?? "Failed to load products.");
+      setItems([]);
+    } else {
+      setItems(r.data?.items ? r.data.items : []);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (isFocused) {
+      load();
+    }
+  }, [isFocused, load]);
 
   const filtered = useMemo(() => {
     if (filter === "ALL") return items;
@@ -94,12 +105,27 @@ export const AdminProductsScreen: React.FC<Props> = ({ onBack, onEdit, onCreate 
         ))}
       </ScrollView>
 
-      {loading ? (
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={{ color: "#EF4444", textAlign: "center", marginBottom: spacing.md, fontSize: 14 }}>
+            {error}
+          </Text>
+          <Pressable
+            onPress={load}
+            style={[styles.retryBtn, { backgroundColor: colors.primary }]}
+            accessibilityLabel="retry-btn"
+          >
+            <Text style={{ color: colors.textInverted, fontWeight: "700" }}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : loading && items.length === 0 ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(p) => p.id}
+          refreshing={loading}
+          onRefresh={load}
           contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
           renderItem={({ item }) => (
@@ -159,4 +185,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   empty: { padding: spacing.xl, borderRadius: radii.lg, borderWidth: 1, borderStyle: "dashed" },
+  errorContainer: { padding: spacing.xl, alignItems: "center", justifyContent: "center", marginTop: spacing.xl },
+  retryBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: radii.pill, marginTop: spacing.sm },
 });

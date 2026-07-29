@@ -20,10 +20,35 @@ route.patch("/me", requireAuth, requireRole("PARTNER", "ADMIN"), async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const db = drizzle(c.env.DB);
   const patch: any = { updatedAt: new Date().toISOString(), updatedBy: user.sub };
-  const fields = ["businessName", "contactPerson", "city", "state", "pincode", "gstNumber", "panLast4"];
-  for (const f of fields) if (body[f] !== undefined) patch[f] = body[f];
+  const fields = [
+    "businessName", "contactPerson", "city", "state", "pincode", "gstNumber", 
+    "panLast4", "panNumber", "aadhaarLast4", "bankAccount", "tier", 
+    "onboardingStep", "kycStatus", "dob", "gender", "address"
+  ];
+  for (const f of fields) {
+    if (body[f] !== undefined) {
+      if (f === "bankAccount" && body[f] !== null) {
+        patch[f] = typeof body[f] === "object" ? JSON.stringify(body[f]) : body[f];
+      } else {
+        patch[f] = body[f];
+      }
+    }
+  }
+  if (body.panNumber !== undefined && body.panNumber !== null) {
+    patch.panLast4 = body.panNumber.slice(-4);
+  }
   await db.update(partnerProfiles).set(patch).where(eq(partnerProfiles.userId, user.sub));
   return ok(c, { updated: true });
+});
+
+route.get("/public/:code", async (c) => {
+  const code = c.req.param("code");
+  const db = drizzle(c.env.DB);
+  const row = (await db.select({ businessName: partnerProfiles.businessName }).from(partnerProfiles).where(eq(partnerProfiles.partnerCode, code)).limit(1))[0];
+  if (!row) {
+    return ok(c, { businessName: "Credupe Techfin Pvt Ltd" });
+  }
+  return ok(c, { businessName: row.businessName });
 });
 
 export default route;

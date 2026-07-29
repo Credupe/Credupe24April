@@ -15,7 +15,12 @@ route.get("/admin/funnel", requireAuth, requireRole("ADMIN"), async (c) => {
   const byStatus: Record<string, number> = {};
   for (const row of (result.results ?? []) as any[]) byStatus[row.status] = Number(row.count);
   const total = Object.values(byStatus).reduce((a, b) => a + b, 0);
-  return ok(c, { total, byStatus });
+
+  // Fetch B2B leads count
+  const leadsResult = await c.env.DB.prepare("SELECT COUNT(*) as count FROM leads WHERE deleted_at IS NULL").first();
+  const leadsCount = leadsResult ? Number((leadsResult as any).count) : 0;
+
+  return ok(c, { total, byStatus, leadsCount });
 });
 
 route.get("/partner/summary", requireAuth, requireRole("PARTNER", "ADMIN"), async (c) => {

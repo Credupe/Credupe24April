@@ -1,20 +1,21 @@
 export const COLORS = {
-  primary: "#6C63FF",      // Main Purple
-  primaryLight: "#ECEBFF", // Light Purple background/highlight
-  primaryDark: "#4D46CC",  // Darker Purple
-  primaryMuted: "#D3D1FF", // Muted Purple for borders/icons
-  
+  primary: "#7C3AED",       // Main Purple
+  secondary: "#A855F7",     // Secondary Purple
+  accent: "#EEF2FF",        // Accent/Light purple bg
   white: "#FFFFFF",
-  background: "#F8F9FD",   // Off-white screen bg
+  background: "#F8FAFC",    // Off-white screen bg
   cardBg: "#FFFFFF",
   
-  text: "#1E1E2D",         // Dark slate for readability
-  textMuted: "#7E8299",    // Grey for labels
+  text: "#111827",          // Text Primary
+  textMuted: "#6B7280",     // Text Secondary
   textInverted: "#FFFFFF", // White text on dark bg
   
-  border: "#EFF2F5",       // Light border line color
-  greyLight: "#F5F6FA",    // Circular icon bg
-  redBadge: "#F1416C",     // Notification red
+  border: "#E5E7EB",        // Border
+  greyLight: "#F1F5F9",     // Circular icon bg/light grey
+  success: "#22C55E",       // Success green
+  redBadge: "#EF4444",      // Notification red
   
-  shadowColor: "#1E1E2D",
+  shadowColor: "#0F172A",
+  primaryLight: "#EEF2FF",
+  primaryMuted: "#C084FC",
 };

@@ -224,6 +224,16 @@ export const credupeApi = {
     }) {
       return request<any>("POST", "/loan-applications", input);
     },
+    createPublic(input: {
+      loanType: string;
+      amount: number;
+      tenureMonths: number;
+      lenderId?: string;
+      formData: Record<string, any>;
+      partnerCode?: string;
+    }) {
+      return request<any>("POST", "/loan-applications/public", input, { auth: false });
+    },
     mine(q: { page?: number; pageSize?: number; status?: ApplicationStatus } = {}) {
       const qs = new URLSearchParams(q as any).toString();
       return request<Paged<any>>("GET", `/loan-applications/mine${qs ? `?${qs}` : ""}`);
@@ -231,6 +241,15 @@ export const credupeApi = {
     get(id: string) { return request<any>("GET", `/loan-applications/${id}`); },
     cancel(id: string, note?: string) {
       return request<any>("POST", `/loan-applications/${id}/transition`, { toStatus: "CANCELLED", note });
+    },
+  },
+
+  lenders: {
+    get(slug: string) {
+      return request<any>("GET", `/lenders/${encodeURIComponent(slug)}`, undefined, { auth: false });
+    },
+    list(activeOnly = true) {
+      return request<{ items: any[], total: number }>("GET", `/lenders?active=${activeOnly}`, undefined, { auth: false });
     },
   },
 
@@ -243,6 +262,15 @@ export const credupeApi = {
     list(q: { page?: number; pageSize?: number; status?: string } = {}) {
       const qs = new URLSearchParams(q as any).toString();
       return request<Paged<any>>("GET", `/leads${qs ? `?${qs}` : ""}`);
+    },
+    createPublic(input: {
+      customerName: string;
+      customerMobile: string;
+      customerEmail?: string;
+      loanType: string;
+      partnerCode?: string;
+    }) {
+      return request<any>("POST", "/leads/public", input, { auth: false });
     },
   },
 
@@ -602,6 +630,12 @@ export const credupeApi = {
   uiConfig: {
     get() { return request<any>("GET", "/ui-config", undefined, { auth: false }); },
     patch(key: string, value: boolean) { return request<any>("PATCH", "/ui-config", { key, value }); },
+  },
+
+  partnerPublic: {
+    getBusinessName(code: string) {
+      return request<{ businessName: string }>("GET", `/partners/public/${code}`, undefined, { auth: false });
+    },
   },
 
   health() { return request<any>("GET", "/health", undefined, { auth: false }); },

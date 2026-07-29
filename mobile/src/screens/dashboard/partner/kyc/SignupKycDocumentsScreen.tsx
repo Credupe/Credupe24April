@@ -19,6 +19,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { RootStackParamList } from "../../../../../App";
 import { useTheme } from "../../../../theme/ThemeProvider";
 import { radii, spacing, typography } from "../../../../theme/colors";
+import { uploadDocument, patchPartnerProfile } from "../../../../api/credupe";
 
 const logoImage = require("../../../../../assets/logo.png");
 
@@ -112,9 +113,9 @@ export const SignupKycDocumentsScreen: React.FC<Props> = ({ navigation, route })
 
   const businessType: BusinessType =
     selectedBusinessType === "Proprietorship" ||
-    selectedBusinessType === "Individual" ||
-    selectedBusinessType === "Partnership" ||
-    selectedBusinessType === "Pvt Ltd"
+      selectedBusinessType === "Individual" ||
+      selectedBusinessType === "Partnership" ||
+      selectedBusinessType === "Pvt Ltd"
       ? selectedBusinessType
       : "Proprietorship";
 
@@ -171,24 +172,41 @@ export const SignupKycDocumentsScreen: React.FC<Props> = ({ navigation, route })
 
     setIsLoading(true);
     try {
-      // TODO: Call API to upload KYC documents
-      // const formData = new FormData();
-      // formData.append("panCard", { uri: panCard.uri, name: panCard.name, type: panCard.mimeType });
-      // formData.append("aadhaarCard", { uri: aadhaarCard.uri, name: aadhaarCard.name, type: aadhaarCard.mimeType });
-      // if (gstCertificate.uri) {
-      //   formData.append("gstCertificate", { uri: gstCertificate.uri, name: gstCertificate.name, type: gstCertificate.mimeType });
-      // }
-      // formData.append("photograph", { uri: photograph.uri, name: photograph.name, type: photograph.mimeType });
-      // formData.append("cancelledCheque", { uri: cancelledCheque.uri, name: cancelledCheque.name, type: cancelledCheque.mimeType });
-      // await uploadKycDocuments(formData);
+      // Upload all selected documents
+      for (const step of steps) {
+        const doc = documents[step.key];
+        if (doc?.uri) {
+          const response = await fetch(doc.uri);
+          const blob = await response.blob();
+          const uploadRes = await uploadDocument(
+            blob,
+            doc.name || `${step.key}.bin`,
+            "KYC",
+            undefined,
+            step.title
+          );
+          if (!uploadRes.ok) {
+            throw new Error(uploadRes.error || `Failed to upload ${step.title}`);
+          }
+        }
+      }
+
+      // Mark onboarding step as COMPLETE and kycStatus as PENDING
+      const patchRes = await patchPartnerProfile({
+        onboardingStep: "COMPLETE",
+        kycStatus: "PENDING",
+      });
+      if (!patchRes.success) {
+        throw new Error(patchRes.error?.message?.join("\n") || "Failed to complete onboarding step");
+      }
 
       setIsLoading(false);
       setShowKycCompleteModal(true);
-    } catch (error) {
+    } catch (error: any) {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Failed to upload documents. Please try again.",
+        text2: error.message || "Failed to upload documents. Please try again.",
       });
       setIsLoading(false);
     }
@@ -286,7 +304,7 @@ export const SignupKycDocumentsScreen: React.FC<Props> = ({ navigation, route })
               <Text style={styles.modalTitle}>KYC Complete</Text>
               <Text style={styles.modalSubtitle}>Your KYC documents have been submitted successfully.</Text>
 
-             
+
 
               <Pressable style={[styles.modalSecondaryBtn, { borderColor: colors.primary }]} onPress={goToDashboard}>
                 <Text style={[styles.modalSecondaryBtnText, { color: colors.primary }]}>Back to Dashboard</Text>

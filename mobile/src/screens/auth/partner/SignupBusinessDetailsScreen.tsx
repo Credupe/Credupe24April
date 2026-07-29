@@ -33,6 +33,8 @@ export const SignupBusinessDetailsScreen: React.FC<Props> = ({ navigation, route
   const [officeAddress, setOfficeAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const { onboardingToken } = route.params || {};
+
   const handleContinue = async () => {
     if (!businessName.trim()) {
       Toast.show({ type: "error", text1: "Please enter your business/firm name" });
@@ -61,21 +63,16 @@ export const SignupBusinessDetailsScreen: React.FC<Props> = ({ navigation, route
 
     setIsLoading(true);
     try {
-      // TODO: Call API to submit business details
-      // await submitBusinessDetails({
-      //   businessName,
-      //   gstNumber,
-      //   panNumber,
-      //   city,
-      //   state,
-      //   pincode,
-      //   officeAddress,
-      // });
-
-      // Navigate to KYC Documents screen after successful submission
-      setTimeout(() => {
-       navigation.replace("SignupPayoutAccount" as any);
-      }, 500);
+      navigation.replace("SignupPayoutAccount" as any, {
+        onboardingToken,
+        businessName: businessName.trim(),
+        gstNumber: gstNumber.trim() || undefined,
+        panNumber: panNumber.trim().toUpperCase(),
+        city: city.trim(),
+        state: state.trim(),
+        pincode: pincode.trim(),
+        address: officeAddress.trim(),
+      });
     } catch (error) {
       Toast.show({ type: "error", text1: "Failed to submit business details. Please try again." });
     } finally {

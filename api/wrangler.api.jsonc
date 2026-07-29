@@ -12,6 +12,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  },
   "d1_databases": [
     {
       "binding": "DB",
@@ -31,7 +34,12 @@
     "JWT_ACCESS_TTL": "900",
     "JWT_REFRESH_TTL": "2592000",
     "BCRYPT_SALT_ROUNDS": "10",
-    "CORS_ORIGINS": "*"
+    "CORS_ORIGINS": "*",
+    "NOTIFICATION_EMAIL": "av457508@gmail.com,mahesh@credupe.com,Aniket@credupe.com,Contact@credupe.com",
+    "DAILY_LEADS_REPORT_TIME": "12:00",
+    "DAILY_LEADS_REPORT_TIMEZONE": "Asia/Kolkata",
+    "TELNYX_SENDER": "+14244797457",
+    "TWILIO_SENDER": "+17627612607"
   },
   "env": {
     "staging": {
@@ -62,7 +70,12 @@
         "JWT_REFRESH_TTL": "2592000",
         "RESEND_FROM_EMAIL": "Credupe Staging <noreply+staging@credupe.com>",
         "BCRYPT_SALT_ROUNDS": "10",
-        "CORS_ORIGINS": "https://staging.credupe.com,https://credupe-staging-web.credupe.workers.dev"
+        "CORS_ORIGINS": "https://staging.credupe.com,https://credupe-staging-web.credupe.workers.dev",
+        "NOTIFICATION_EMAIL": "av457508@gmail.com,mahesh@credupe.com,Aniket@credupe.com,Contact@credupe.com",
+        "DAILY_LEADS_REPORT_TIME": "12:00",
+        "DAILY_LEADS_REPORT_TIMEZONE": "Asia/Kolkata",
+        "TELNYX_SENDER": "+14244797457",
+        "TWILIO_SENDER": "+17627612607"
       }
     },
     "production": {
@@ -93,7 +106,12 @@
         "JWT_REFRESH_TTL": "2592000",
         "RESEND_FROM_EMAIL": "Credupe <noreply@credupe.com>",
         "BCRYPT_SALT_ROUNDS": "10",
-        "CORS_ORIGINS": "https://credupe.com,https://www.credupe.com,https://credupe-prod-web.credupe.workers.dev"
+        "CORS_ORIGINS": "https://credupe.com,https://www.credupe.com,https://credupe-prod-web.credupe.workers.dev",
+        "NOTIFICATION_EMAIL": "av457508@gmail.com,mahesh@credupe.com,Aniket@credupe.com,Contact@credupe.com",
+        "DAILY_LEADS_REPORT_TIME": "12:00",
+        "DAILY_LEADS_REPORT_TIMEZONE": "Asia/Kolkata",
+        "TELNYX_SENDER": "+14244797457",
+        "TWILIO_SENDER": "+17627612607"
       }
     }
   }

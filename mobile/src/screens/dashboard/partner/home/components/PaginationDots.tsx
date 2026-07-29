@@ -10,15 +10,18 @@ interface Props {
 export const PaginationDots: React.FC<Props> = React.memo(({ count, activeIndex }) => {
   return (
     <View style={styles.container}>
-      {Array.from({ length: count }).map((_, index) => (
-        <View
-          key={index}
-          style={[
-            styles.dot,
-            index === activeIndex ? styles.activeDot : styles.inactiveDot,
-          ]}
-        />
-      ))}
+      {Array.from({ length: count }).map((_, index) => {
+        const isActive = index === activeIndex;
+        return (
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              isActive ? styles.activeDot : styles.inactiveDot,
+            ]}
+          />
+        );
+      })}
     </View>
   );
 });
@@ -28,22 +31,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 12,
+    marginTop: 14,
+    marginBottom: 6,
     gap: 6,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    height: 6,
+    borderRadius: 3,
   },
   activeDot: {
     backgroundColor: COLORS.primary,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 20,
   },
   inactiveDot: {
-    backgroundColor: COLORS.primaryMuted,
-    opacity: 0.5,
+    backgroundColor: "#D1D5DB",
+    width: 6,
   },
 });

@@ -2,12 +2,13 @@ import { Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
-const bannerWidth = Math.min(width - 32, 480);
+// 20px horizontal padding on each side -> total screen padding is 40
+const bannerWidth = Math.min(width - 40, 480);
 
 export const DIMENSIONS = {
   width,
   height,
-  cardWidth: (width - 48) / 3, // Grid card width
+  cardWidth: (width - 60) / 2, // 2 columns: screen width - 40 (horizontal padding) - 20 (middle gap)
   bannerWidth,
-  bannerHeight: Math.round(bannerWidth * 0.44), // Maintain a clean ~2.27:1 aspect ratio (160/360)
+  bannerHeight: 180,           // Standardized banner height 180
 };
