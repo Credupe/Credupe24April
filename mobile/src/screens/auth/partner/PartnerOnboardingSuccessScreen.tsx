@@ -9,10 +9,13 @@ import { radii, spacing, typography } from "../../../theme/colors";
 
 const logoImage = require("../../../../assets/logo.png");
 
-type Props = NativeStackScreenProps<RootStackParamList, "PartnerOnboardingSuccess">;
+type Props = NativeStackScreenProps<RootStackParamList, "PartnerOnboardingSuccess"> & {
+  onAuthed: () => void;
+};
 
-export const PartnerOnboardingSuccessScreen: React.FC<Props> = ({ navigation }) => {
+export const PartnerOnboardingSuccessScreen: React.FC<Props> = ({ navigation, route, onAuthed }) => {
   const { colors } = useTheme();
+  const { partnerCode, tempPassword } = route.params || {};
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -28,17 +31,22 @@ export const PartnerOnboardingSuccessScreen: React.FC<Props> = ({ navigation }) 
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>YOUR PARTNER CODE</Text>
-          <Text style={styles.cardValue}>CRD - PA0003</Text>
+          <Text style={styles.cardValue}>{partnerCode || "CRD-PA00000"}</Text>
           <Text style={styles.cardHint}>Share this with customers to attribute leads to you.</Text>
         </View>
 
-        <View style={styles.passwordCard}>
-          <Text style={styles.passwordLabel}>TEMPORARY PASSWORD</Text>
-          <Text style={styles.passwordValue}>u4ubr18w</Text>
-          <Text style={styles.passwordHint}>Save it now. You can change it from the dashboard.</Text>
-        </View>
+        {tempPassword ? (
+          <View style={styles.passwordCard}>
+            <Text style={styles.passwordLabel}>TEMPORARY PASSWORD</Text>
+            <Text style={styles.passwordValue}>{tempPassword}</Text>
+            <Text style={styles.passwordHint}>Save it now. You can change it from the dashboard.</Text>
+          </View>
+        ) : null}
 
-        <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={() => navigation.replace("PartnerHomeDirect")}>
+        <Pressable
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          onPress={() => onAuthed()}
+        >
           <Text style={styles.buttonText}>Open my dashboard</Text>
         </Pressable>
       </View>

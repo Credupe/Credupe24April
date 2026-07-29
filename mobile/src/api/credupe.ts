@@ -245,6 +245,12 @@ export async function updateLoanProduct(id: string, patch: Partial<LoanProduct> 
   });
 }
 
+export async function deleteLoanProduct(id: string) {
+  return apiFetch<{ id: string; deleted: boolean }>(`/loan-products/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export interface LoanApplication {
   id: string;
   referenceNo: string;
@@ -369,6 +375,43 @@ export async function patchMyProfile(patch: Partial<CustomerProfile>) {
   });
 }
 
+/* ─── Partner profile (KYC) ────────────────────────────────────────────── */
+
+export interface PartnerProfile {
+  id: string;
+  userId: string;
+  partnerCode: string;
+  businessName: string;
+  contactPerson?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  address?: string | null;
+  gstNumber?: string | null;
+  panNumber?: string | null;
+  panLast4?: string | null;
+  aadhaarLast4?: string | null;
+  bankAccount?: string | null;
+  tier?: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM";
+  onboardingStep?: string;
+  kycStatus?: "PENDING" | "VERIFIED" | "REJECTED";
+  dob?: string | null;
+  gender?: "Male" | "Female" | "Other" | null;
+}
+
+export async function fetchPartnerProfile() {
+  return apiFetch<{ profile: PartnerProfile | null }>("/partners/me");
+}
+
+export async function patchPartnerProfile(patch: Partial<PartnerProfile>) {
+  return apiFetch<{ updated: boolean }>("/partners/me", {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
 /* ─── Documents ───────────────────────────────────────────────────────── */
 
 export type DocumentTag = "KYC" | "INCOME" | "PROPERTY" | "BANK_STATEMENT" | "OTHER";
@@ -377,6 +420,7 @@ export interface MyDocument {
   id: string;
   tag: DocumentTag;
   fileName: string;
+  documentName?: string;
   mimeType: string | null;
   status: "UPLOADED" | "VERIFIED" | "REJECTED" | "PENDING";
   rejectionReason?: string | null;
@@ -409,6 +453,7 @@ export async function presignDocument(params: {
 export async function registerDocument(params: {
   docId: string;
   fileName: string;
+  documentName?: string;
   mimeType?: string;
   sizeBytes?: number;
   storageKey: string;
@@ -430,6 +475,7 @@ export async function uploadDocument(
   fileName: string,
   tag: DocumentTag = "KYC",
   applicationId?: string,
+  documentName?: string,
 ): Promise<{ ok: boolean; docId?: string; error?: string }> {
   const presign = await presignDocument({
     fileName,
@@ -458,6 +504,7 @@ export async function uploadDocument(
   const reg = await registerDocument({
     docId,
     fileName,
+    documentName,
     mimeType: blob.type || undefined,
     sizeBytes: blob.size,
     storageKey,
@@ -623,6 +670,21 @@ export async function fetchAdminApplications(status?: ApplicationStatus) {
   return apiFetch<{ items: AdminApplication[]; total: number }>(`/loan-applications${qs}`);
 }
 
+export async function fetchApplicationDetails(id: string) {
+  return apiFetch<{
+    id: string;
+    referenceNo: string;
+    loanType: string;
+    amount: number;
+    tenureMonths: number;
+    status: string;
+    formData: Record<string, any> | null;
+    createdAt: string;
+    updatedAt: string;
+    history: any[];
+  }>(`/loan-applications/${id}`);
+}
+
 export async function transitionApplication(id: string, toStatus: ApplicationStatus, note?: string) {
   return apiFetch<{ id: string; status: ApplicationStatus }>(
     `/loan-applications/${id}/transition`,
@@ -633,9 +695,11 @@ export async function transitionApplication(id: string, toStatus: ApplicationSta
 export interface AdminDocument {
   id: string;
   ownerUserId: string;
+  ownerName?: string;
   applicationId: string | null;
   tag: DocumentTag;
   fileName: string;
+  documentName?: string;
   mimeType: string | null;
   storageKey: string;
   sizeBytes: number | null;
@@ -651,6 +715,19 @@ export async function fetchAdminDocuments(params: { status?: string; tag?: Docum
   return apiFetch<{ items: AdminDocument[]; total: number }>(
     `/documents${qs ? `?${qs}` : ""}`,
   );
+}
+
+
+
+export function getDocumentViewUrl(id: string): string {
+  return `${API}/documents/${id}/view`;
+}
+
+export async function getDocumentViewHeaders(): Promise<Record<string, string>> {
+  const { access } = await readTokens();
+  return {
+    Authorization: access ? `Bearer ${access}` : "",
+  };
 }
 
 export async function verifyDocument(id: string, status: "VERIFIED" | "REJECTED", rejectionReason?: string) {
@@ -736,3 +813,188 @@ export async function markNotificationRead(id: string) {
 export async function markAllNotificationsRead() {
   return apiFetch<{ read: boolean }>("/notifications/read-all", { method: "POST" });
 }
+
+/* ─── Partner onboarding ────────────────────────────────────────────────── */
+
+export interface StartOnboardingResult {
+  onboardingToken: string;
+  expiresInSec: number;
+}
+
+export interface RequestOtpResult {
+  channel: "mobile" | "email";
+  destination: string;
+  expiresInSec: number;
+  devOtp?: string;
+}
+
+export interface VerifyOtpResult {
+  onboardingToken: string;
+  mobileVerified: boolean;
+  emailVerified: boolean;
+  bothVerified: boolean;
+}
+
+export interface FinalizePartnerInput {
+  onboardingToken: string;
+  businessName: string;
+  gstNumber?: string;
+  panNumber?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  address?: string;
+  password?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  ifsc?: string;
+}
+
+export interface FinalizePartnerResult {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: ApiUser;
+  partner: {
+    id: string;
+    partnerCode: string;
+    businessName: string;
+    onboardingStep: string;
+    tier: string;
+  };
+  generatedPassword?: string;
+}
+
+export async function startPartnerOnboarding(email: string, mobile: string, contactPerson: string) {
+  return rawFetch<StartOnboardingResult>("/partner-onboarding/start", {
+    method: "POST",
+    body: JSON.stringify({ email, mobile, contactPerson }),
+    skipAuth: true,
+  });
+}
+
+export async function requestPartnerOtp(onboardingToken: string, channel: "mobile" | "email", destination: string) {
+  return rawFetch<RequestOtpResult>("/partner-onboarding/otp/request", {
+    method: "POST",
+    body: JSON.stringify({ onboardingToken, channel, destination }),
+    skipAuth: true,
+  });
+}
+
+export async function verifyPartnerOtp(onboardingToken: string, channel: "mobile" | "email", destination: string, code: string) {
+  return rawFetch<VerifyOtpResult>("/partner-onboarding/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ onboardingToken, channel, destination, code }),
+    skipAuth: true,
+  });
+}
+
+export async function finalizePartnerOnboarding(input: FinalizePartnerInput) {
+  const r = await rawFetch<FinalizePartnerResult>("/partner-onboarding/finalize", {
+    method: "POST",
+    body: JSON.stringify(input),
+    skipAuth: true,
+  });
+  if (r.success && r.data) {
+    await writeTokens(r.data.accessToken, r.data.refreshToken);
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(r.data.user));
+  }
+  return r;
+}
+
+/* ─── Forgot/Reset Password ─────────────────────────────────────────────── */
+
+export interface ForgotPasswordResult {
+  email: string;
+  expiresInSec: number;
+  devOtp?: string;
+}
+
+export async function forgotPassword(email: string) {
+  return rawFetch<ForgotPasswordResult>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+    skipAuth: true,
+  });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string) {
+  return rawFetch<{ success: boolean }>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ email, code, newPassword }),
+    skipAuth: true,
+  });
+}
+
+export async function sendOtpDirect(phone: string) {
+  return rawFetch<{ destination: string; expiresInSec: number; devOtp?: string }>(
+    "/auth/send-otp",
+    {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+      skipAuth: true,
+    }
+  );
+}
+
+/* ─── Feedback Endpoints ────────────────────────────────────────────────── */
+
+export interface UserFeedback {
+  id: string;
+  userId: string;
+  rating: number;
+  ratingLabel: string;
+  ipAddress?: string;
+  device?: string;
+  platform?: string;
+  appVersion?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubmitFeedbackResult {
+  success: boolean;
+  message: string;
+}
+
+export async function submitFeedback(
+  rating: number,
+  details?: { device?: string; platform?: string; appVersion?: string }
+) {
+  return apiFetch<SubmitFeedbackResult>("/feedback", {
+    method: "POST",
+    body: JSON.stringify({ rating, ...details }),
+  });
+}
+
+export async function fetchMyFeedback() {
+  return apiFetch<{ items: UserFeedback[]; total: number }>("/feedback/my");
+}
+
+export async function fetchAdminFeedback(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  rating?: number;
+  ratingLabel?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+} = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== "")
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
+  return apiFetch<{
+    items: (UserFeedback & { userEmail: string; userRole: string })[];
+    total: number;
+    totalPages: number;
+  }>(`/admin/feedback${qs ? `?${qs}` : ""}`);
+}
+
+
+
+

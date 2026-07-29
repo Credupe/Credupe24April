@@ -22,6 +22,7 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import type { AppEnv } from "./env";
 import { ok, fail } from "./lib/envelope";
+import { processScheduledReport } from "./modules/leads-report";
 
 import health from "./modules/health";
 import auth from "./modules/auth";
@@ -39,6 +40,8 @@ import analytics from "./modules/analytics";
 import uiConfig from "./modules/ui-config";
 import partnerOnboarding from "./modules/partner-onboarding";
 import partnerDashboard from "./modules/partner-dashboard";
+import { feedback, adminFeedback } from "./modules/feedback";
+
 
 const app = new Hono<AppEnv>();
 
@@ -67,6 +70,7 @@ v1.route("/customers", customers);
 v1.route("/partners", partners);
 v1.route("/lenders", lenders);
 v1.route("/loan-products", loanProducts);
+v1.route("/admin/loan-products", loanProducts);
 v1.route("/quotes", quotes);
 v1.route("/loan-applications", loanApplications);
 v1.route("/leads", leads);
@@ -76,8 +80,12 @@ v1.route("/analytics", analytics);
 v1.route("/ui-config", uiConfig);
 v1.route("/partner-onboarding", partnerOnboarding);
 v1.route("/partner-dashboard", partnerDashboard);
+v1.route("/feedback", feedback);
+v1.route("/admin/feedback", adminFeedback);
 
 app.route("/api/v1", v1);
+app.route("/api/feedback", feedback);
+app.route("/api/admin/feedback", adminFeedback);
 
 // ── 404 fallback ─────────────────────────────────────────────────────────
 app.notFound((c) => fail(c, 404, "NOT_FOUND", `Route ${c.req.method} ${c.req.path} not found`));
@@ -88,4 +96,9 @@ app.onError((err, c) => {
   return fail(c, 500, "INTERNAL_ERROR", err instanceof Error ? err.message : String(err));
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(event: ScheduledEvent, env: any, ctx: ExecutionContext) {
+    ctx.waitUntil(processScheduledReport(env));
+  }
+};

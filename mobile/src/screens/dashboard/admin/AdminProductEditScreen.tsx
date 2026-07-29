@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +18,7 @@ import {
   Lender,
   LoanProduct,
   updateLoanProduct,
+  deleteLoanProduct,
 } from "../../../api/credupe";
 import { useTheme } from "../../../theme/ThemeProvider";
 import { radii, spacing, typography } from "../../../theme/colors";
@@ -125,6 +127,40 @@ export const AdminProductEditScreen: React.FC<Props> = ({ product, onBack, onSav
     });
     onSaved();
   }, [name, lenderId, loanType, minAmount, maxAmount, minTenure, maxTenure, minRate, maxRate, procFee, minIncome, minCibil, active, isNew, product, onSaved]);
+
+  const handleDelete = useCallback(async () => {
+    if (isNew || !product) return;
+    Alert.alert(
+      "Confirm Deletion",
+      `Are you sure you want to delete ${product.name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setSaving(true);
+            const r = await deleteLoanProduct(product.id);
+            setSaving(false);
+            if (!r.success) {
+              Toast.show({
+                type: "error",
+                text1: "Delete failed",
+                text2: r.error?.message?.join("\n") ?? "Try again",
+              });
+              return;
+            }
+            Toast.show({
+              type: "success",
+              text1: "Product deleted",
+              text2: "Changes applied successfully.",
+            });
+            onSaved();
+          }
+        }
+      ]
+    );
+  }, [isNew, product, onSaved]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
@@ -257,6 +293,23 @@ export const AdminProductEditScreen: React.FC<Props> = ({ product, onBack, onSav
             </Text>
           )}
         </Pressable>
+
+        {!isNew ? (
+          <Pressable
+            onPress={handleDelete}
+            disabled={saving}
+            style={[styles.deleteBtn, { borderColor: "#EF4444", borderWidth: 1, opacity: saving ? 0.7 : 1 }]}
+            accessibilityLabel="delete-product-btn"
+          >
+            {saving ? (
+              <ActivityIndicator color="#EF4444" />
+            ) : (
+              <Text style={{ color: "#EF4444", fontWeight: "800", fontSize: 16 }}>
+                Delete Product
+              </Text>
+            )}
+          </Pressable>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -334,5 +387,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radii.pill,
     alignItems: "center",
+  },
+  deleteBtn: {
+    marginTop: spacing.md,
+    paddingVertical: 16,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    borderWidth: 1,
   },
 });

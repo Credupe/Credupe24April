@@ -1,0 +1,81 @@
+                    React Native App
+                           │
+                    Request OTP
+                           │
+                           ▼
+                Cloudflare Worker API
+  (/api/v1 / auth / send - otp)
+                           │
+                           ▼
+                Routing Decision Engine
+                           │
+        ┌──────────────────┼────────────────────┐
+        │                  │                    │
+        ▼                  ▼                    ▼
+ Country Detection   Routing Strategy     Feature Flags
+        │                  │                    │
+        ▼                  ▼                    ▼
+ Provider Priority    WhatsApp Enabled ? Cost Rules
+        │                  │
+        ▼                  ▼
+ Provider Queue Builder
+        │
+        ▼
+ Attempt Provider #1
+        │
+Success ?
+   /        \
+ Yes         No
+ │            │
+ ▼            ▼
+ Return     Provider #2
+                 │
+Success ?
+            /      \
+          Yes       No
+           │         │
+           ▼         ▼
+       Return    Provider #3
+                     │
+                     ▼
+                 Twilio Backup
+
+
+                 United States & Canada (US / CA) — A2P 10DLC & Toll-Free Verification
+The Regulation: Carrier networks in the US and Canada strictly monitor A2P (Application-to-Person) SMS.
+How it works (10DLC): If you send SMS from a standard 10-digit long code phone number, you must register your Brand (business identity) and Campaign (what you are sending) with The Campaign Registry (TCR).
+Toll-Free Verification: If you send from a Toll-Free number, the number must go through a formal verification process declaring your business and opt-in method.
+Why it matters: Unregistered numbers sending A2P messages face nearly 100% block rates by major carriers (T-Mobile, AT&T, Verizon) and suffer high carrier surcharges.
+2. India (IN) — DLT (Distributed Ledger Technology) Registry
+The Regulation: Regulated by the Telecom Regulatory Authority of India (TRAI) to combat massive SMS spam.
+How it works: India uses a blockchain-based registry called DLT. To deliver messages, you must register:
+Principal Entity (PE): Your business registration on a carrier's DLT portal.
+Sender Headers (Sender IDs): The 6-character alphabetic header indicating who sent the message (e.g., CP-CREDUP).
+Content Templates: The exact structure of your messages (e.g., OTP texts, promotional messages). Every template must have variables defined (e.g., Your OTP is {#var#}).
+Why it matters: If the message body sent by your application does not exactly match a registered and approved template in the DLT registry, local operators will instantly drop the message.
+3. Singapore (SG) — SSIR (SMS Sender ID Registry)
+The Regulation: Operated by the Singapore Network Information Centre (SGNIC) to eliminate spoofing and phishing scams.
+How it works: Any organization wishing to send SMS using an alphanumeric Sender ID (like CREDUPE) to Singapore mobile numbers must register that specific ID using their Singapore UEN (Unique Entity Number).
+Why it matters: Any unregistered alphanumeric Sender ID will be automatically overwritten and labeled by carriers as "Likely-SCAM" or completely blocked.
+4. Malaysia (MY) — "RM0.00" Prefix & Content Rules
+The Regulation: Governed by the Malaysian Communications and Multimedia Commission (MCMC) to protect consumers.
+How it works:
+"RM0.00" Prefix: Every message body must start with the prefix RM0.00 (Ringgit Malaysia 0.00). This indicates to the consumer that they are not being charged to receive the message.
+Link Restrictions: Malaysian carriers heavily filter messages that contain URLs, callback numbers, or requests for personal/financial info.
+Why it matters: Messages without the RM0.00 prefix or containing restricted content (like unregistered short-links) are rejected by operators.
+5. Indonesia (ID) — Brand Identity & Keyword Filtering
+The Regulation: Designed by Indonesian carriers to secure OTP verification paths.
+How it works:
+Brand Matching: Messages must include your business/brand name inside the message body.
+Keyword Restrictions: Indonesian telcos (like Telkomsel and XL Axiata) actively filter and block unregistered traffic containing sensitive OTP keywords like Verify, PIN, OTP, or Code.
+Why it matters: To reliably send transactional updates or OTPs, you must whitelist your sender ID and register your OTP templates directly with the carriers through your SMS provider.
+6. Germany (DE) — Explicit Opt-In (UWG)
+The Regulation: Germany enforces some of the strictest data privacy and anti-spam laws (under GDPR and the German Act Against Unfair Competition - UWG).
+How it works: You must have prior, explicit, and documented consent (double opt-in is highly recommended) before sending any marketing messages.
+Why it matters: Sending unsolicited SMS in Germany exposes businesses to massive regulatory fines and legal cease-and-desist warnings (Abmahnung) from competitors or consumer rights organizations.
+7. France (FR) — Mandated Sending Windows & "STOP" Opt-Out
+The Regulation: Regulated by ARCEP and CNIL to protect consumer privacy.
+How it works:
+Strict Marketing Hours: Promotional and marketing SMS can only be sent between 08:00 and 21:30 (local French time) from Monday to Saturday. Sending promotional SMS on Sundays, French public holidays, or late at night is strictly prohibited.
+"STOP" Keyword: Every marketing message must end with a standard opt-out command (e.g., STOP au 36xxx).
+Why it matters: French carriers use time-based filters to block promotional messages outside the allowed windows. (Note: Transactional messages like OTP security codes are exempt from the time limits and can be sent 24/7).
