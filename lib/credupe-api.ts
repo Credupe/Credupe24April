@@ -568,6 +568,7 @@ export const credupeApi = {
     async finalize(input: {
       onboardingToken: string;
       businessName: string;
+      businessType?: string;
       gstNumber?: string;
       panNumber?: string;
       city?: string;

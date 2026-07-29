@@ -350,6 +350,7 @@ route.post("/finalize", async (c) => {
     .object({
       onboardingToken: z.string(),
       businessName: z.string().min(2),
+      businessType: z.string().optional(),
       gstNumber: z.string().optional(),
       panNumber: z.string().optional(),
       city: z.string().optional(),
@@ -442,6 +443,7 @@ route.post("/finalize", async (c) => {
     userId,
     partnerCode,
     businessName: dto.businessName,
+    businessType: dto.businessType ?? null,
     contactPerson: session.contactPerson,
     email: session.email,
     mobile: session.mobile,

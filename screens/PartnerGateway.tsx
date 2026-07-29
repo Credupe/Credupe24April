@@ -39,13 +39,42 @@ const STEP_LABEL: Record<Step, string> = {
   success: "Done",
 };
 
-const KYC_DOC_SLOTS = [
-  { tag: "PAN", label: "PAN Card", required: true,  hint: "JPG/PDF · ≤ 5 MB" },
-  { tag: "AADHAAR", label: "Aadhaar Card", required: true,  hint: "Front + back single PDF" },
-  { tag: "GST", label: "GST Certificate", required: false, hint: "Optional, for registered businesses" },
-  { tag: "PHOTO", label: "Recent Photograph", required: true,  hint: "Passport-sized · JPG" },
-  { tag: "CHEQUE", label: "Cancelled Cheque", required: true,  hint: "Bank account proof" },
-] as const;
+export type BusinessType = "Proprietorship" | "Individual" | "Partnership" | "Pvt Ltd";
+
+export const KYC_FLOWS: Record<BusinessType, Array<{ tag: string; label: string; required: boolean; hint: string }>> = {
+  Proprietorship: [
+    { tag: "AADHAAR", label: "Aadhaar Card", required: true, hint: "Front + back single PDF" },
+    { tag: "PAN", label: "PAN Card", required: true, hint: "Proprietor PAN · JPG/PDF · ≤ 5 MB" },
+    { tag: "GST", label: "GST Registration (If Any)", required: false, hint: "Optional, for registered businesses" },
+    { tag: "CHEQUE", label: "Cancelled Cheque", required: true, hint: "Bank account proof" },
+    { tag: "PHOTO", label: "Passport Photo", required: true, hint: "Passport-sized · JPG" },
+    { tag: "OFFICE_PHOTO", label: "Office Photo", required: true, hint: "Office premises · JPG/PNG" },
+  ],
+  Individual: [
+    { tag: "AADHAAR", label: "Aadhaar Card", required: true, hint: "Front + back single PDF" },
+    { tag: "PAN", label: "PAN Card", required: true, hint: "Individual PAN · JPG/PDF · ≤ 5 MB" },
+    { tag: "GST", label: "GST Registration (If Any)", required: false, hint: "Optional" },
+    { tag: "CHEQUE", label: "Cancelled Cheque", required: true, hint: "Bank account proof" },
+    { tag: "PHOTO", label: "Passport Photo", required: true, hint: "Passport-sized · JPG" },
+    { tag: "PHOTO_WITH_UM", label: "Photo with Credupe Representative", required: true, hint: "Selfie with Credupe Representative" },
+  ],
+  Partnership: [
+    { tag: "PAN", label: "PAN Card", required: true, hint: "Entity PAN · JPG/PDF · ≤ 5 MB" },
+    { tag: "GST", label: "GST Registration (If Any)", required: false, hint: "Optional" },
+    { tag: "PARTNERSHIP_DEED", label: "Partnership Deed", required: true, hint: "Partnership Deed PDF" },
+    { tag: "CHEQUE", label: "Cancelled Cheque", required: true, hint: "Bank account proof" },
+    { tag: "LETTER_OF_AUTHORIZATION", label: "Letter of Authorization", required: true, hint: "Authorized signatory letter" },
+    { tag: "OFFICE_PHOTO", label: "Office Photo", required: true, hint: "Office premises · JPG/PNG" },
+  ],
+  "Pvt Ltd": [
+    { tag: "PAN", label: "PAN Card", required: true, hint: "Company PAN · JPG/PDF · ≤ 5 MB" },
+    { tag: "GST", label: "GST Registration (If Any)", required: false, hint: "Optional" },
+    { tag: "CERTIFICATE_OF_INCORPORATION", label: "Certificate of Incorporation", required: true, hint: "Certificate of Incorporation PDF" },
+    { tag: "CHEQUE", label: "Cancelled Cheque", required: true, hint: "Bank account proof" },
+    { tag: "LETTER_OF_AUTHORIZATION", label: "Letter of Authorization", required: true, hint: "Board resolution or LOA" },
+    { tag: "OFFICE_PHOTO", label: "Office Photo", required: true, hint: "Office premises · JPG/PNG" },
+  ],
+};
 
 type KycDoc = {
   slot: string;
@@ -85,6 +114,7 @@ export default function PartnerOnboarding() {
   const [emailResendIn, setEmailResendIn] = useState(0);
 
   // business
+  const [businessType, setBusinessType] = useState<BusinessType>("Proprietorship");
   const [businessName, setBusinessName] = useState("");
   const [gstNumber, setGstNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
@@ -308,7 +338,8 @@ export default function PartnerOnboarding() {
   }
 
   function submitKyc() {
-    const missing = KYC_DOC_SLOTS.filter(
+    const currentSlots = KYC_FLOWS[businessType];
+    const missing = currentSlots.filter(
       (s) => s.required && !docs.find((d) => d.slot === s.tag && d.documentId),
     );
     if (missing.length) {
@@ -350,6 +381,7 @@ export default function PartnerOnboarding() {
       const res = await credupeApi.partnerOnboarding.finalize({
         onboardingToken,
         businessName, gstNumber, panNumber,
+        businessType,
         city, state, pincode, address,
         bankName, accountHolder: accountHolder || businessName, accountNumber, ifsc,
         kycDocuments,
@@ -463,6 +495,7 @@ export default function PartnerOnboarding() {
               <BusinessStep
                 key="business"
                 businessName={businessName} setBusinessName={setBusinessName}
+                businessType={businessType} setBusinessType={setBusinessType}
                 gstNumber={gstNumber} setGstNumber={setGstNumber}
                 panNumber={panNumber} setPanNumber={setPanNumber}
                 city={city} setCity={setCity}
@@ -477,6 +510,7 @@ export default function PartnerOnboarding() {
               <KycStep
                 key="kyc"
                 docs={docs}
+                businessType={businessType}
                 onFile={handleFile}
                 onRemove={removeDoc}
                 onBack={() => setStep("business")}
@@ -693,6 +727,19 @@ function BusinessStep(p: any) {
         <Field label="Business / Firm Name *" full>
           <input data-testid="onboard-business-name" value={p.businessName} onChange={(e) => p.setBusinessName(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50" placeholder="ABC Financial Services LLP" />
         </Field>
+        <Field label="Partnership Type *">
+          <select
+            data-testid="onboard-business-type"
+            value={p.businessType}
+            onChange={(e) => p.setBusinessType(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          >
+            <option value="Proprietorship">Proprietorship</option>
+            <option value="Individual">Individual</option>
+            <option value="Partnership">Partnership</option>
+            <option value="Pvt Ltd">Pvt Ltd</option>
+          </select>
+        </Field>
         <Field label="GST Number (optional)">
           <input data-testid="onboard-gst" value={p.gstNumber} onChange={(e) => p.setGstNumber(e.target.value.toUpperCase())} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 font-mono" placeholder="27AABCD1234E1Z5" />
         </Field>
@@ -722,10 +769,12 @@ function BusinessStep(p: any) {
 
 function KycStep(p: {
   docs: KycDoc[];
+  businessType: BusinessType;
   onFile: (slot: string, f: File) => void;
   onRemove: (slot: string) => void;
   onBack: () => void; onSubmit: () => void;
 }) {
+  const currentSlots = KYC_FLOWS[p.businessType];
   return (
     <StepShell>
       <div className="flex items-center gap-3 mb-6">
@@ -738,7 +787,7 @@ function KycStep(p: {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {KYC_DOC_SLOTS.map((slot) => {
+        {currentSlots.map((slot) => {
           const doc = p.docs.find((d) => d.slot === slot.tag);
           return (
             <DocSlot key={slot.tag} slot={slot} doc={doc} onFile={p.onFile} onRemove={p.onRemove} />
@@ -756,7 +805,7 @@ function KycStep(p: {
 function DocSlot({
   slot, doc, onFile, onRemove,
 }: {
-  slot: typeof KYC_DOC_SLOTS[number];
+  slot: { tag: string; label: string; required: boolean; hint: string };
   doc?: KycDoc;
   onFile: (slot: string, f: File) => void;
   onRemove: (slot: string) => void;
@@ -767,9 +816,8 @@ function DocSlot({
   return (
     <div
       data-testid={`kyc-slot-${slot.tag.toLowerCase()}`}
-      className={`rounded-xl border-2 border-dashed p-4 transition-colors ${
-        uploaded ? "border-green-500/40 bg-green-500/5" : "border-border hover:border-primary/40"
-      }`}
+      className={`rounded-xl border-2 border-dashed p-4 transition-colors ${uploaded ? "border-green-500/40 bg-green-500/5" : "border-border hover:border-primary/40"
+        }`}
     >
       <div className="flex items-start justify-between">
         <div>
