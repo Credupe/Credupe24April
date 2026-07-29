@@ -37,7 +37,7 @@ const ProductCardsSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-8"
+          className="mb-10 text-center"
         >
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">
             Choose the best for your <span className="text-gradient">credit requirements</span>
@@ -45,7 +45,7 @@ const ProductCardsSection = () => {
           <p className="mt-2 text-sm text-muted-foreground">Compare a wide range of loan offers from top lenders, tailored for you.</p>
         </motion.div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
           {filteredProducts.map((p, i) => (
             <motion.div
               key={p.title}
@@ -53,21 +53,35 @@ const ProductCardsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              className={`rounded-xl p-4 border transition-all group cursor-pointer hover:shadow-md ${p.highlight
-                ? "bg-purple-deep text-primary-foreground border-purple-deep/80 hover:bg-purple-deep/90"
+              whileHover={{ 
+                y: -8, 
+                scale: 1.02,
+                boxShadow: p.highlight 
+                  ? "0 20px 40px -15px rgba(109, 40, 217, 0.6)" 
+                  : "0 20px 35px -15px rgba(139, 92, 246, 0.2)"
+              }}
+              whileTap={{ scale: 0.98 }}
+              className={`w-[calc(50%-8px)] sm:w-[260px] lg:w-[280px] min-h-[220px] sm:min-h-[250px] flex flex-col justify-between flex-shrink-0 flex-grow-0 rounded-2xl p-6 sm:p-7 border transition-all duration-300 group cursor-pointer ${p.highlight
+                ? "bg-purple-deep text-primary-foreground border-purple-deep/80 hover:bg-purple-deep/95"
                 : "bg-card border-border hover:border-purple-deep/40"
                 }`}
             >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${p.highlight ? "bg-primary-foreground/20" : "bg-accent group-hover:bg-purple-deep/10"
-                }`}>
-                <p.icon className={`w-4 h-4 ${p.highlight ? "text-primary-foreground" : "text-purple-deep"}`} />
+              <div className="flex flex-col gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${p.highlight ? "bg-primary-foreground/20 group-hover:bg-primary-foreground/30" : "bg-accent group-hover:bg-purple-deep/10"
+                  }`}>
+                  <p.icon className={`w-6 h-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${p.highlight ? "text-primary-foreground" : "text-purple-deep"}`} />
+                </div>
+                <div>
+                  <h3 className={`text-base sm:text-lg font-bold leading-tight ${p.highlight ? "text-primary-foreground" : "text-foreground"}`}>{p.title}</h3>
+                  <p className={`mt-2 text-xs sm:text-sm leading-relaxed line-clamp-3 ${p.highlight ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{p.desc}</p>
+                </div>
               </div>
-              <h3 className={`mt-2.5 text-sm font-semibold leading-tight ${p.highlight ? "text-primary-foreground" : "text-foreground"}`}>{p.title}</h3>
-              <p className={`mt-1 text-[11px] leading-snug line-clamp-2 ${p.highlight ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{p.desc}</p>
-              <button className={`mt-2.5 inline-flex items-center gap-1 text-xs font-semibold hover:gap-2 transition-all ${p.highlight ? "text-purple-light" : "text-purple-mid"
-                }`}>
-                Apply Now <ArrowRight className="w-3 h-3" />
-              </button>
+              <div className="mt-4">
+                <button className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold ${p.highlight ? "text-purple-light" : "text-purple-mid"
+                  }`}>
+                  Apply Now <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-out group-hover:translate-x-1.5" />
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
