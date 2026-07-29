@@ -153,12 +153,12 @@ const HeroSection = () => {
               <br />
               Platform for
               <br />
-              <span className="text-gradient">Loans & Cards</span>
+              <span className="text-gradient">Consumer Loans </span>
             </h1>
 
             <div className="mt-6 space-y-2">
               {[
-                "Compare offers from 80+ banks & NBFCs",
+                "Compare offers from Multiple Banks & NBFCs",
                 "Check your credit score for free",
                 "Get instant loan approval online",
               ].map((point) => (
