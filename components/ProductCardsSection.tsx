@@ -61,22 +61,30 @@ const ProductCardsSection = () => {
                   : "0 20px 35px -15px rgba(139, 92, 246, 0.2)"
               }}
               whileTap={{ scale: 0.98 }}
-              className={`w-[calc(50%-8px)] sm:w-[260px] lg:w-[280px] min-h-[220px] sm:min-h-[250px] flex flex-col justify-between flex-shrink-0 flex-grow-0 rounded-2xl p-6 sm:p-7 border transition-all duration-300 group cursor-pointer ${p.highlight
+              className={`w-[calc(50%-8px)] sm:w-[260px] lg:w-[460px] min-h-[220px] sm:min-h-[250px] lg:min-h-[180px] flex flex-col justify-between flex-shrink-0 flex-grow-0 rounded-2xl p-6 sm:p-7 border transition-all duration-300 group cursor-pointer ${p.highlight
                 ? "bg-purple-deep text-primary-foreground border-purple-deep/80 hover:bg-purple-deep/95"
                 : "bg-card border-border hover:border-purple-deep/40"
                 }`}
             >
-              <div className="flex flex-col gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${p.highlight ? "bg-primary-foreground/20 group-hover:bg-primary-foreground/30" : "bg-accent group-hover:bg-purple-deep/10"
+              <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start flex-grow">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${p.highlight ? "bg-primary-foreground/20 group-hover:bg-primary-foreground/30" : "bg-accent group-hover:bg-purple-deep/10"
                   }`}>
                   <p.icon className={`w-6 h-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${p.highlight ? "text-primary-foreground" : "text-purple-deep"}`} />
                 </div>
-                <div>
-                  <h3 className={`text-base sm:text-lg font-bold leading-tight ${p.highlight ? "text-primary-foreground" : "text-foreground"}`}>{p.title}</h3>
-                  <p className={`mt-2 text-xs sm:text-sm leading-relaxed line-clamp-3 ${p.highlight ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{p.desc}</p>
+                <div className="flex-grow flex flex-col justify-between self-stretch">
+                  <div>
+                    <h3 className={`text-base sm:text-lg font-bold leading-tight ${p.highlight ? "text-primary-foreground" : "text-foreground"}`}>{p.title}</h3>
+                    <p className={`mt-2 text-xs sm:text-sm leading-relaxed line-clamp-3 ${p.highlight ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{p.desc}</p>
+                  </div>
+                  <div className="mt-4 hidden lg:block">
+                    <button className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold ${p.highlight ? "text-purple-light" : "text-purple-mid"
+                      }`}>
+                      Apply Now <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-out group-hover:translate-x-1.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="mt-4">
+              <div className="mt-4 lg:hidden">
                 <button className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold ${p.highlight ? "text-purple-light" : "text-purple-mid"
                   }`}>
                   Apply Now <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-out group-hover:translate-x-1.5" />
