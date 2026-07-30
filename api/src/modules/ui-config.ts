@@ -19,6 +19,7 @@ const DEFAULT_CONFIG = {
     hideHomeLoan: false,
     hideLoanAgainstProperty: false,
     hideCreditCard: false,
+    hideLoanIntelligence: false,
     hideAllTabs: false,
   },
   sections: {

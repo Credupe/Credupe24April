@@ -8,6 +8,7 @@ export interface UIConfig {
     hideHomeLoan: boolean;
     hideLoanAgainstProperty: boolean;
     hideCreditCard: boolean;
+    hideLoanIntelligence: boolean;
     hideAllTabs: boolean;
   };
   sections: {
