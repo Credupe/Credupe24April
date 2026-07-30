@@ -13,6 +13,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowLeft, User, Phone, Mail, ShieldCheck, ChevronDown } from "lucide-react-native";
@@ -43,8 +44,10 @@ const countries = [
 export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { mode } = useTheme();
   const insets = useSafeAreaInsets();
-  
+  const { width, height } = useWindowDimensions();
+
   const isDark = mode === "dark";
+  const isTablet = width > 600;
 
   // Form State
   const [name, setName] = useState("");
@@ -145,219 +148,600 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
     });
   };
 
+  const themeColors = useMemo(() => {
+    return {
+      primary: isDark ? "#A78BFA" : "#7C3AED",
+      primaryDark: isDark ? "#8B5CF6" : "#6D28D9",
+      bgGradient: (isDark ? ["#0B0F14", "#131922"] : ["#F8F7FF", "#FCFCFF"]) as [string, string],
+      cardBg: isDark ? "#161C24" : "#FFFFFF",
+      inputBg: isDark ? "#1C2430" : "#F8FAFC",
+      inputBgFocused: isDark ? "#1E1B4B" : "#F5F3FF",
+      inputBorder: isDark ? "#232A33" : "#E5E7EB",
+      textMain: isDark ? "#FFFFFF" : "#111827",
+      textMuted: isDark ? "#94A3B8" : "#6B7280",
+      infoBg: isDark ? "#1E1B4B" : "#F5F3FF",
+      infoBorder: isDark ? "#312E81" : "#EDE9FE",
+      infoText: isDark ? "#C084FC" : "#5B21B6",
+      btnGradient: (isDark ? ["#7C3AED", "#5B21B6"] : ["#7C3AED", "#9333EA"]) as [string, string],
+      shadowColor: isDark ? "#000000" : "#7C3AED",
+    };
+  }, [isDark]);
+
+  const styles = useMemo(() => {
+    return StyleSheet.create({
+      container: {
+        flex: 1,
+        position: "relative",
+        overflow: "hidden",
+      },
+      scrollContainer: {
+        flexGrow: 1,
+        justifyContent: "center",
+        paddingTop: insets.top + (isTablet ? 30 : 16),
+        paddingBottom: insets.bottom + 24,
+      },
+      animatedContent: {
+        flex: 1,
+        justifyContent: "center",
+      },
+      topRightShape: {
+        position: "absolute",
+        top: -100,
+        right: -100,
+        width: 320,
+        height: 320,
+        borderRadius: 160,
+        backgroundColor: themeColors.primary,
+        opacity: isDark ? 0.08 : 0.05,
+      },
+      bottomLeftShape: {
+        position: "absolute",
+        bottom: -120,
+        left: -120,
+        width: 380,
+        height: 380,
+        borderRadius: 190,
+        backgroundColor: themeColors.primary,
+        opacity: isDark ? 0.08 : 0.05,
+      },
+      headerBar: {
+        paddingHorizontal: 20,
+        paddingTop: 8,
+        paddingBottom: 12,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        maxWidth: 500,
+        width: "100%",
+        alignSelf: "center",
+      },
+      backBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: themeColors.cardBg,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0.3 : 0.06,
+        shadowRadius: 8,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: themeColors.inputBorder,
+      },
+      backBtnPressed: {
+        opacity: 0.85,
+        transform: [{ scale: 0.95 }],
+      },
+      logoSection: {
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: isTablet ? 32 : 12,
+        marginBottom: isTablet ? 32 : 24,
+        maxWidth: 500,
+        width: isTablet ? 500 : "100%",
+        alignSelf: "center",
+      },
+      logoWrap: {
+        width: 150,
+        height: 54,
+        alignSelf: "center",
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: 20,
+      },
+      logoImage: {
+        width: "100%",
+        height: "100%",
+      },
+      welcomeText: {
+        fontSize: 13,
+        fontWeight: "700",
+        textTransform: "uppercase",
+        letterSpacing: 1.5,
+        color: themeColors.primary,
+        textAlign: "center",
+        marginBottom: 8,
+        fontFamily: "Plus Jakarta Sans",
+      },
+      headingText: {
+        fontSize: width < 360 ? 28 : 34,
+        fontWeight: "800",
+        color: themeColors.textMain,
+        textAlign: "center",
+        lineHeight: width < 360 ? 34 : 40,
+        marginBottom: 8,
+        paddingHorizontal: 24,
+        fontFamily: "Plus Jakarta Sans",
+      },
+      subtitleText: {
+        fontSize: 14,
+        fontWeight: "500",
+        lineHeight: 20,
+        color: themeColors.textMuted,
+        textAlign: "center",
+        paddingHorizontal: 24,
+        fontFamily: "Plus Jakarta Sans",
+      },
+      formCard: {
+        backgroundColor: themeColors.cardBg,
+        borderRadius: 24,
+        padding: width < 360 ? 18 : 24,
+        alignSelf: isTablet ? "center" : "stretch",
+        width: isTablet ? 500 : undefined,
+        marginHorizontal: isTablet ? 0 : 20,
+        shadowColor: themeColors.shadowColor,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: isDark ? 0.3 : 0.05,
+        shadowRadius: 20,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: themeColors.inputBorder,
+        marginBottom: 20,
+      },
+      fieldGroup: {
+        marginBottom: 18,
+      },
+      inputLabel: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: themeColors.textMuted,
+        marginBottom: 8,
+        fontFamily: "Plus Jakarta Sans",
+      },
+      inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        height: 58,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: themeColors.inputBorder,
+        backgroundColor: themeColors.inputBg,
+        paddingHorizontal: 16,
+      },
+      inputContainerFocused: {
+        borderColor: themeColors.primary,
+        backgroundColor: themeColors.inputBgFocused,
+      },
+      inputIcon: {
+        marginRight: 12,
+      },
+      textInput: {
+        flex: 1,
+        height: "100%",
+        fontSize: 16,
+        fontWeight: "500",
+        fontFamily: "Plus Jakarta Sans",
+        color: themeColors.textMain,
+        padding: 0,
+        ...Platform.select({
+          web: {
+            outlineStyle: "none" as any,
+          },
+        }),
+      },
+      phoneRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        gap: 12,
+        marginTop: 2,
+      },
+      countryCodeBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        height: 58,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: themeColors.inputBorder,
+        backgroundColor: themeColors.inputBg,
+        paddingHorizontal: 12,
+      },
+      countryCodeBoxFocused: {
+        borderColor: themeColors.primary,
+        backgroundColor: themeColors.inputBgFocused,
+      },
+      countryCodeBoxPressed: {
+        opacity: 0.85,
+      },
+      countryFlag: {
+        fontSize: 18,
+        marginRight: 6,
+      },
+      countryCodeText: {
+        fontSize: 16,
+        fontWeight: "600",
+        fontFamily: "Plus Jakarta Sans",
+        color: themeColors.textMain,
+      },
+      mobileInputContainer: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        height: 58,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: themeColors.inputBorder,
+        backgroundColor: themeColors.inputBg,
+        paddingHorizontal: 16,
+      },
+      infoBox: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        borderRadius: 16,
+        padding: 16,
+        alignSelf: isTablet ? "center" : "stretch",
+        width: isTablet ? 500 : undefined,
+        marginHorizontal: isTablet ? 0 : 20,
+        backgroundColor: themeColors.infoBg,
+        borderWidth: 1,
+        borderColor: themeColors.infoBorder,
+        marginBottom: 20,
+      },
+      infoIcon: {
+        marginRight: 12,
+        marginTop: 2,
+      },
+      infoText: {
+        flex: 1,
+        fontSize: 14,
+        fontWeight: "500",
+        lineHeight: 20,
+        fontFamily: "Plus Jakarta Sans",
+        color: themeColors.infoText,
+      },
+      buttonContainer: {
+        alignSelf: isTablet ? "center" : "stretch",
+        width: isTablet ? 500 : undefined,
+        marginHorizontal: isTablet ? 0 : 20,
+        height: 56,
+        borderRadius: 28,
+        shadowColor: themeColors.primary,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: isDark ? 0.4 : 0.25,
+        shadowRadius: 16,
+        elevation: 5,
+        marginBottom: 20,
+      },
+      buttonPressable: {
+        flex: 1,
+        borderRadius: 28,
+        overflow: "hidden",
+      },
+      gradientBg: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 28,
+      },
+      buttonText: {
+        color: "#FFFFFF",
+        fontSize: 18,
+        fontWeight: "700",
+        fontFamily: "Plus Jakarta Sans",
+      },
+      buttonDisabled: {
+        opacity: 0.6,
+      },
+      footerWrap: {
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 12,
+        marginBottom: 32,
+        paddingHorizontal: 24,
+        alignSelf: isTablet ? "center" : "stretch",
+        width: isTablet ? 500 : undefined,
+      },
+      footerText: {
+        fontSize: 13,
+        fontWeight: "500",
+        textAlign: "center",
+        fontFamily: "Plus Jakarta Sans",
+        lineHeight: 18,
+        color: themeColors.textMuted,
+      },
+      modalBackdrop: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: isTablet ? "center" : "flex-end",
+        alignItems: isTablet ? "center" : "stretch",
+      },
+      modalContent: {
+        backgroundColor: themeColors.cardBg,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        borderBottomLeftRadius: isTablet ? 24 : 0,
+        borderBottomRightRadius: isTablet ? 24 : 0,
+        paddingBottom: isTablet ? 24 : 40,
+        width: isTablet ? 400 : "100%",
+        maxHeight: "50%",
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 10,
+      },
+      modalHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 24,
+        paddingVertical: 18,
+        borderBottomWidth: 1,
+        borderBottomColor: themeColors.inputBorder,
+      },
+      modalTitle: {
+        fontSize: 18,
+        fontWeight: "700",
+        fontFamily: "Plus Jakarta Sans",
+        color: themeColors.textMain,
+      },
+      closeBtnText: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: themeColors.primary,
+      },
+      countryList: {
+        paddingVertical: 8,
+      },
+      countryItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+      },
+      countryItemPressed: {
+        backgroundColor: themeColors.inputBg,
+      },
+      countryItemFlag: {
+        fontSize: 22,
+        marginRight: 14,
+      },
+      countryItemLabel: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: "500",
+        fontFamily: "Plus Jakarta Sans",
+        color: themeColors.textMain,
+      },
+      countryItemCode: {
+        fontSize: 16,
+        fontWeight: "600",
+        fontFamily: "Plus Jakarta Sans",
+        color: themeColors.textMuted,
+      },
+    });
+  }, [insets, width, height, isDark, themeColors, isTablet]);
+
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? "#0B0F14" : "#FFFFFF" }]}>
+    <LinearGradient
+      colors={themeColors.bgGradient}
+      style={styles.container}
+    >
       {/* Background Shapes */}
-      <View style={[styles.topRightShape, isDark && styles.topRightShapeDark]} pointerEvents="none" />
-      <View style={[styles.bottomLeftShape, isDark && styles.bottomLeftShapeDark]} pointerEvents="none" />
+      <View style={styles.topRightShape} pointerEvents="none" />
+      <View style={styles.bottomLeftShape} pointerEvents="none" />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContainer,
-            { paddingTop: insets.top, paddingBottom: insets.bottom + 24 },
-          ]}
-          keyboardShouldPersistTaps="handled"
+      <View style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          {/* Header */}
-          <View style={styles.headerSection}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.backBtn,
-                pressed && styles.backBtnPressed,
-                isDark && styles.backBtnDark,
-              ]}
-              onPress={navigation.goBack}
-            >
-              <ArrowLeft size={22} color={isDark ? "#FFFFFF" : "#111827"} />
-            </Pressable>
-          </View>
-
-          {/* Logo & Headline */}
-          <View style={styles.logoSection}>
-            <View style={styles.logoWrap}>
-              <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
-            </View>
-            <Text style={styles.welcomeText}>Welcome</Text>
-            <Text style={[styles.headingText, { color: isDark ? "#FFFFFF" : "#111827" }]}>
-              Tell us about yourself
-            </Text>
-            <Text style={[styles.subtitleText, { color: isDark ? "#94A3B8" : "#6B7280" }]}>
-              Let's verify your contact details to continue.
-            </Text>
-          </View>
-
-          {/* Form Card */}
-          <Animated.View
-            style={[
-              styles.formCard,
-              isDark && styles.formCardDark,
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-            ]}
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {/* Field: Contact Person */}
-            <View style={styles.fieldGroup}>
-              <Text style={[styles.inputLabel, { color: isDark ? "#E2E8F0" : "#374151" }]}>
-                Contact Person
-              </Text>
-              <View
-                style={[
-                  styles.inputContainer,
-                  isDark && styles.inputContainerDark,
-                  focusedInput === "name" && styles.inputContainerFocused,
-                ]}
-              >
-                <User
-                  size={22}
-                  color={focusedInput === "name" ? "#6D28D9" : isDark ? "#64748B" : "#9CA3AF"}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={[styles.textInput, { color: isDark ? "#FFFFFF" : "#111827" }]}
-                  placeholder="Your full name"
-                  placeholderTextColor={isDark ? "#64748B" : "#9CA3AF"}
-                  value={name}
-                  onChangeText={setName}
-                  onFocus={() => setFocusedInput("name")}
-                  onBlur={() => setFocusedInput(null)}
-                  autoCorrect={false}
-                  textContentType="name"
-                  autoComplete="name"
-                />
+            <Animated.View
+              style={[
+                styles.animatedContent,
+                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+              ]}
+            >
+              {/* Logo & Headline */}
+              <View style={styles.logoSection}>
+                <View style={styles.logoWrap}>
+                  <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
+                </View>
+                <Text style={styles.welcomeText}>Welcome</Text>
+                <Text style={styles.headingText}>
+                  Tell us about yourself
+                </Text>
+                <Text style={styles.subtitleText}>
+                  Let's verify your contact details to continue.
+                </Text>
               </View>
-            </View>
 
-            {/* Field: Mobile Number */}
-            <View style={styles.fieldGroup}>
-              <Text style={[styles.inputLabel, { color: isDark ? "#E2E8F0" : "#374151" }]}>
-                Mobile
-              </Text>
-              <View style={styles.phoneRow}>
-                {/* Country Code */}
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.countryCodeBox,
-                    isDark && styles.countryCodeBoxDark,
-                    pressed && (isDark ? styles.countryCodeBoxPressedDark : styles.countryCodeBoxPressed),
-                  ]}
-                  onPress={() => setShowCountryPicker(true)}
-                >
-                  <Text style={styles.countryFlag}>{country.flag}</Text>
-                  <Text style={[styles.countryCodeText, { color: isDark ? "#FFFFFF" : "#111827" }]}>
-                    {country.code}
+              {/* Form Card */}
+              <View style={styles.formCard}>
+                {/* Field: Contact Person */}
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.inputLabel}>
+                    Contact Person
                   </Text>
-                  <ChevronDown size={14} color={isDark ? "#94A3B8" : "#6B7280"} style={{ marginLeft: 4 }} />
-                </Pressable>
+                  <View
+                    style={[
+                      styles.inputContainer,
+                      focusedInput === "name" && styles.inputContainerFocused,
+                    ]}
+                  >
+                    <User
+                      size={20}
+                      color={focusedInput === "name" ? themeColors.primary : themeColors.textMuted}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Your full name"
+                      placeholderTextColor={themeColors.textMuted}
+                      value={name}
+                      onChangeText={setName}
+                      onFocus={() => setFocusedInput("name")}
+                      onBlur={() => setFocusedInput(null)}
+                      autoCorrect={false}
+                      textContentType="name"
+                      autoComplete="name"
+                      accessibilityLabel="Contact Person Name Input"
+                    />
+                  </View>
+                </View>
 
-                {/* Number Input */}
-                <View
-                  style={[
-                    styles.mobileInputContainer,
-                    isDark && styles.inputContainerDark,
-                    focusedInput === "mobile" && styles.inputContainerFocused,
-                  ]}
-                >
-                  <Phone
-                    size={22}
-                    color={focusedInput === "mobile" ? "#6D28D9" : isDark ? "#64748B" : "#9CA3AF"}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[styles.textInput, { color: isDark ? "#FFFFFF" : "#111827" }]}
-                    placeholder={country.code === "+91" ? "98765 43210" : "Enter phone number"}
-                    placeholderTextColor={isDark ? "#64748B" : "#9CA3AF"}
-                    value={mobile}
-                    onChangeText={handleMobileChange}
-                    keyboardType="phone-pad"
-                    maxLength={country.code === "+91" ? 10 : 15}
-                    onFocus={() => setFocusedInput("mobile")}
-                    onBlur={() => setFocusedInput(null)}
-                    textContentType="telephoneNumber"
-                    autoComplete="tel"
-                  />
+                {/* Field: Mobile Number */}
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.inputLabel}>
+                    Mobile
+                  </Text>
+                  <View style={styles.phoneRow}>
+                    {/* Country Code */}
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.countryCodeBox,
+                        showCountryPicker && styles.countryCodeBoxFocused,
+                        pressed && styles.countryCodeBoxPressed,
+                      ]}
+                      onPress={() => setShowCountryPicker(true)}
+                      accessibilityLabel="Country code picker"
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.countryFlag}>{country.flag}</Text>
+                      <Text style={styles.countryCodeText}>
+                        {country.code}
+                      </Text>
+                      <ChevronDown size={14} color={themeColors.textMuted} style={{ marginLeft: 4 }} />
+                    </Pressable>
+
+                    {/* Number Input */}
+                    <View
+                      style={[
+                        styles.mobileInputContainer,
+                        focusedInput === "mobile" && styles.inputContainerFocused,
+                      ]}
+                    >
+                      <Phone
+                        size={20}
+                        color={focusedInput === "mobile" ? themeColors.primary : themeColors.textMuted}
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={styles.textInput}
+                        placeholder={country.code === "+91" ? "98765 43210" : "Enter phone number"}
+                        placeholderTextColor={themeColors.textMuted}
+                        value={mobile}
+                        onChangeText={handleMobileChange}
+                        keyboardType="phone-pad"
+                        maxLength={country.code === "+91" ? 10 : 15}
+                        onFocus={() => setFocusedInput("mobile")}
+                        onBlur={() => setFocusedInput(null)}
+                        textContentType="telephoneNumber"
+                        autoComplete="tel"
+                        accessibilityLabel="Mobile Number Input"
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                {/* Field: Work Email */}
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.inputLabel}>
+                    Work Email
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputContainer,
+                      focusedInput === "email" && styles.inputContainerFocused,
+                    ]}
+                  >
+                    <Mail
+                      size={20}
+                      color={focusedInput === "email" ? themeColors.primary : themeColors.textMuted}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="you@yourfirm.com"
+                      placeholderTextColor={themeColors.textMuted}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={() => setFocusedInput("email")}
+                      onBlur={() => setFocusedInput(null)}
+                      textContentType="emailAddress"
+                      autoComplete="email"
+                      accessibilityLabel="Work Email Input"
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
 
-            {/* Field: Work Email */}
-            <View style={styles.fieldGroup}>
-              <Text style={[styles.inputLabel, { color: isDark ? "#E2E8F0" : "#374151" }]}>
-                Work Email
-              </Text>
-              <View
-                style={[
-                  styles.inputContainer,
-                  isDark && styles.inputContainerDark,
-                  focusedInput === "email" && styles.inputContainerFocused,
-                ]}
-              >
-                <Mail
-                  size={22}
-                  color={focusedInput === "email" ? "#6D28D9" : isDark ? "#64748B" : "#9CA3AF"}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={[styles.textInput, { color: isDark ? "#FFFFFF" : "#111827" }]}
-                  placeholder="you@yourfirm.com"
-                  placeholderTextColor={isDark ? "#64748B" : "#9CA3AF"}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onFocus={() => setFocusedInput("email")}
-                  onBlur={() => setFocusedInput(null)}
-                  textContentType="emailAddress"
-                  autoComplete="email"
-                />
+              {/* OTP Information Box */}
+              <View style={styles.infoBox}>
+                <ShieldCheck size={20} color={themeColors.primary} style={styles.infoIcon} />
+                <Text style={styles.infoText}>
+                  We'll send secure OTPs to verify your mobile number and email address.
+                </Text>
               </View>
-            </View>
-          </Animated.View>
 
-          {/* OTP Information Box */}
-          <View style={[styles.infoBox, { backgroundColor: isDark ? "#1E1B4B" : "#F5F3FF" }]}>
-            <ShieldCheck size={22} color={isDark ? "#C084FC" : "#5B21B6"} style={styles.infoIcon} />
-            <Text style={[styles.infoText, { color: isDark ? "#C084FC" : "#5B21B6" }]}>
-              We'll send secure OTPs to verify your mobile number and email address.
-            </Text>
-          </View>
+              {/* Submit Button */}
+              <Animated.View style={[styles.buttonContainer, { transform: [{ scale: buttonScale }] }]}>
+                <Pressable
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  onPress={handleSendOTPs}
+                  disabled={isLoading}
+                  android_ripple={{ color: "rgba(255, 255, 255, 0.2)" }}
+                  style={styles.buttonPressable}
+                  accessibilityLabel="Send OTPs Button"
+                  accessibilityRole="button"
+                >
+                  <LinearGradient
+                    colors={themeColors.btnGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.gradientBg, isLoading && styles.buttonDisabled]}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <Text style={styles.buttonText}>Send OTPs</Text>
+                    )}
+                  </LinearGradient>
+                </Pressable>
+              </Animated.View>
 
-          {/* Submit Button */}
-          <Animated.View style={[styles.buttonContainer, { transform: [{ scale: buttonScale }] }]}>
-            <Pressable
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
-              onPress={handleSendOTPs}
-              disabled={isLoading}
-              android_ripple={{ color: "rgba(255, 255, 255, 0.2)" }}
-              style={styles.buttonPressable}
-            >
-              <LinearGradient
-                colors={["#7C3AED", "#9333EA"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={[styles.gradientBg, isLoading && styles.buttonDisabled]}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.buttonText}>Send OTPs</Text>
-                )}
-              </LinearGradient>
-            </Pressable>
-          </Animated.View>
-
-          {/* Footer */}
-          <View style={styles.footerWrap}>
-            <Text style={[styles.footerText, { color: isDark ? "#94A3B8" : "#6B7280" }]}>
-              🔒 Your information is encrypted and completely secure.
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              {/* Footer */}
+              <View style={styles.footerWrap}>
+                <Text style={styles.footerText}>
+                  🔒 Your information is encrypted and completely secure.
+                </Text>
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
 
       {/* Country Code Picker Modal */}
       <Modal
@@ -367,34 +751,36 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
         onRequestClose={() => setShowCountryPicker(false)}
       >
         <Pressable style={styles.modalBackdrop} onPress={() => setShowCountryPicker(false)}>
-          <View style={[styles.modalContent, isDark && styles.modalContentDark]}>
-            <View style={[styles.modalHeader, isDark && styles.modalHeaderDark]}>
-              <Text style={[styles.modalTitle, { color: isDark ? "#FFFFFF" : "#111827" }]}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
                 Select Country
               </Text>
-              <Pressable onPress={() => setShowCountryPicker(false)}>
+              <Pressable onPress={() => setShowCountryPicker(false)} accessibilityRole="button" accessibilityLabel="Close country picker">
                 <Text style={styles.closeBtnText}>Close</Text>
               </Pressable>
             </View>
-            <ScrollView contentContainerStyle={styles.countryList}>
+            <ScrollView contentContainerStyle={styles.countryList} showsVerticalScrollIndicator={false}>
               {countries.map((c) => (
                 <Pressable
                   key={`${c.code}-${c.label}`}
                   style={({ pressed }) => [
                     styles.countryItem,
-                    pressed && (isDark ? styles.countryItemPressedDark : styles.countryItemPressed)
+                    pressed && styles.countryItemPressed
                   ]}
                   onPress={() => {
                     setCountry(c);
                     setMobile(""); // Clear field when country changes to avoid validation mismatch
                     setShowCountryPicker(false);
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${c.label}`}
                 >
                   <Text style={styles.countryItemFlag}>{c.flag}</Text>
-                  <Text style={[styles.countryItemLabel, { color: isDark ? "#FFFFFF" : "#111827" }]}>
+                  <Text style={styles.countryItemLabel}>
                     {c.label}
                   </Text>
-                  <Text style={[styles.countryItemCode, { color: isDark ? "#94A3B8" : "#6B7280" }]}>
+                  <Text style={styles.countryItemCode}>
                     {c.code}
                   </Text>
                 </Pressable>
@@ -403,342 +789,7 @@ export const SignupContactDetailsScreen: React.FC<Props> = ({ navigation, route 
           </View>
         </Pressable>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: "relative",
-    overflow: "hidden",
-  },
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  topRightShape: {
-    position: "absolute",
-    top: -60,
-    right: -60,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: "#7C3AED",
-    opacity: 0.08,
-  },
-  topRightShapeDark: {
-    backgroundColor: "#A855F7",
-    opacity: 0.12,
-  },
-  bottomLeftShape: {
-    position: "absolute",
-    bottom: -80,
-    left: -80,
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    backgroundColor: "#C084FC",
-    opacity: 0.08,
-  },
-  bottomLeftShapeDark: {
-    backgroundColor: "#C084FC",
-    opacity: 0.12,
-  },
-  headerSection: {
-    paddingHorizontal: 24,
-    marginTop: 24,
-    marginBottom: 20,
-  },
-  backBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 3,
-  },
-  backBtnDark: {
-    backgroundColor: "#161C24",
-    shadowColor: "#000000",
-    shadowOpacity: 0.2,
-  },
-  backBtnPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.96 }],
-  },
-  logoSection: {
-    marginBottom: 20,
-  },
-  logoWrap: {
-    width: 70,
-    height: 70,
-    marginLeft: 24,
-    marginBottom: 16,
-    justifyContent: "center",
-  },
-  logoImage: {
-    width: 70,
-    height: 70,
-  },
-  welcomeText: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#6B7280",
-    fontFamily: "Plus Jakarta Sans",
-    marginBottom: 4,
-    paddingHorizontal: 24,
-  },
-  headingText: {
-    fontSize: 30,
-    fontWeight: "700",
-    lineHeight: 36,
-    fontFamily: "Plus Jakarta Sans",
-    marginBottom: 8,
-    paddingHorizontal: 24,
-  },
-  subtitleText: {
-    fontSize: 15,
-    fontWeight: "500",
-    lineHeight: 22,
-    fontFamily: "Plus Jakarta Sans",
-    paddingHorizontal: 24,
-  },
-  formCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    padding: 24,
-    marginHorizontal: 24,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 30,
-    elevation: 5,
-    marginBottom: 20,
-  },
-  formCardDark: {
-    backgroundColor: "#161C24",
-    shadowColor: "#000000",
-    shadowOpacity: 0.2,
-  },
-  fieldGroup: {
-    marginBottom: 18,
-  },
-  inputLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 6,
-    fontFamily: "Plus Jakarta Sans",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    paddingHorizontal: 16,
-  },
-  inputContainerDark: {
-    backgroundColor: "#1C2430",
-    borderColor: "#232A33",
-  },
-  inputContainerFocused: {
-    borderColor: "#6D28D9",
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  textInput: {
-    flex: 1,
-    height: "100%",
-    fontSize: 16,
-    fontWeight: "500",
-    fontFamily: "Plus Jakarta Sans",
-    padding: 0,
-    ...Platform.select({
-      web: {
-        outlineStyle: "none" as any,
-      },
-    }),
-  },
-  phoneRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  countryCodeBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    paddingHorizontal: 12,
-  },
-  countryCodeBoxDark: {
-    backgroundColor: "#1C2430",
-    borderColor: "#232A33",
-  },
-  countryCodeBoxPressed: {
-    backgroundColor: "#F1F5F9",
-  },
-  countryCodeBoxPressedDark: {
-    backgroundColor: "#2E3A4B",
-  },
-  countryFlag: {
-    fontSize: 18,
-    marginRight: 6,
-  },
-  countryCodeText: {
-    fontSize: 16,
-    fontWeight: "500",
-    fontFamily: "Plus Jakarta Sans",
-  },
-  mobileInputContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    paddingHorizontal: 16,
-  },
-  infoBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 24,
-    marginBottom: 20,
-  },
-  infoIcon: {
-    marginRight: 12,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 20,
-    fontFamily: "Plus Jakarta Sans",
-  },
-  buttonContainer: {
-    marginHorizontal: 24,
-    height: 56,
-    borderRadius: 18,
-    shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 25,
-    elevation: 6,
-    marginBottom: 20,
-  },
-  buttonPressable: {
-    flex: 1,
-    borderRadius: 18,
-    overflow: "hidden",
-  },
-  gradientBg: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 18,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Plus Jakarta Sans",
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  footerWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
-    paddingHorizontal: 24,
-  },
-  footerText: {
-    fontSize: 13,
-    fontWeight: "500",
-    textAlign: "center",
-    fontFamily: "Plus Jakarta Sans",
-    lineHeight: 18,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 40,
-    maxHeight: "50%",
-  },
-  modalContentDark: {
-    backgroundColor: "#161C24",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-  },
-  modalHeaderDark: {
-    borderBottomColor: "#232A33",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Plus Jakarta Sans",
-  },
-  closeBtnText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#6D28D9",
-  },
-  countryList: {
-    paddingVertical: 8,
-  },
-  countryItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  countryItemPressed: {
-    backgroundColor: "#F8FAFC",
-  },
-  countryItemPressedDark: {
-    backgroundColor: "#1C2430",
-  },
-  countryItemFlag: {
-    fontSize: 22,
-    marginRight: 14,
-  },
-  countryItemLabel: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
-    fontFamily: "Plus Jakarta Sans",
-  },
-  countryItemCode: {
-    fontSize: 16,
-    fontWeight: "600",
-    fontFamily: "Plus Jakarta Sans",
-  },
-});

@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sparkles, ArrowRight, TrendingDown, Target, LayoutDashboard,
   CreditCard, Home, Car, Briefcase, GraduationCap, Building2,
@@ -6,6 +7,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 
 /* ─────────────────────── Static data — Mr. Sharma's journey ─────────── */
 const JOURNEY_STEPS = [
@@ -58,6 +60,15 @@ const SUPPORTED_LOAN_TYPES = [
 ];
 
 const LoanIntelligence = () => {
+  const { config } = useUIConfigStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (config.navbar?.hideLoanIntelligence) {
+      navigate("/");
+    }
+  }, [config.navbar?.hideLoanIntelligence, navigate]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

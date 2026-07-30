@@ -1,15 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIConfigStore } from "@/stores/uiConfigStore";
-import { Shield, Loader2 } from "lucide-react";
+import { Shield, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 
 const AdminDashboard = () => {
   const { user, isReady } = useAuth();
   const navigate = useNavigate();
   const { config, fetchConfig, updateFlag } = useUIConfigStore();
+  const [eduExpanded, setEduExpanded] = useState(false);
+  const [persExpanded, setPersExpanded] = useState(false);
 
   useEffect(() => {
     if (isReady) {
@@ -77,32 +79,115 @@ const AdminDashboard = () => {
 
             {/* Dynamic Sections Grid */}
             <div className="space-y-6">
-              <div className="border border-border rounded-xl bg-muted/25 p-5">
-                <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider text-primary">Navbar Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {config.navbar &&
-                    Object.entries(config.navbar).map(([key, val]) => {
-                      const fullKey = `navbar.${key}`;
-                      const value = val as boolean;
-                      return (
-                        <div
-                          key={fullKey}
-                          className="flex items-center justify-between p-4 bg-background border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all duration-200"
-                        >
-                          <span className="text-sm font-semibold text-foreground">{formatLabel(key)}</span>
-                          <button
-                            onClick={() => handleToggle(fullKey, value)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${value ? "bg-primary" : "bg-muted"
-                              }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? "translate-x-6" : "translate-x-1"
-                                }`}
-                            />
-                          </button>
-                        </div>
-                      );
-                    })}
+              <div className="border border-border rounded-xl bg-muted/25 p-5 space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider text-primary">Navbar Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {config.navbar &&
+                      Object.entries(config.navbar)
+                        .filter(([_, val]) => typeof val === "boolean")
+                        .map(([key, val]) => {
+                          const fullKey = `navbar.${key}`;
+                          const value = val as boolean;
+                          return (
+                            <div
+                              key={fullKey}
+                              className="flex items-center justify-between p-4 bg-background border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all duration-200"
+                            >
+                              <span className="text-sm font-semibold text-foreground">{formatLabel(key)}</span>
+                              <button
+                                onClick={() => handleToggle(fullKey, value)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${value ? "bg-primary" : "bg-muted"
+                                  }`}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? "translate-x-6" : "translate-x-1"
+                                    }`}
+                                />
+                              </button>
+                            </div>
+                          );
+                        })}
+                  </div>
+                </div>
+
+                {/* Sub-sections dropdowns */}
+                <div className="space-y-4 pt-4 border-t border-border/40">
+                  {/* Education Loan Dropdown */}
+                  <div className="border border-border rounded-xl bg-background overflow-hidden shadow-sm">
+                    <button
+                      onClick={() => setEduExpanded(!eduExpanded)}
+                      className="w-full flex items-center justify-between p-4 font-bold text-sm text-foreground hover:bg-muted/40 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">Education Loan Banks Visibility Settings</span>
+                      {eduExpanded ? <ChevronDown className="w-4 h-4 text-primary" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                    </button>
+                    {eduExpanded && (
+                      <div className="p-5 border-t border-border bg-muted/10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {config.navbar?.educationLoan &&
+                          Object.entries(config.navbar.educationLoan).map(([key, val]) => {
+                            const fullKey = `navbar.educationLoan.${key}`;
+                            const value = val as boolean;
+                            return (
+                              <div
+                                key={fullKey}
+                                className="flex items-center justify-between p-4 bg-background border border-border rounded-xl hover:border-primary/20 transition-all duration-200"
+                              >
+                                <span className="text-sm font-semibold text-foreground">{formatLabel(key)}</span>
+                                <button
+                                  onClick={() => handleToggle(fullKey, value)}
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${value ? "bg-primary" : "bg-muted"
+                                    }`}
+                                >
+                                  <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? "translate-x-6" : "translate-x-1"
+                                      }`}
+                                  />
+                                </button>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Personal Loan Dropdown */}
+                  <div className="border border-border rounded-xl bg-background overflow-hidden shadow-sm">
+                    <button
+                      onClick={() => setPersExpanded(!persExpanded)}
+                      className="w-full flex items-center justify-between p-4 font-bold text-sm text-foreground hover:bg-muted/40 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">Personal Loan Banks Visibility Settings</span>
+                      {persExpanded ? <ChevronDown className="w-4 h-4 text-primary" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                    </button>
+                    {persExpanded && (
+                      <div className="p-5 border-t border-border bg-muted/10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {config.navbar?.personalLoan &&
+                          Object.entries(config.navbar.personalLoan).map(([key, val]) => {
+                            const fullKey = `navbar.personalLoan.${key}`;
+                            const value = val as boolean;
+                            return (
+                              <div
+                                key={fullKey}
+                                className="flex items-center justify-between p-4 bg-background border border-border rounded-xl hover:border-primary/20 transition-all duration-200"
+                              >
+                                <span className="text-sm font-semibold text-foreground">{formatLabel(key)}</span>
+                                <button
+                                  onClick={() => handleToggle(fullKey, value)}
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${value ? "bg-primary" : "bg-muted"
+                                    }`}
+                                >
+                                  <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? "translate-x-6" : "translate-x-1"
+                                      }`}
+                                  />
+                                </button>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

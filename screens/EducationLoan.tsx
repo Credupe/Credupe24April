@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 import Footer from "@/components/Footer";
 import ProductSidebar from "@/components/ProductSidebar";
 import SidebarContentPanel from "@/components/SidebarContentPanel";
@@ -70,9 +71,51 @@ const eligibilityDocs = [
   "Education Loan Repayment Guide",
 ];
 
+const bankToConfigKeyMap: Record<string, string> = {
+  "SBI": "hideStateBankOfIndia",
+  "State Bank of India": "hideStateBankOfIndia",
+  "HDFC Credila": "hideCredilaHDFC",
+  "Credila (HDFC)": "hideCredilaHDFC",
+  "Axis Bank": "hideAxisBank",
+  "Axis": "hideAxisBank",
+  "Bank of Baroda": "hideBankOfBaroda",
+  "BOB": "hideBankOfBaroda",
+  "IDFC FIRST": "hideIDFCFirstBank",
+  "IDFC First Bank": "hideIDFCFirstBank",
+  "Prodigy Finance": "hideProdigyFinance",
+  "Mpower Finance": "hideMpowerFinance",
+  "Union Bank of India": "hideUnionBankOfIndia",
+  "ICICI Bank": "hideICICIBank",
+  "Avanse": "hideAvanse",
+  "InCred": "hideInCred",
+};
+
 const EducationLoan = () => {
   const [activeTab, setActiveTab] = useState("Education Loan");
   const { selectedSlug, selectedType, handleItemClick, handleClose, contentRef } = useSidebarContent();
+  const { config } = useUIConfigStore();
+
+  const filteredTopLenders = topLenders.filter((lender) => {
+    const match = Object.keys(bankToConfigKeyMap).find((k) => lender.includes(k));
+    if (match) {
+      const configKey = bankToConfigKeyMap[match];
+      if (config.navbar?.educationLoan?.[configKey as keyof typeof config.navbar.educationLoan]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const filteredInterestRates = interestRates.filter((rate) => {
+    const match = Object.keys(bankToConfigKeyMap).find((k) => rate.includes(k));
+    if (match) {
+      const configKey = bankToConfigKeyMap[match];
+      if (config.navbar?.educationLoan?.[configKey as keyof typeof config.navbar.educationLoan]) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-background max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
@@ -239,8 +282,8 @@ const EducationLoan = () => {
         <ProductSidebar
           productName="Education Loan"
           insights={educationInsights}
-          topLenders={topLenders}
-          interestRates={interestRates}
+          topLenders={filteredTopLenders}
+          interestRates={filteredInterestRates}
           eligibilityDocs={eligibilityDocs}
           ctaIcon={GraduationCap}
           ctaTitle="Get Education Loan"

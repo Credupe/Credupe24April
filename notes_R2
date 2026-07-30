@@ -1,0 +1,7 @@
+http://localhost:8787/api/v1/documents/download/doc_2d08722y642g6i2r1y5s2q
+
+immport  remote data into local
+npx wrangler login
+
+npx wrangler d1 export credupe-db-staging --remote --output=staging-data.sql -c wrangler.api.jsonc --env staging
+npx wrangler d1 execute credupe --local --file=staging-data.sql -c wrangler.api.jsonc

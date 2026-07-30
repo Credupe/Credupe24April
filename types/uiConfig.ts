@@ -8,7 +8,33 @@ export interface UIConfig {
     hideHomeLoan: boolean;
     hideLoanAgainstProperty: boolean;
     hideCreditCard: boolean;
+    hideLoanIntelligence: boolean;
     hideAllTabs: boolean;
+    educationLoan: {
+      hideUnionBankOfIndia: boolean;
+      hideAxisBank: boolean;
+      hideICICIBank: boolean;
+      hideIDFCFirstBank: boolean;
+      hideCredilaHDFC: boolean;
+      hideAvanse: boolean;
+      hideInCred: boolean;
+      hideProdigyFinance: boolean;
+      hideMpowerFinance: boolean;
+      hideStateBankOfIndia: boolean;
+      hideBankOfBaroda: boolean;
+    };
+    personalLoan: {
+      hideHDFCBank: boolean;
+      hideICICIBank: boolean;
+      hideStateBankOfIndia: boolean;
+      hideAxisBank: boolean;
+      hideKotakMahindraBank: boolean;
+      hideBajajFinserv: boolean;
+      hideTataCapital: boolean;
+      hideIndusIndBank: boolean;
+      hideYesBank: boolean;
+      hidePunjabNationalBank: boolean;
+    };
   };
   sections: {
     hidePartnerStats: boolean;

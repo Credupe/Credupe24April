@@ -100,10 +100,12 @@ const Navbar = () => {
             </div>
             {!config.navbar?.hideAllTabs && (
               <div className="hidden sm:flex items-center gap-6">
-                <Link to="/loan-intelligence" data-testid="topbar-loan-intelligence" className="hover:underline font-medium inline-flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Loan Intelligence
-                </Link>
+                {!config.navbar?.hideLoanIntelligence && (
+                  <Link to="/loan-intelligence" data-testid="topbar-loan-intelligence" className="hover:underline font-medium inline-flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Loan Intelligence
+                  </Link>
+                )}
                 <Link to="/about-us" className="hover:underline font-medium">About Us</Link>
                 <Link to="/careers" className="hover:underline font-medium">Careers</Link>
                 <Link to="/contact-us" className="hover:underline font-medium">Contact Us</Link>
