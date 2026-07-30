@@ -11,6 +11,7 @@ export const defaultUIConfig: UIConfig = {
     hideLoanAgainstProperty: false,
     hideCreditCard: false,
     hideLoanIntelligence: false,
+    hideMyPortfolio: false,
     hideAllTabs: false,
     educationLoan: {
       hideUnionBankOfIndia: false,

@@ -9,6 +9,7 @@ export interface UIConfig {
     hideLoanAgainstProperty: boolean;
     hideCreditCard: boolean;
     hideLoanIntelligence: boolean;
+    hideMyPortfolio: boolean;
     hideAllTabs: boolean;
     educationLoan: {
       hideUnionBankOfIndia: boolean;

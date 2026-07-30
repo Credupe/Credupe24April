@@ -20,6 +20,7 @@ const DEFAULT_CONFIG = {
     hideLoanAgainstProperty: false,
     hideCreditCard: false,
     hideLoanIntelligence: false,
+    hideMyPortfolio: false,
     hideAllTabs: false,
     educationLoan: {
       hideUnionBankOfIndia: false,
