@@ -56,6 +56,9 @@ const Navbar = () => {
       if (item.label === "Credit Cards" && config.navbar?.hideCreditCard === true) {
         return false;
       }
+      if (item.label === "My Portfolio" && config.navbar?.hideMyPortfolio === true) {
+        return false;
+      }
       return true;
     })
     .map((item) => {

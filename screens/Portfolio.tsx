@@ -6,6 +6,7 @@ import {
   Wallet, BarChart3, IndianRupee, Brain, Zap, Loader2, RefreshCw, X, ExternalLink,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 import Footer from "@/components/Footer";
 import { useAuth, refreshCredupeAuth } from "@/hooks/useAuth";
 import { credupeApi, CredupeApiError } from "@/lib/credupe-api";
@@ -295,6 +296,13 @@ function buildReasons(rate: number, approval: number, fee: number, lender?: stri
 const Portfolio = () => {
   const { user, isReady } = useAuth();
   const navigate = useNavigate();
+  const { config } = useUIConfigStore();
+
+  useEffect(() => {
+    if (config.navbar?.hideMyPortfolio) {
+      navigate("/");
+    }
+  }, [config.navbar?.hideMyPortfolio, navigate]);
 
   const [data, setData] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
