@@ -2,6 +2,21 @@ import { GraduationCap, BookOpen, Shield, Clock, IndianRupee, FileText, CheckCir
 import { useState } from "react";
 import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
 import { Link } from "react-router-dom";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
+
+const bankToConfigKeyMap: Record<string, string> = {
+  "Union Bank of India": "hideUnionBankOfIndia",
+  "Axis Bank": "hideAxisBank",
+  "ICICI Bank": "hideICICIBank",
+  "IDFC First Bank": "hideIDFCFirstBank",
+  "Credila (HDFC)": "hideCredilaHDFC",
+  "Avanse": "hideAvanse",
+  "InCred": "hideInCred",
+  "Prodigy Finance": "hideProdigyFinance",
+  "Mpower Finance": "hideMpowerFinance",
+  "State Bank of India": "hideStateBankOfIndia",
+  "Bank of Baroda": "hideBankOfBaroda",
+};
 
 const faqs = [
   { q: "What exactly is a student loan?", a: "A student loan is a type of financial support that helps cover the expenses of higher education. This can include tuition fees, accommodation, books, equipment, and other costs directly related to your studies." },
@@ -34,6 +49,15 @@ const interestRates = [
 
 const EducationLoanAbout = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { config } = useUIConfigStore();
+
+  const filteredRates = interestRates.filter((r) => {
+    const configKey = bankToConfigKeyMap[r.bank];
+    if (configKey && config.navbar?.educationLoan?.[configKey as keyof typeof config.navbar.educationLoan]) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-16 pb-16">
@@ -127,7 +151,7 @@ const EducationLoanAbout = () => {
               </tr>
             </thead>
             <tbody>
-              {interestRates.map((r, i) => (
+              {filteredRates.map((r, i) => (
                 <tr key={r.bank} className={`border-b border-border ${i % 2 === 0 ? "bg-card" : "bg-muted/30"}`}>
                   <td className="p-3 font-medium text-foreground">{r.bank}</td>
                   <td className="p-3 text-muted-foreground">{r.secured}</td>
@@ -150,7 +174,7 @@ const EducationLoanAbout = () => {
       {/* Best Loan Recommendation (AI) */}
       <BestLoanRecommendation
         loanType="EDUCATION_LOAN"
-        offerings={interestRates.map((r) => ({ lender: r.bank, rateText: r.secured && r.secured !== "NA" ? r.secured : r.unsecured }))}
+        offerings={filteredRates.map((r) => ({ lender: r.bank, rateText: r.secured && r.secured !== "NA" ? r.secured : r.unsecured }))}
       />
 
       {/* Eligibility */}

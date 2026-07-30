@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 import Footer from "@/components/Footer";
 import ProductSidebar from "@/components/ProductSidebar";
 import { BestLoanRecommendation } from "@/components/BestLoanRecommendation";
@@ -132,8 +133,60 @@ const faqs = [
   { q: "Can I take a personal loan for debt consolidation?", a: "Yes, personal loans can be used for debt consolidation — merging multiple high-interest debts (credit cards, EMIs) into a single lower-interest personal loan. This simplifies payments and can save money on interest." },
 ];
 
+const bankToConfigKeyMap: Record<string, string> = {
+  "HDFC Bank": "hideHDFCBank",
+  "HDFC": "hideHDFCBank",
+  "ICICI Bank": "hideICICIBank",
+  "ICICI": "hideICICIBank",
+  "State Bank of India": "hideStateBankOfIndia",
+  "SBI": "hideStateBankOfIndia",
+  "Axis Bank": "hideAxisBank",
+  "Axis": "hideAxisBank",
+  "Kotak Mahindra Bank": "hideKotakMahindraBank",
+  "Kotak": "hideKotakMahindraBank",
+  "Bajaj Finserv": "hideBajajFinserv",
+  "Tata Capital": "hideTataCapital",
+  "IndusInd Bank": "hideIndusIndBank",
+  "IndusInd": "hideIndusIndBank",
+  "Yes Bank": "hideYesBank",
+  "Punjab National Bank": "hidePunjabNationalBank",
+  "PNB": "hidePunjabNationalBank",
+};
+
 const PersonalLoan = () => {
   const { selectedSlug, selectedType, handleItemClick, handleClose, contentRef } = useSidebarContent();
+  const { config } = useUIConfigStore();
+
+  const filteredRates = interestRates.filter((r) => {
+    const configKey = bankToConfigKeyMap[r.lender];
+    if (configKey && config.navbar?.personalLoan?.[configKey as keyof typeof config.navbar.personalLoan]) {
+      return false;
+    }
+    return true;
+  });
+
+  const filteredPersonalLoanByBank = personalLoanByBank.filter((lender) => {
+    const match = Object.keys(bankToConfigKeyMap).find((k) => lender.includes(k));
+    if (match) {
+      const configKey = bankToConfigKeyMap[match];
+      if (config.navbar?.personalLoan?.[configKey as keyof typeof config.navbar.personalLoan]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const filteredInterestRateByBank = interestRateByBank.filter((rate) => {
+    const match = Object.keys(bankToConfigKeyMap).find((k) => rate.includes(k));
+    if (match) {
+      const configKey = bankToConfigKeyMap[match];
+      if (config.navbar?.personalLoan?.[configKey as keyof typeof config.navbar.personalLoan]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   const sectionRefs = {
     About: useRef<HTMLDivElement>(null),
     Features: useRef<HTMLDivElement>(null),
@@ -313,7 +366,7 @@ const PersonalLoan = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {interestRates.map((row, i) => (
+                  {filteredRates.map((row, i) => (
                     <tr key={row.lender} className={`${i % 2 === 0 ? "bg-card" : "bg-muted/30"} border-t border-border`}>
                       <td className="px-4 py-3 text-xs font-medium text-foreground">{row.lender}</td>
                       <td className="px-4 py-3 text-xs text-primary font-semibold">{row.rate}</td>
@@ -336,7 +389,7 @@ const PersonalLoan = () => {
           {/* Best Loan Recommendation (AI) */}
           <BestLoanRecommendation
             loanType="PERSONAL_LOAN"
-            offerings={interestRates.map((r) => ({ lender: r.lender, rateText: r.rate }))}
+            offerings={filteredRates.map((r) => ({ lender: r.lender, rateText: r.rate }))}
           />
 
           {/* Eligibility Section */}
@@ -445,8 +498,8 @@ const PersonalLoan = () => {
         <ProductSidebar
           productName="Personal Loan"
           insights={relatedArticles}
-          topLenders={personalLoanByBank}
-          interestRates={interestRateByBank}
+          topLenders={filteredPersonalLoanByBank}
+          interestRates={filteredInterestRateByBank}
           eligibilityDocs={personalLoanDetails}
           ctaIcon={User}
           ctaDescription="Compare offers from 80+ lenders and get the best rates instantly."
