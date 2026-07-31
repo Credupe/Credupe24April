@@ -484,7 +484,6 @@ export default function PartnerOnboarding() {
                 onVerify={verifyEmail}
                 onResend={() => resendOtp("email")}
                 resendIn={emailResendIn}
-                devOtp={devEmailOtp}
                 onBack={() => setStep("mobileOtp")}
                 submitting={submitting}
                 icon={<Mail className="w-6 h-6" />}
