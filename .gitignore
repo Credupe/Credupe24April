@@ -79,3 +79,8 @@ next-env.d.ts
 !.dev.vars.example
 worker-configuration.d.ts
 
+# Notes files
+notes
+notes_R2
+
+

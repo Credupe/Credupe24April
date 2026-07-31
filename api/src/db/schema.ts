@@ -127,6 +127,7 @@ export const partnerProfiles = sqliteTable("partner_profiles", {
   userId: text("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   partnerCode: text("partner_code").notNull().unique(),
   businessName: text("business_name").notNull(),
+  businessType: text("business_type"),
   contactPerson: text("contact_person"),
   email: text("email"),
   mobile: text("mobile"),
