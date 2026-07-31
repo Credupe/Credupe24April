@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Calculator, TrendingUp, Home, Car, Briefcase, Coins, Bike,
   Building2, FileText, CreditCard, Landmark, ChevronRight,
   PiggyBank, BarChart3, Shield, Target, Sparkles, ArrowRight, Tractor
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CalculatorSidebar from "@/components/CalculatorSidebar";
@@ -32,8 +32,20 @@ const eligibilityCalculators = [
 
 type CalcType = "emi" | "eligibility" | "prepayment";
 const Calculators = () => {
-  const [activeCalc, setActiveCalc] = useState<CalcType>("emi");
-  
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeCalc, setActiveCalc] = useState<CalcType>(
+    (tabParam === "eligibility" || tabParam === "prepayment" || tabParam === "emi")
+      ? (tabParam as CalcType)
+      : "emi"
+  );
+
+  useEffect(() => {
+    if (tabParam === "eligibility" || tabParam === "prepayment" || tabParam === "emi") {
+      setActiveCalc(tabParam as CalcType);
+    }
+  }, [tabParam]);
+
 
   const [amount, setAmount] = useState(1000000);
   const [rate, setRate] = useState(8.5);

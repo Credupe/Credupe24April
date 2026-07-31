@@ -145,7 +145,7 @@ const EducationLoan = () => {
                 <span className="text-xs block">Interest rate starts from</span>
                 <span className="text-3xl md:text-4xl font-bold text-primary">9.5% p.a</span>
               </div>
-              <Link to="/calculators" className="px-6 py-3 rounded-lg border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
+              <Link to="/calculators?tab=eligibility" className="px-6 py-3 rounded-lg border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
                 Check Eligibility
               </Link>
               <Link to="/login" className="px-6 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
