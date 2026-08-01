@@ -5,3 +5,7 @@ npx wrangler login
 
 npx wrangler d1 export credupe-db-staging --remote --output=staging-data.sql -c wrangler.api.jsonc --env staging
 npx wrangler d1 execute credupe --local --file=staging-data.sql -c wrangler.api.jsonc
+
+
+temprray pass e6w56crh
+aman   mb4rygkw
