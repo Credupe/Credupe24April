@@ -3,7 +3,7 @@
  *
  * Two themes:
  *  - dark  : neon-on-charcoal (matches the Next.js "night mode")
- *  - light : violet-on-paper (matches the credupe.com day mode in the user's screenshot)
+ *  - light : Argon Premium (vibrant modern colors inspired by Argon Design System)
  */
 
 export type ThemeMode = "dark" | "light";
@@ -26,6 +26,7 @@ export interface ThemeColors {
   success: string;
   warning: string;
   danger: string;
+  info: string;
   // Tab bar
   tabBg: string;
   tabActive: string;
@@ -46,28 +47,30 @@ export const dark: ThemeColors = {
   success: "#7AE582",
   warning: "#FFB454",
   danger: "#FF6B6B",
+  info: "#11CDEF",
   tabBg: "#0F1419",
   tabActive: "#D8FF85",
   tabInactive: "#6B7280",
 };
 
 export const light: ThemeColors = {
-  bg: "#F7F5FF",
+  bg: "#F8F9FE", // Argon secondary/background
   bgGradientTo: "#FFFFFF",
   card: "#FFFFFF",
   cardElevated: "#FFFFFF",
-  border: "#E5E3F0",
-  text: "#0B0B14",
-  textMuted: "#5B5B6B",
+  border: "#E9ECEF", // Argon light border
+  text: "#172B4D", // Argon default text
+  textMuted: "#8898AA", // Argon muted text
   textInverted: "#FFFFFF",
-  primary: "#7C3AED",       // CreduPe violet
-  primaryMuted: "#EDE5FF",
-  success: "#16A34A",
-  warning: "#D97706",
-  danger: "#DC2626",
+  primary: "#5E72E4", // Argon primary
+  primaryMuted: "#EAECEF", // Lightest shade
+  success: "#2DCE89", // Argon success
+  warning: "#FB6340", // Argon warning
+  danger: "#F5365C", // Argon error
+  info: "#11CDEF", // Argon info
   tabBg: "#FFFFFF",
-  tabActive: "#7C3AED",
-  tabInactive: "#9CA3AF",
+  tabActive: "#5E72E4",
+  tabInactive: "#ADB5BD",
 };
 
 export const palette: Record<ThemeMode, ThemeColors> = { dark, light };
@@ -96,4 +99,21 @@ export const typography = {
   body: { fontSize: 15, fontWeight: "500" as const },
   caption: { fontSize: 13, fontWeight: "500" as const },
   micro: { fontSize: 11, fontWeight: "600" as const, letterSpacing: 0.6 },
+};
+
+export const shadows = {
+  argon: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    elevation: 4,
+  },
+  soft: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  }
 };

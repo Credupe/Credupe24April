@@ -11,6 +11,7 @@ import {
   View,
   Animated,
   Image,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -26,12 +27,16 @@ import {
   ArrowRight,
   ChevronRight,
 } from "lucide-react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const logoImage = require("../../assets/logo.png");
+const bgImage = require("../../assets/register-bg.png");
 import { getApiConfig, loginEmail, requestOtp, verifyOtp, forgotPassword, resetPassword, apiFetch } from "../api/credupe";
 import { useTheme } from "../theme/ThemeProvider";
 import { radii, spacing } from "../theme/colors";
 import Toast from "react-native-toast-message";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 
 type Mode = "otp" | "email" | "forgot";
 
@@ -66,82 +71,92 @@ export const LoginScreen: React.FC<{ onAuthed: () => void; onSignup?: () => void
   }, []);
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.bg }]} edges={["top", "bottom"]}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <View style={[styles.topBar, { backgroundColor: colors.bg }]}>
-          <ThemeToggle />
-        </View>
-
-        <ScrollView
-          contentContainerStyle={[styles.scrollContainer, { backgroundColor: colors.bg }]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Animated.View
-            style={[
-              styles.authCard,
-              {
-                transform: [{ scale: cardScale }],
-                opacity: cardOpacity,
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            {/* Header / Logo */}
-            <View style={styles.header}>
-              <Image source={logoImage} style={styles.logo} resizeMode="contain" />
-              <Text style={[styles.appTagline, { color: colors.textMuted }]}>
-                One marketplace. Every loan.{"\n"}Designed for partners and customers.
-              </Text>
+    <View style={styles.safeArea}>
+      <ImageBackground source={bgImage} style={{ flex: 1, width: "100%", height: "100%" }}>
+        <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <View style={styles.topBar}>
+              <ThemeToggle />
             </View>
 
-            {/* Sliding Pill Tab Selector */}
-            {tab !== "forgot" ? (
-              <SlidingTabSelector tab={tab} setTab={setTab} />
-            ) : (
-              <View style={styles.resetHeaderContainer}>
-                <Text style={styles.resetTitle}>Reset Password</Text>
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.scrollContainer}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={{ flex: 1, minHeight: 60 }} />
+
+              {/* Logo floating above the sheet */}
+              <View style={styles.floatingLogoContainer}>
+                <Image source={logoImage} style={[styles.floatingLogo, { tintColor: "#FFFFFF" }]} resizeMode="contain" />
+                <Text style={styles.floatingTagline}>
+                  One marketplace. Every loan.{"\n"}Designed for partners and customers.
+                </Text>
               </View>
-            )}
 
-            {/* Panels */}
-            {tab === "otp" ? (
-              <OtpPanel onAuthed={onAuthed} />
-            ) : tab === "email" ? (
-              <EmailPanel onAuthed={onAuthed} onForgotPassword={() => setTab("forgot")} />
-            ) : (
-              <ForgotPasswordPanel onCancel={() => setTab("email")} />
-            )}
-
-            {/* Sign Up Action */}
-            {onSignup && tab !== "forgot" ? (
-              <Pressable
-                onPress={onSignup}
-                style={styles.signupRedirectWrap}
-                accessibilityLabel="open-signup"
+              <Animated.View
+                style={[
+                  styles.bottomSheet,
+                  {
+                    transform: [{ scale: cardScale }],
+                    opacity: cardOpacity,
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                  },
+                ]}
               >
-                <Text style={[styles.signupLabel, { color: colors.textMuted }]}>Don't have an account? </Text>
-                <View style={styles.signupButtonWrap}>
-                  <Text style={[styles.signupText, { color: colors.primary }]}>Create Account</Text>
-                  <ChevronRight size={14} color={colors.primary} />
-                </View>
-              </Pressable>
-            ) : null}
 
-            {/* Footer Disclaimer */}
-            <View style={styles.footerWrap}>
-              <Text style={[styles.footerText, { color: colors.textMuted }]}>
-                By continuing, you agree to our{" "}
-                <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
-                {" "}&amp;{" "}
-                <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>.
-              </Text>
-            </View>
-          </Animated.View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+                {/* Sliding Pill Tab Selector */}
+                {tab !== "forgot" ? (
+                  <SlidingTabSelector tab={tab} setTab={setTab} />
+                ) : (
+                  <View style={styles.resetHeaderContainer}>
+                    <Text style={styles.resetTitle}>Reset Password</Text>
+                  </View>
+                )}
+
+                {/* Panels Wrapper to prevent layout shift */}
+                <View style={{ minHeight: 310 }}>
+                  {tab === "otp" ? (
+                    <OtpPanel onAuthed={onAuthed} />
+                  ) : tab === "email" ? (
+                    <EmailPanel onAuthed={onAuthed} onForgotPassword={() => setTab("forgot")} />
+                  ) : (
+                    <ForgotPasswordPanel onCancel={() => setTab("email")} />
+                  )}
+                </View>
+
+                {/* Sign Up Action */}
+                {onSignup && tab !== "forgot" ? (
+                  <Pressable
+                    onPress={onSignup}
+                    style={styles.signupRedirectWrap}
+                    accessibilityLabel="open-signup"
+                  >
+                    <Text style={[styles.signupLabel, { color: colors.textMuted }]}>Don't have an account? </Text>
+                    <View style={styles.signupButtonWrap}>
+                      <Text style={[styles.signupText, { color: colors.primary }]}>Create Account</Text>
+                      <ChevronRight size={14} color={colors.primary} />
+                    </View>
+                  </Pressable>
+                ) : null}
+
+                {/* Footer Disclaimer */}
+                <View style={styles.footerWrap}>
+                  <Text style={[styles.footerText, { color: colors.textMuted }]}>
+                    By continuing, you agree to our{" "}
+                    <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
+                    {" "}&amp;{" "}
+                    <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>.
+                  </Text>
+                </View>
+              </Animated.View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 };
 
@@ -149,44 +164,20 @@ export const LoginScreen: React.FC<{ onAuthed: () => void; onSignup?: () => void
    Helper UI Components
    ========================================== */
 
-// 1. Sliding Segmented Tab Selector
+// 1. Argon-style Discrete Tab Selector
 const SlidingTabSelector: React.FC<{
   tab: Mode;
   setTab: (t: Mode) => void;
 }> = ({ tab, setTab }) => {
-  const slideAnim = useRef(new Animated.Value(tab === "otp" ? 0 : 1)).current;
-
-  useEffect(() => {
-    Animated.spring(slideAnim, {
-      toValue: tab === "otp" ? 0 : 1,
-      useNativeDriver: false,
-      tension: 100,
-      friction: 12,
-    }).start();
-  }, [tab]);
-
-  const leftPosition = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0%", "50%"],
-  });
-
   return (
     <View style={styles.tabSelectorBg}>
-      <Animated.View
-        style={[
-          styles.tabSelectorSlider,
-          {
-            left: leftPosition,
-          },
-        ]}
-      />
-      <Pressable onPress={() => setTab("otp")} style={styles.tabButton}>
-        <Text style={[styles.tabButtonText, { color: tab === "otp" ? "#FFFFFF" : "#6B7280" }]}>
+      <Pressable onPress={() => setTab("otp")} style={[styles.tabButton, tab === "otp" && styles.tabButtonActive]}>
+        <Text style={[styles.tabButtonText, { color: tab === "otp" ? "#FFFFFF" : "#8898AA" }]}>
           Mobile + OTP
         </Text>
       </Pressable>
-      <Pressable onPress={() => setTab("email")} style={styles.tabButton}>
-        <Text style={[styles.tabButtonText, { color: tab === "email" ? "#FFFFFF" : "#6B7280" }]}>
+      <Pressable onPress={() => setTab("email")} style={[styles.tabButton, tab === "email" && styles.tabButtonActive]}>
+        <Text style={[styles.tabButtonText, { color: tab === "email" ? "#FFFFFF" : "#8898AA" }]}>
           Email + Password
         </Text>
       </Pressable>
@@ -538,8 +529,8 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
     return (
       <View style={{ width: "100%", marginTop: 16 }}>
         <View style={{ marginBottom: phoneError ? 8 : 16 }}>
-          <FloatingInput
-            label="Mobile number"
+          <Input
+            placeholder="Mobile number (e.g. 9999000001)"
             value={phone}
             onChangeText={(txt) => {
               setPhone(txt);
@@ -547,15 +538,14 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
             }}
             keyboardType="phone-pad"
             maxLength={10}
-            prefix="+91"
             icon={<Smartphone size={20} color="#6B7280" />}
-            placeholder="9999000001"
             testID="phone-input"
+            error={!!phoneError}
           />
           {phoneError && <Text style={styles.errorText}>{phoneError}</Text>}
         </View>
 
-        <PremiumButton label="Send OTP" onPress={send} loading={loading} testID="send-otp-btn" />
+        <Button title="Send OTP" onPress={send} loading={loading} testID="send-otp-btn" style={{ marginBottom: 16 }} />
 
         <View style={styles.devTipsContainer}>
           <Text style={[styles.hint, { color: colors.textMuted }]}>
@@ -570,14 +560,13 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
   return (
     <View style={{ width: "100%", marginTop: 16 }}>
       <View style={{ marginBottom: 16 }}>
-        <FloatingInput
-          label={`Enter OTP sent to +91 ${phone}`}
+        <Input
+          placeholder={`Enter OTP sent to +91 ${phone}`}
           value={otp}
           onChangeText={setOtp}
           keyboardType="number-pad"
           maxLength={6}
           icon={<Smartphone size={20} color="#6B7280" />}
-          placeholder="6-digit OTP"
           testID="otp-input"
         />
       </View>
@@ -593,7 +582,7 @@ const OtpPanel: React.FC<{ onAuthed: () => void }> = ({ onAuthed }) => {
         </Pressable>
       ) : null}
 
-      <PremiumButton label="Verify &amp; Sign In" onPress={verify} loading={loading} testID="verify-otp-btn" />
+      <Button title="Verify & Sign In" onPress={verify} loading={loading} testID="verify-otp-btn" style={{ marginBottom: 16 }} />
 
       <Pressable onPress={() => setStage("phone")} style={styles.changeNumberBtn}>
         <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: "600" }}>Change number</Text>
@@ -695,8 +684,8 @@ const EmailPanel: React.FC<{ onAuthed: () => void; onForgotPassword: () => void 
     <View style={{ width: "100%", marginTop: 16 }}>
       {/* Email Input */}
       <View style={{ marginBottom: emailError ? 8 : 16 }}>
-        <FloatingInput
-          label="Email"
+        <Input
+          placeholder="Enter your email"
           value={email}
           onChangeText={(txt) => {
             setEmail(txt);
@@ -704,16 +693,16 @@ const EmailPanel: React.FC<{ onAuthed: () => void; onForgotPassword: () => void 
           }}
           keyboardType="email-address"
           icon={<Mail size={20} color="#6B7280" />}
-          placeholder="Enter your email"
           testID="email-input"
+          error={!!emailError}
         />
         {emailError && <Text style={styles.errorText}>{emailError}</Text>}
       </View>
 
       {/* Password Input */}
       <View style={{ marginBottom: passwordError ? 8 : 12 }}>
-        <FloatingInput
-          label="Password"
+        <Input
+          placeholder="Enter your password"
           value={pwd}
           onChangeText={(txt) => {
             setPwd(txt);
@@ -721,17 +710,8 @@ const EmailPanel: React.FC<{ onAuthed: () => void; onForgotPassword: () => void 
           }}
           secureTextEntry={!showPassword}
           icon={<Lock size={20} color="#6B7280" />}
-          placeholder="Enter your password"
           testID="password-input"
-          rightIcon={
-            <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={8}>
-              {showPassword ? (
-                <EyeOff size={20} color="#6B7280" />
-              ) : (
-                <Eye size={20} color="#6B7280" />
-              )}
-            </Pressable>
-          }
+          error={!!passwordError}
         />
         {passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
       </View>
@@ -742,12 +722,13 @@ const EmailPanel: React.FC<{ onAuthed: () => void; onForgotPassword: () => void 
       </Pressable>
 
       {/* Sign In Button */}
-      <PremiumButton
-        label="Sign In"
+      <Button
+        title="Sign In"
         onPress={submit}
         loading={loading}
         disabled={!email || !pwd}
         testID="signin-btn"
+        style={{ marginBottom: 16 }}
       />
 
       {/* Collapsible Quick Login */}
@@ -825,8 +806,8 @@ const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) =
     return (
       <View style={{ width: "100%", marginTop: 16 }}>
         <View style={{ marginBottom: emailError ? 8 : 16 }}>
-          <FloatingInput
-            label="Email Address"
+          <Input
+            placeholder="Enter your email"
             value={email}
             onChangeText={(txt) => {
               setEmail(txt);
@@ -834,12 +815,12 @@ const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) =
             }}
             keyboardType="email-address"
             icon={<Mail size={20} color="#6B7280" />}
-            placeholder="Enter your email"
+            error={!!emailError}
           />
           {emailError && <Text style={styles.errorText}>{emailError}</Text>}
         </View>
 
-        <PremiumButton label="Send Reset Code" onPress={handleRequest} loading={loading} />
+        <Button title="Send Reset Code" onPress={handleRequest} loading={loading} style={{ marginBottom: 16 }} />
 
         <Pressable onPress={onCancel} style={styles.changeNumberBtn}>
           <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 14 }}>Back to Login</Text>
@@ -851,14 +832,13 @@ const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) =
   return (
     <View style={{ width: "100%", marginTop: 16 }}>
       <View style={{ marginBottom: 16 }}>
-        <FloatingInput
-          label="Verification Code"
+        <Input
+          placeholder="6-digit verification code"
           value={code}
           onChangeText={setCode}
           keyboardType="number-pad"
           maxLength={6}
           icon={<Mail size={20} color="#6B7280" />}
-          placeholder="6-digit code"
         />
       </View>
 
@@ -874,17 +854,16 @@ const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) =
       ) : null}
 
       <View style={{ marginBottom: 16 }}>
-        <FloatingInput
-          label="New Password"
+        <Input
+          placeholder="Enter new password"
           value={newPassword}
           onChangeText={setNewPassword}
           secureTextEntry
           icon={<Lock size={20} color="#6B7280" />}
-          placeholder="Enter new password"
         />
       </View>
 
-      <PremiumButton label="Reset Password" onPress={handleReset} loading={loading} />
+      <Button title="Reset Password" onPress={handleReset} loading={loading} style={{ marginBottom: 16 }} />
 
       <Pressable onPress={onCancel} style={styles.changeNumberBtn}>
         <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 14 }}>Back to Login</Text>
@@ -901,71 +880,70 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topBar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: 24,
-    paddingTop: 12,
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 10,
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    justifyContent: "center",
   },
-  authCard: {
+  bottomSheet: {
     width: "100%",
-    borderRadius: 24,
+    backgroundColor: "#F4F5F7",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     paddingHorizontal: 24,
-    paddingVertical: 32,
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 8,
-    borderWidth: 1,
+    paddingTop: 32,
+    paddingBottom: 40,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  header: {
+  floatingLogoContainer: {
     alignItems: "center",
-    marginBottom: 28,
+    marginBottom: 40,
   },
-  logo: {
-    width: 140,
-    height: 50,
+  floatingLogo: {
+    width: 210,
+    height: 75,
     alignSelf: "center",
     marginBottom: 12,
   },
-  appTagline: {
+  floatingTagline: {
     fontSize: 14,
     fontFamily: FONT_FAMILY,
-    lineHeight: 20,
+    color: "#FFFFFF",
     textAlign: "center",
-    marginTop: 8,
+    fontWeight: "600",
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
-  // Sliding Segmented Tab styles
+  // Tab styles (Argon inspired)
   tabSelectorBg: {
     flexDirection: "row",
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#F1F5F9",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    padding: 3,
-    position: "relative",
-    marginBottom: 16,
-  },
-  tabSelectorSlider: {
-    position: "absolute",
-    top: 3,
-    bottom: 3,
-    width: "50%",
-    borderRadius: 23,
-    backgroundColor: "#7C3AED",
+    height: 44,
+    marginBottom: 20,
+    justifyContent: "space-between",
   },
   tabButton: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
+    backgroundColor: "#F4F5F7",
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  tabButtonActive: {
+    backgroundColor: "#5E72E4",
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabButtonText: {
     fontSize: 14,
@@ -1111,7 +1089,7 @@ const styles = StyleSheet.create({
   },
   forgotBtn: {
     alignSelf: "flex-end",
-    marginTop: 6,
+    marginTop: -2,
     paddingVertical: 4,
   },
   // Premium Buttons
