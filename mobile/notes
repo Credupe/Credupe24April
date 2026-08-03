@@ -14,3 +14,10 @@ mobile test
 
 api mobile test 
           npx wrangler dev --config wrangler.api.jsonc --ip 0.0.0.0
+
+
+new build commned =   .\build.ps1
+>> 
+
+
+                   

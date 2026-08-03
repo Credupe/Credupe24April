@@ -1,0 +1,38 @@
+# EAS Ignore - File patterns to ignore when zipping files to upload to EAS Build
+
+# Dependencies
+node_modules/
+
+# Expo / Metro
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# Android Build artifacts & cache
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+.gradle/
+build/
+
+# iOS Build artifacts
+ios/build/
+ios/Pods/
+
+# Environment and certificates
+.env*.local
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# IDE / System
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
