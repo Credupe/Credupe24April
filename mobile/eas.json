@@ -23,6 +23,16 @@
       }
     },
 
+    "previewbf": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://staging-api.credupe.com"
+      }
+    },
+
     "production": {
       "autoIncrement": true,
       "env": {
