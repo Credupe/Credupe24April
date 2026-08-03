@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Text,
   View,
-  Pressable,
-  TextInput,
   ScrollView,
   Share,
   Platform,
   StyleSheet,
   ActivityIndicator,
-  Image
+  Image,
+  Pressable
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -17,8 +15,11 @@ import Toast from "react-native-toast-message";
 import { Search, Copy, Share2, Bell, Link2 } from "lucide-react-native";
 
 import { apiFetch } from "../../../../../api/credupe";
-import { COLORS } from "../constants/colors";
-import { THEME } from "../constants/theme";
+import { useTheme } from "../../../../../theme/ThemeProvider";
+import { Text } from "../../../../../components/ui/Text";
+import { Button } from "../../../../../components/ui/Button";
+import { Card } from "../../../../../components/ui/Card";
+import { Input } from "../../../../../components/ui/Input";
 
 interface UtilityLinkItem {
   id: string;
@@ -28,12 +29,6 @@ interface UtilityLinkItem {
 }
 
 const UTILITIES_DATA: UtilityLinkItem[] = [
-  // {
-  //   id: "credit-card",
-  //   title: "Credit Card Lead Form UTM Link",
-  //   slug: "credit-card",
-  //   productName: "Credit Card",
-  // },
   {
     id: "personal-loan",
     title: "Personal Loan Lead Form UTM Link",
@@ -54,6 +49,7 @@ export const UtilityToolScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   // Fetch partner profile on mount to get the actual partner code
   useEffect(() => {
@@ -144,24 +140,24 @@ export const UtilityToolScreen: React.FC = () => {
   const logoImage = require("../../../../../../assets/logo.png");
 
   return (
-    <SafeAreaView style={styles.container} edges={["left", "right"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]} edges={["left", "right"]}>
       {/* Redesigned Premium Header */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 16, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
-            <Text style={styles.headerWelcome}>Welcome</Text>
-            <Text style={styles.headerCompanyName}>Credupe Techfin Pvt Ltd</Text>
+            <Text variant="caption" muted style={styles.headerWelcome}>Welcome</Text>
+            <Text variant="h2" color={colors.text}>Credupe Techfin Pvt Ltd</Text>
           </View>
           <View style={styles.headerRight}>
-            <View style={styles.logoCircle}>
+            <View style={[styles.logoCircle, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Pressable
               onPress={() => navigation.navigate("Notifications" as any)}
-              style={styles.bellPressable}
+              style={[styles.bellPressable, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
-              <Bell size={22} color="#6B7280" strokeWidth={2} />
-              <View style={styles.badge} />
+              <Bell size={22} color={colors.textMuted} strokeWidth={2} />
+              <View style={[styles.badge, { backgroundColor: colors.danger }]} />
             </Pressable>
           </View>
         </View>
@@ -169,22 +165,18 @@ export const UtilityToolScreen: React.FC = () => {
 
       {/* Premium Search Bar */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={18} color="#6B7280" style={styles.searchIcon} />
-          <TextInput
-            placeholder="Search Utility"
-            placeholderTextColor="#6B7280"
-            style={styles.searchInput}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            accessibilityLabel="search-utility-tools"
-          />
-        </View>
+        <Input 
+          placeholder="Search Utility"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          icon={<Search size={18} color={colors.textMuted} />}
+          accessibilityLabel="search-utility-tools"
+        />
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color={COLORS.primary} size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : (
         <ScrollView
@@ -193,54 +185,46 @@ export const UtilityToolScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           {filteredItems.map((item) => (
-            <View key={item.id} style={styles.card}>
+            <Card key={item.id} elevated>
               <View style={styles.cardHeader}>
-                <View style={styles.cardIconContainer}>
-                  <Link2 size={20} color="#7C3AED" />
+                <View style={[styles.cardIconContainer, { backgroundColor: colors.primaryMuted }]}>
+                  <Link2 size={20} color={colors.primary} />
                 </View>
                 <View style={styles.cardTitleContainer}>
-                  <Text style={styles.cardTitle}>{item.productName} Lead Form</Text>
-                  <Text style={styles.cardSubtitle}>Generate and share your lead form instantly.</Text>
+                  <Text variant="body" bold>{item.productName} Lead Form</Text>
+                  <Text variant="caption" muted>Generate and share your lead form instantly.</Text>
                 </View>
               </View>
 
-              <View style={styles.separator} />
+              <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
               <View style={styles.buttonRow}>
                 {/* Copy Button */}
-                <Pressable
+                <Button 
+                  style={styles.flex1}
+                  variant="primary"
+                  title="Copy"
+                  icon={<Copy size={16} color={colors.textInverted} style={styles.buttonIcon} />}
                   onPress={() => handleCopy(item)}
-                  style={({ pressed }) => [
-                    styles.copyButton,
-                    { transform: [{ scale: pressed ? 0.96 : 1 }] }
-                  ]}
-                  accessibilityRole="button"
                   accessibilityLabel={`copy-utm-${item.id}`}
-                >
-                  <Copy size={16} color="#FFFFFF" style={styles.buttonIcon} />
-                  <Text style={styles.copyText}>Copy</Text>
-                </Pressable>
+                />
 
                 {/* Share Button */}
-                <Pressable
+                <Button 
+                  style={styles.flex1}
+                  variant="outline"
+                  title="Share"
+                  icon={<Share2 size={16} color={colors.primary} style={styles.buttonIcon} />}
                   onPress={() => handleShare(item)}
-                  style={({ pressed }) => [
-                    styles.shareButton,
-                    { transform: [{ scale: pressed ? 0.96 : 1 }] }
-                  ]}
-                  accessibilityRole="button"
                   accessibilityLabel={`share-utm-${item.id}`}
-                >
-                  <Share2 size={16} color="#7C3AED" style={styles.buttonIcon} />
-                  <Text style={styles.shareText}>Share</Text>
-                </Pressable>
+                />
               </View>
-            </View>
+            </Card>
           ))}
 
           {filteredItems.length === 0 && (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No matching utility links found</Text>
+              <Text variant="body" muted>No matching utility links found</Text>
             </View>
           )}
         </ScrollView>
@@ -252,14 +236,11 @@ export const UtilityToolScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FC",
   },
   headerContainer: {
-    backgroundColor: "#FFFFFF",
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
   },
   headerContent: {
     flexDirection: "row",
@@ -270,15 +251,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWelcome: {
-    fontSize: 13,
-    color: "#6B7280",
-    fontWeight: "400",
     marginBottom: 4,
-  },
-  headerCompanyName: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#1F2937",
   },
   headerRight: {
     flexDirection: "row",
@@ -289,9 +262,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -308,9 +279,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -327,37 +296,11 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#EF4444",
   },
   searchContainer: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 52,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: "#1F2937",
-    fontWeight: "500",
-    paddingVertical: 10,
   },
   scrollView: {
     flex: 1,
@@ -366,19 +309,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 110,
     paddingTop: 8,
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 18,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
   },
   cardHeader: {
     flexDirection: "row",
@@ -389,27 +319,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: "#F3E8FF",
     alignItems: "center",
     justifyContent: "center",
   },
   cardTitleContainer: {
     flex: 1,
   },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#1F2937",
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    color: "#6B7280",
-    fontWeight: "400",
-  },
   separator: {
     height: 1,
-    backgroundColor: "#E5E7EB",
     marginVertical: 16,
   },
   buttonRow: {
@@ -417,37 +334,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
-  copyButton: {
+  flex1: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#7C3AED",
-    borderRadius: 14,
-    height: 48,
-    gap: 6,
-  },
-  copyText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  shareButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#7C3AED",
-    borderRadius: 14,
-    height: 48,
-    gap: 6,
-  },
-  shareText: {
-    color: "#7C3AED",
-    fontSize: 15,
-    fontWeight: "500",
   },
   buttonIcon: {
     marginRight: 4,
@@ -460,10 +348,5 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 32,
     alignItems: "center",
-  },
-  emptyText: {
-    color: "#6B7280",
-    fontSize: 14,
-    fontWeight: "600",
   },
 });
