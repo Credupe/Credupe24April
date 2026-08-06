@@ -362,19 +362,8 @@ export const SignupVerificationScreen: React.FC<Props> = ({ navigation, route })
           ]}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
-          <View style={styles.headerSection}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.backBtn,
-                pressed && styles.backBtnPressed,
-                isDark && styles.backBtnDark,
-              ]}
-              onPress={navigation.goBack}
-            >
-              <ArrowLeft size={22} color={isDark ? "#FFFFFF" : "#111827"} />
-            </Pressable>
-          </View>
+          {/* Header Spacer */}
+          <View style={styles.headerSection} />
 
           {/* Logo & Headline */}
           <View style={styles.logoSection}>
@@ -878,19 +867,19 @@ const styles = StyleSheet.create({
   otpWrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 8,
+    gap: 6,
     marginBottom: 16,
   },
   otpBox: {
     flex: 1,
-    height: 60,
-    maxWidth: 52,
-    borderRadius: 14,
+    height: 52,
+    maxWidth: 42,
+    borderRadius: 10,
     backgroundColor: "#F8FAFC",
     borderWidth: 1.5,
     borderColor: "#E5E7EB",
     textAlign: "center",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: "#111827",
     fontFamily: "Plus Jakarta Sans",

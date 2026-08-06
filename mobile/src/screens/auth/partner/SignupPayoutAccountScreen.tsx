@@ -92,9 +92,7 @@ export const SignupPayoutAccountScreen: React.FC<Props> = ({ navigation, route }
       <KeyboardAvoidingView style={styles.safeArea} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="always">
           <View style={styles.heroSection}>
-            <Pressable style={styles.backBtn} onPress={navigation.goBack}>
-              <Text style={styles.backIcon}>‹</Text>
-            </Pressable>
+
 
             <View style={styles.dotPattern} />
 
@@ -102,7 +100,7 @@ export const SignupPayoutAccountScreen: React.FC<Props> = ({ navigation, route }
               <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
             </View>
 
-            
+
 
             <Text style={[styles.title, { color: colors.text }]}>Payout account</Text>
 

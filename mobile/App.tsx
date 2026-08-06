@@ -449,6 +449,10 @@ const Root: React.FC = () => {
                 />
               )}
             </Stack.Screen>
+            <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
+            <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
+            <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
+            <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
             <Stack.Screen name="PartnerOnboardingSuccess">
               {({ navigation, route }) => (
                 <PartnerOnboardingSuccessScreen
@@ -652,11 +656,7 @@ const Root: React.FC = () => {
         )}
         <Stack.Screen name="SignupSelection" component={SignupSelectionScreen} />
         <Stack.Screen name="SignupBasicDetails" component={SignupBasicDetailsScreen} />
-        <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
-        <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
-        <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
         <Stack.Screen name="SignupKycDocuments" component={SignupKycDocumentsScreen} />
-        <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
         <Stack.Screen name="ApplyPersonalLoan" component={ApplyPersonalLoanScreen} />
         <Stack.Screen name="ApplyBusinessLoan" component={ApplyBusinessLoanScreen} />
         <Stack.Screen name="ApplyHomeLoan" component={ApplyHomeLoanScreen} />
