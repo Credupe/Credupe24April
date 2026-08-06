@@ -65,6 +65,19 @@ import { MoreScreen } from "./src/screens/dashboard/partner/home/More/MoreScreen
 import { registerForPushNotifications } from "./src/lib/push";
 import { getCachedUser, fetchPartnerProfile, Lead, Lender, LoanProduct, Quote } from "./src/api/credupe";
 
+// Inject global style on Web to disable the default orange/yellow focus outline/border on inputs
+if (Platform.OS === "web" && typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = `
+    input, textarea, select {
+      outline: none !important;
+      outline-width: 0 !important;
+      box-shadow: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export type RootStackParamList = {
   Login: undefined;
   SignupSelection: undefined;
@@ -436,6 +449,10 @@ const Root: React.FC = () => {
                 />
               )}
             </Stack.Screen>
+            <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
+            <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
+            <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
+            <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
             <Stack.Screen name="PartnerOnboardingSuccess">
               {({ navigation, route }) => (
                 <PartnerOnboardingSuccessScreen
@@ -639,11 +656,7 @@ const Root: React.FC = () => {
         )}
         <Stack.Screen name="SignupSelection" component={SignupSelectionScreen} />
         <Stack.Screen name="SignupBasicDetails" component={SignupBasicDetailsScreen} />
-        <Stack.Screen name="SignupContactDetails" component={SignupContactDetailsScreen} />
-        <Stack.Screen name="SignupVerification" component={SignupVerificationScreen} />
-        <Stack.Screen name="SignupBusinessDetails" component={SignupBusinessDetailsScreen} />
         <Stack.Screen name="SignupKycDocuments" component={SignupKycDocumentsScreen} />
-        <Stack.Screen name="SignupPayoutAccount" component={SignupPayoutAccountScreen} />
         <Stack.Screen name="ApplyPersonalLoan" component={ApplyPersonalLoanScreen} />
         <Stack.Screen name="ApplyBusinessLoan" component={ApplyBusinessLoanScreen} />
         <Stack.Screen name="ApplyHomeLoan" component={ApplyHomeLoanScreen} />
