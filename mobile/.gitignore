@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Android build outputs and caches (speeds up EAS Build uploads)
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+.gradle/
+build/
