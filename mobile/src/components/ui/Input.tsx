@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, TextInputProps, StyleSheet } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { radii, typography, shadows } from '../../theme/colors';
 
@@ -62,5 +62,10 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: '100%',
-  }
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      },
+    }),
+  } as any
 });

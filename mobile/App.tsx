@@ -65,6 +65,19 @@ import { MoreScreen } from "./src/screens/dashboard/partner/home/More/MoreScreen
 import { registerForPushNotifications } from "./src/lib/push";
 import { getCachedUser, fetchPartnerProfile, Lead, Lender, LoanProduct, Quote } from "./src/api/credupe";
 
+// Inject global style on Web to disable the default orange/yellow focus outline/border on inputs
+if (Platform.OS === "web" && typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = `
+    input, textarea, select {
+      outline: none !important;
+      outline-width: 0 !important;
+      box-shadow: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export type RootStackParamList = {
   Login: undefined;
   SignupSelection: undefined;
