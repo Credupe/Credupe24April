@@ -1,7 +1,9 @@
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View, Clipboard } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Copy } from "lucide-react-native";
+import Toast from "react-native-toast-message";
 
 import { RootStackParamList } from "../../../../App";
 import { useTheme } from "../../../theme/ThemeProvider";
@@ -17,6 +19,15 @@ export const PartnerOnboardingSuccessScreen: React.FC<Props> = ({ navigation, ro
   const { colors } = useTheme();
   const { partnerCode, tempPassword } = route.params || {};
 
+  const copyToClipboard = (text: string, label: string) => {
+    Clipboard.setString(text);
+    Toast.show({
+      type: "success",
+      text1: "Copied!",
+      text2: `${label} copied to clipboard`,
+    });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <View style={styles.container}>
@@ -31,14 +42,32 @@ export const PartnerOnboardingSuccessScreen: React.FC<Props> = ({ navigation, ro
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>YOUR PARTNER CODE</Text>
-          <Text style={styles.cardValue}>{partnerCode || "CRD-PA00000"}</Text>
+          <View style={styles.valueRow}>
+            <Text style={styles.cardValue}>{partnerCode || "CRD-PA00000"}</Text>
+            <Pressable
+              onPress={() => copyToClipboard(partnerCode || "CRD-PA00000", "Partner Code")}
+              style={styles.copyBtn}
+              accessibilityLabel="copy-partner-code"
+            >
+              <Copy size={20} color={colors.primary} />
+            </Pressable>
+          </View>
           <Text style={styles.cardHint}>Share this with customers to attribute leads to you.</Text>
         </View>
 
         {tempPassword ? (
           <View style={styles.passwordCard}>
             <Text style={styles.passwordLabel}>TEMPORARY PASSWORD</Text>
-            <Text style={styles.passwordValue}>{tempPassword}</Text>
+            <View style={styles.valueRow}>
+              <Text style={styles.passwordValue}>{tempPassword}</Text>
+              <Pressable
+                onPress={() => copyToClipboard(tempPassword, "Temporary Password")}
+                style={[styles.copyBtn, styles.copyBtnPassword]}
+                accessibilityLabel="copy-temp-password"
+              >
+                <Copy size={20} color="#7C5A00" />
+              </Pressable>
+            </View>
             <Text style={styles.passwordHint}>Save it now. You can change it from the dashboard.</Text>
           </View>
         ) : null}
@@ -116,7 +145,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   cardValue: {
-    marginTop: spacing.sm,
     color: "#111827",
     fontSize: 36,
     fontWeight: "900",
@@ -146,7 +174,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   passwordValue: {
-    marginTop: spacing.sm,
     color: "#2D2A25",
     fontSize: 34,
     fontWeight: "900",
@@ -169,5 +196,22 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 20,
     fontWeight: "800",
+  },
+  valueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: spacing.sm,
+  },
+  copyBtn: {
+    marginLeft: spacing.md,
+    padding: spacing.sm,
+    borderRadius: radii.sm,
+    backgroundColor: "#F4F5FD",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  copyBtnPassword: {
+    backgroundColor: "#FFF9E6",
   },
 });

@@ -53,6 +53,19 @@ export default function UtilityLeadForm() {
         .catch((err) => {
           console.warn("Failed to fetch partner name:", err);
         });
+    } else {
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("credupe_access") : null;
+      if (token) {
+        credupeApi.partner.me()
+          .then((res) => {
+            if (res && res.profile && res.profile.businessName) {
+              setPartnerName(res.profile.businessName);
+            }
+          })
+          .catch((err) => {
+            console.warn("Failed to fetch logged in partner details:", err);
+          });
+      }
     }
   }, [partnerCode]);
 
@@ -121,10 +134,10 @@ export default function UtilityLeadForm() {
       {/* Main Content Area */}
       <main className="w-full max-w-6xl flex-grow px-6 py-8 md:py-16 flex flex-col md:grid md:grid-cols-12 md:gap-12 lg:gap-16 items-center md:items-start justify-center">
         
-        {/* Left Column: Header, Dynamic Titles, Visual Cards, Security (Desktop) */}
-        <div className="w-full md:col-span-6 lg:col-span-7 flex flex-col justify-center md:justify-start text-center md:text-left space-y-6">
-          {/* Call to Action Titles */}
-          <div>
+        {/* Left Column: Header, Dynamic Titles, Visual Cards, Security (Desktop / Bottom on Mobile) */}
+        <div className="w-full md:col-span-6 lg:col-span-7 flex flex-col justify-center md:justify-start text-center md:text-left space-y-6 order-2 md:order-1 mt-8 md:mt-0">
+          {/* Call to Action Titles - Desktop Only */}
+          <div className="hidden md:block">
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 leading-snug sm:text-3xl lg:text-4xl">
               Unlock the Benefits of the Perfect{" "}
               <span className={`block md:inline bg-gradient-to-r ${themeColor} bg-clip-text text-transparent`}>
@@ -136,7 +149,7 @@ export default function UtilityLeadForm() {
           {/* Product Visual Cards (matches mockup layout) */}
           <div className="flex justify-center md:justify-start items-center py-4 md:py-6 md:pl-4">
             {slug === "credit-card" ? (
-              <div className="relative w-56 h-36 flex items-center justify-center">
+              <div className="relative w-56 h-36 flex items-center justify-center scale-90 sm:scale-100">
                 {/* Card 1: Black (back) */}
                 <div className="absolute w-44 h-28 bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col justify-between p-3 transform -rotate-12 translate-x-4 -translate-y-2 opacity-90">
                   <div className="flex justify-between items-start">
@@ -166,26 +179,38 @@ export default function UtilityLeadForm() {
                 </div>
               </div>
             ) : (
-              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100">
-                {React.cloneElement(iconComponent, { className: iconComponent.props.className + " md:w-14 md:h-14" })}
+              <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100">
+                {React.cloneElement(iconComponent, { className: iconComponent.props.className + " w-10 h-10 md:w-14 md:h-14" })}
               </div>
             )}
           </div>
 
-          {/* Security / Consent Note - Desktop Only */}
-          <div className="hidden md:flex gap-2.5 px-3.5 py-3 bg-slate-100/50 border border-slate-200/20 rounded-xl items-start max-w-md">
+          {/* Security / Consent Note */}
+          <div className="flex gap-2.5 px-3.5 py-3 bg-slate-100/50 border border-slate-200/20 rounded-xl items-start max-w-md mx-auto md:mx-0">
             <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+            <p className="text-[11px] text-slate-500 font-medium leading-relaxed text-left">
               Your information is 100% secure. We never share your details without your consent.
             </p>
           </div>
         </div>
 
-        {/* Right Column: Lead Form & Security (Mobile) */}
-        <div className="w-full md:col-span-6 lg:col-span-5 mt-8 md:mt-0 flex flex-col items-center">
+        {/* Right Column: Lead Form (Top on Mobile) */}
+        <div className="w-full md:col-span-6 lg:col-span-5 flex flex-col items-center order-1 md:order-2">
           <div className="w-full bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-100">
+            
+            {/* Call to Action Titles - Mobile Only */}
+            <div className="md:hidden mb-6 text-center">
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 leading-snug">
+                Unlock the Benefits of the Perfect{" "}
+                <span className={`block bg-gradient-to-r ${themeColor} bg-clip-text text-transparent`}>
+                  {pageTitle.replace("Perfect ", "")}!
+                </span>
+              </h1>
+              <div className="w-12 h-1 bg-violet-600 rounded mx-auto mt-2.5" />
+            </div>
+
             <div className="text-center mb-6">
-              <h2 className="text-lg md:text-xl font-bold text-slate-800">
+              <h2 className="text-base md:text-xl font-bold text-slate-800">
                 Enter Your Details to Start Your Application!
               </h2>
               <p className="text-xs text-slate-400 mt-1">
@@ -261,14 +286,6 @@ export default function UtilityLeadForm() {
                 )}
               </button>
             </form>
-          </div>
-
-          {/* Security / Consent Note - Mobile Only */}
-          <div className="md:hidden mt-6 flex gap-2.5 px-3 py-2 bg-slate-100/50 border border-slate-200/20 rounded-xl items-start w-full">
-            <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-              Your information is 100% secure. We never share your details without your consent.
-            </p>
           </div>
         </div>
       </main>

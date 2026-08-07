@@ -710,6 +710,15 @@ const EmailPanel: React.FC<{ onAuthed: () => void; onForgotPassword: () => void 
           }}
           secureTextEntry={!showPassword}
           icon={<Lock size={20} color="#6B7280" />}
+          rightIcon={
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
+              {showPassword ? (
+                <EyeOff size={20} color="#6B7280" />
+              ) : (
+                <Eye size={20} color="#6B7280" />
+              )}
+            </Pressable>
+          }
           testID="password-input"
           error={!!passwordError}
         />
@@ -752,6 +761,7 @@ const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) =
   const [stage, setStage] = useState<"request" | "reset">("request");
   const [devOtp, setDevOtp] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Field validations
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -858,8 +868,17 @@ const ForgotPasswordPanel: React.FC<{ onCancel: () => void }> = ({ onCancel }) =
           placeholder="Enter new password"
           value={newPassword}
           onChangeText={setNewPassword}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           icon={<Lock size={20} color="#6B7280" />}
+          rightIcon={
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
+              {showPassword ? (
+                <EyeOff size={20} color="#6B7280" />
+              ) : (
+                <Eye size={20} color="#6B7280" />
+              )}
+            </Pressable>
+          }
         />
       </View>
 

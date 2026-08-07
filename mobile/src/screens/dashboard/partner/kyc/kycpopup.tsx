@@ -29,10 +29,10 @@ type KycPopupProps = {
 };
 
 const bullets = [
-  "Instant payouts",
-  "Secure one-time verification",
-  "Higher earning potential",
-  "Access to premium features",
+  "Instant Payouts",
+  "One-Time Setup",
+  "Higher Earnings",
+  "Premium Features",
 ];
 
 const FONT_FAMILY = Platform.select({
@@ -163,11 +163,11 @@ export const KycPopup: React.FC<KycPopupProps> = ({ onCompleteKyc, onSkip }) => 
               <View style={styles.illustrationContent}>
                 <View style={styles.iconContainer}>
                   <View style={styles.glowBgCircle} />
-                  <ShieldCheck size={56} color="#7C3AED" style={styles.shieldIcon} />
-                  <BadgeCheck size={22} color="#10B981" style={styles.checkBadgeIcon} />
+                  <ShieldCheck size={44} color="#7C3AED" style={styles.shieldIcon} />
+                  <BadgeCheck size={18} color="#10B981" style={styles.checkBadgeIcon} />
                 </View>
-                <Sparkles size={20} color="#A78BFA" style={styles.sparkleIconLeft} />
-                <Sparkles size={16} color="#FDBA74" style={styles.sparkleIconRight} />
+                <Sparkles size={16} color="#A78BFA" style={styles.sparkleIconLeft} />
+                <Sparkles size={12} color="#FDBA74" style={styles.sparkleIconRight} />
               </View>
             </LinearGradient>
           </Animated.View>
@@ -193,7 +193,7 @@ export const KycPopup: React.FC<KycPopupProps> = ({ onCompleteKyc, onSkip }) => 
                   ]}
                 >
                   <View style={styles.checkCircleIconWrap}>
-                    <CircleCheck size={18} color="#10B981" />
+                    <CircleCheck size={16} color="#10B981" />
                   </View>
                   <Text style={styles.benefitText}>{item}</Text>
                 </Animated.View>
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   cardScrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 36,
+    paddingTop: 28,
     paddingBottom: 20,
     alignItems: "stretch",
   },
@@ -296,25 +296,25 @@ const styles = StyleSheet.create({
   title: {
     color: "#111827",
     textAlign: "center",
-    fontSize: 24,
-    lineHeight: 30,
+    fontSize: 22,
+    lineHeight: 28,
     fontWeight: "800",
     fontFamily: FONT_FAMILY,
   },
   subtitle: {
-    marginTop: 8,
-    color: "#6B7280",
+    marginTop: 6,
+    color: "#4B5563",
     textAlign: "center",
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: "500",
     fontFamily: FONT_FAMILY,
   },
   // Illustration styles
   illustrationCard: {
-    marginTop: 16,
-    height: 100,
-    borderRadius: 16,
+    marginTop: 12,
+    height: 76,
+    borderRadius: 14,
     overflow: "hidden",
   },
   illustrationGradient: {
@@ -330,81 +330,85 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     position: "relative",
-    width: 60,
-    height: 60,
+    width: 48,
+    height: 48,
     alignItems: "center",
     justifyContent: "center",
   },
   glowBgCircle: {
     position: "absolute",
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: "rgba(124, 58, 237, 0.12)",
   },
   shieldIcon: {
     shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
   checkBadgeIcon: {
     position: "absolute",
-    bottom: -1,
-    right: -1,
+    bottom: -2,
+    right: -2,
     backgroundColor: "#FFFFFF",
-    borderRadius: 11,
+    borderRadius: 9,
     overflow: "hidden",
   },
   sparkleIconLeft: {
     position: "absolute",
-    left: "22%",
-    top: "22%",
+    left: "26%",
+    top: "24%",
   },
   sparkleIconRight: {
     position: "absolute",
-    right: "22%",
-    bottom: "22%",
+    right: "26%",
+    bottom: "24%",
   },
   // Benefits styles
   benefitsContainer: {
-    marginTop: 16,
-    gap: 8,
+    marginTop: 12,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   benefitCard: {
+    width: "48%",
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F5F3FF",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#EAE6FF",
+    marginBottom: 8,
   },
   checkCircleIconWrap: {
-    marginRight: 10,
+    marginRight: 8,
   },
   benefitText: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#111827",
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#1F2937",
     fontFamily: FONT_FAMILY,
   },
   // Button styles
   primaryButtonPressable: {
-    marginTop: 20,
+    marginTop: 12,
     width: "100%",
-    borderRadius: 25,
+    borderRadius: 22,
     shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 3,
   },
   primaryButtonGradient: {
-    height: 50,
-    borderRadius: 25,
+    height: 46,
+    borderRadius: 22,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",

@@ -14,3 +14,14 @@ mobile test
 
 api mobile test 
           npx wrangler dev --config wrangler.api.jsonc --ip 0.0.0.0
+
+
+new build commned =   .\build.ps1
+>> 
+
+E:\amar\development\Credupe24April\mobile\src\screens\auth\partner\PartnerOnboardingSuccessScreen.tsx
+
+if here i will click the Open my dashboard
+then why go this  http://localhost:8081/SignupContactDetails page  then i will refresh this page then open open parterner dashboard
+fix this issue to open partner dashborad directly if cliikc this Open my dashboard
+                   
