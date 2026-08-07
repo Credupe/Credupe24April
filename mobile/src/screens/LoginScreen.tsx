@@ -400,7 +400,7 @@ const CollapsibleDevCard: React.FC<{
   });
 
   return (
-    <View style={[styles.devCardContainer, { borderColor: colors.border, backgroundColor: "#F8FAFC" }]}>
+    <View style={[styles.devCardContainer, { borderColor: colors.border, backgroundColor: "transparent" }]}>
       <Pressable onPress={() => setExpanded(!expanded)} style={styles.devCardHeader}>
         <View style={styles.devCardHeaderTitleWrap}>
           <User size={18} color={colors.primary} style={{ marginRight: 8 }} />
@@ -1089,7 +1089,8 @@ const styles = StyleSheet.create({
   },
   forgotBtn: {
     alignSelf: "flex-end",
-    marginTop: -2,
+    marginTop: -8,
+    marginBottom: 12,
     paddingVertical: 4,
   },
   // Premium Buttons
