@@ -9,11 +9,12 @@ import { THEME } from "../constants/theme";
 interface Props {
   onNotificationPress?: () => void;
   badgeCount?: number;
+  businessName?: string;
 }
 
 const logoImage = require("../../../../../../assets/logo.png");
 
-export const Header: React.FC<Props> = React.memo(({ onNotificationPress, badgeCount = 1 }) => {
+export const Header: React.FC<Props> = React.memo(({ onNotificationPress, badgeCount = 1, businessName }) => {
   const insets = useSafeAreaInsets();
 
   return (
@@ -24,7 +25,7 @@ export const Header: React.FC<Props> = React.memo(({ onNotificationPress, badgeC
           <View style={styles.companyRow}>
             <Building2 size={20} color={COLORS.primary} style={styles.companyIcon} />
             <Text style={styles.companyName} numberOfLines={1}>
-              Credupe Techfin Pvt Ltd
+              {businessName || "Credupe Techfin Pvt Ltd"}
             </Text>
           </View>
           <View style={styles.badgeContainer}>
