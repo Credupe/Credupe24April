@@ -1,0 +1,1 @@
+ALTER TABLE `partner_profiles` ADD `business_type` text;

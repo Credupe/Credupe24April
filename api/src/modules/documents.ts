@@ -7,6 +7,7 @@ import { ok, fail } from "../lib/envelope";
 import { requireAuth, requireRole, optionalAuth } from "../middleware/auth";
 import { verifyJwt } from "../lib/jwt";
 import { newId } from "../lib/ids";
+import { verifyJwt } from "../lib/jwt";
 
 const route = new Hono<AppEnv>();
 
@@ -29,7 +30,7 @@ route.post("/presign", requireAuth, async (c) => {
     // Actual multi-part / signed URLs require SigV4; keeping simple proxy
     // for MVP; the Worker receives the PUT and forwards to R2.
     return ok(c, {
-      uploadUrl: `/api/v1/documents/_upload/${id}`,
+      uploadUrl: `/api/v1/documents/_upload/${id}?key=${encodeURIComponent(storageKey)}`,
       method: "PUT",
       headers: { "content-type": mimeType ?? "application/octet-stream" },
       storageKey,
@@ -39,7 +40,7 @@ route.post("/presign", requireAuth, async (c) => {
     });
   }
   return ok(c, {
-    uploadUrl: `/api/v1/documents/_upload/${id}`,
+    uploadUrl: `/api/v1/documents/_upload/${id}?key=${encodeURIComponent(storageKey)}`,
     method: "PUT",
     headers: { "content-type": mimeType ?? "application/octet-stream" },
     storageKey,
@@ -52,9 +53,9 @@ route.post("/presign", requireAuth, async (c) => {
 // Simple upload proxy → R2 if bound, else discards bytes (mock for MVP)
 route.put("/_upload/:id", requireAuth, async (c) => {
   const id = c.req.param("id");
+  const key = c.req.query("key") || `docs/${c.get("user")!.sub}/${id}/uploaded.bin`;
   if (c.env.DOCS) {
     const body = await c.req.arrayBuffer();
-    const key = `docs/${c.get("user")!.sub}/${id}/uploaded.bin`;
     await c.env.DOCS.put(key, body);
   }
   return ok(c, { uploaded: true, docId: id });
@@ -85,16 +86,90 @@ route.post("/register", requireAuth, async (c) => {
   }
 
   const id = docId ?? newId("doc");
+
+  // Construct a download URL pointing to the worker
+  const url = new URL(c.req.url);
+  const fileUrl = `${url.origin}/api/v1/documents/download/${id}`;
+
   await db.insert(documents).values({
     id, ownerUserId: user.sub,
     applicationId: applicationId ?? null,
     tag,
-    fileName,
-    documentName: documentName || null,
-    mimeType: mimeType ?? null, sizeBytes: sizeBytes ?? null,
-    storageKey, status: "UPLOADED",
+    fileName, mimeType: mimeType ?? null, sizeBytes: sizeBytes ?? null,
+    storageKey: fileUrl,
+    status: "UPLOADED",
   });
-  return ok(c, { id }, 201);
+  return ok(c, { id, fileUrl }, 201);
+});
+
+route.get("/download/:id", async (c) => {
+  const id = c.req.param("id");
+  const auth = c.req.header("authorization") || "";
+  let userId = "";
+
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  const token = m ? m[1] : c.req.query("token") || "";
+
+  if (token) {
+    const claims = await verifyJwt(token, c.env.JWT_ACCESS_SECRET);
+    if (claims && claims.typ === "access") {
+      userId = claims.sub;
+    }
+  }
+
+  const db = drizzle(c.env.DB);
+  let doc;
+
+  const host = c.req.header("host") || "";
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || c.env.ENV !== "production";
+
+  console.log("[documents-download] env:", c.env.ENV, "host:", host, "isLocal:", isLocal);
+
+  if (userId) {
+    const rows = await db
+      .select()
+      .from(documents)
+      .where(and(eq(documents.id, id), eq(documents.ownerUserId, userId)))
+      .limit(1);
+    doc = rows[0];
+  } else if (isLocal) {
+    const rows = await db
+      .select()
+      .from(documents)
+      .where(eq(documents.id, id))
+      .limit(1);
+    doc = rows[0];
+  }
+
+  if (!doc) {
+    return fail(c, 401, "UNAUTHENTICATED", "Unauthenticated or document not found");
+  }
+
+  if (c.env.DOCS) {
+    // If the storageKey stored in DB is the full URL, reconstruct the R2 key.
+    // Otherwise (for older records), use the stored raw storageKey.
+    let r2Key = doc.storageKey;
+    if (r2Key.startsWith("http")) {
+      r2Key = `docs/${doc.ownerUserId}/${doc.id}/${doc.fileName}`;
+    }
+
+    const object = await c.env.DOCS.get(r2Key);
+    if (!object) {
+      return fail(c, 404, "NOT_FOUND", "File not found in storage");
+    }
+
+    const headers = new Headers();
+    object.writeHttpMetadata(headers);
+    headers.set("etag", object.httpEtag);
+    if (doc.mimeType) {
+      headers.set("content-type", doc.mimeType);
+    }
+    headers.set("content-disposition", `inline; filename="${encodeURIComponent(doc.fileName)}"`);
+
+    return new Response(object.body, { headers });
+  }
+
+  return fail(c, 400, "NOT_SUPPORTED", "Storage not available");
 });
 
 export function getCleanDocumentName(fileName: string): string {

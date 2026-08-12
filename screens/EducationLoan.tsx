@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import { useUIConfigStore } from "@/stores/uiConfigStore";
 import Footer from "@/components/Footer";
 import ProductSidebar from "@/components/ProductSidebar";
 import SidebarContentPanel from "@/components/SidebarContentPanel";
@@ -70,9 +71,51 @@ const eligibilityDocs = [
   "Education Loan Repayment Guide",
 ];
 
+const bankToConfigKeyMap: Record<string, string> = {
+  "SBI": "hideStateBankOfIndia",
+  "State Bank of India": "hideStateBankOfIndia",
+  "HDFC Credila": "hideCredilaHDFC",
+  "Credila (HDFC)": "hideCredilaHDFC",
+  "Axis Bank": "hideAxisBank",
+  "Axis": "hideAxisBank",
+  "Bank of Baroda": "hideBankOfBaroda",
+  "BOB": "hideBankOfBaroda",
+  "IDFC FIRST": "hideIDFCFirstBank",
+  "IDFC First Bank": "hideIDFCFirstBank",
+  "Prodigy Finance": "hideProdigyFinance",
+  "Mpower Finance": "hideMpowerFinance",
+  "Union Bank of India": "hideUnionBankOfIndia",
+  "ICICI Bank": "hideICICIBank",
+  "Avanse": "hideAvanse",
+  "InCred": "hideInCred",
+};
+
 const EducationLoan = () => {
   const [activeTab, setActiveTab] = useState("Education Loan");
   const { selectedSlug, selectedType, handleItemClick, handleClose, contentRef } = useSidebarContent();
+  const { config } = useUIConfigStore();
+
+  const filteredTopLenders = topLenders.filter((lender) => {
+    const match = Object.keys(bankToConfigKeyMap).find((k) => lender.includes(k));
+    if (match) {
+      const configKey = bankToConfigKeyMap[match];
+      if (config.navbar?.educationLoan?.[configKey as keyof typeof config.navbar.educationLoan]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const filteredInterestRates = interestRates.filter((rate) => {
+    const match = Object.keys(bankToConfigKeyMap).find((k) => rate.includes(k));
+    if (match) {
+      const configKey = bankToConfigKeyMap[match];
+      if (config.navbar?.educationLoan?.[configKey as keyof typeof config.navbar.educationLoan]) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-background max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
@@ -100,9 +143,9 @@ const EducationLoan = () => {
             <div className="flex flex-wrap items-center gap-4 md:gap-6">
               <div className="text-white/80">
                 <span className="text-xs block">Interest rate starts from</span>
-                <span className="text-3xl md:text-4xl font-bold text-primary">6.85% p.a</span>
+                <span className="text-3xl md:text-4xl font-bold text-primary">9.5% p.a</span>
               </div>
-              <Link to="/login" className="px-6 py-3 rounded-lg border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
+              <Link to="/calculators?tab=eligibility" className="px-6 py-3 rounded-lg border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
                 Check Eligibility
               </Link>
               <Link to="/login" className="px-6 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
@@ -120,9 +163,8 @@ const EducationLoan = () => {
               <button
                 key={tab.label}
                 onClick={() => setActiveTab(tab.label)}
-                className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors relative ${
-                  activeTab === tab.label ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                } ${i < tabs.length - 1 ? "border-r border-border" : ""}`}
+                className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors relative ${activeTab === tab.label ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  } ${i < tabs.length - 1 ? "border-r border-border" : ""}`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {tab.label}
@@ -154,11 +196,10 @@ const EducationLoan = () => {
               return (
                 <div
                   key={card.title}
-                  className={`rounded-xl border p-5 flex items-start gap-4 transition-all duration-300 ${
-                    card.highlighted
+                  className={`rounded-xl border p-5 flex items-start gap-4 transition-all duration-300 ${card.highlighted
                       ? "bg-[hsl(var(--purple-deep))] border-[hsl(var(--purple-deep))] text-white shadow-lg"
                       : "bg-card border-border hover:shadow-md"
-                  }`}
+                    }`}
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${card.highlighted ? "bg-white/15" : "bg-muted"}`}>
                     <Icon className={`w-5 h-5 ${card.highlighted ? "text-white" : "text-foreground"}`} />
@@ -190,7 +231,7 @@ const EducationLoan = () => {
             {activeTab === "Education Loan Cost – Study Abroad" && <EducationLoanCost />}
             {activeTab === "Intake – Fall / Spring" && <EducationLoanIntake />}
             {activeTab === "Our Partners" && <EducationLoanPartners />}
-            
+
             {/* Study in India Tab */}
             {activeTab === "Study in India" && (
               <div className="py-8">
@@ -239,8 +280,8 @@ const EducationLoan = () => {
         <ProductSidebar
           productName="Education Loan"
           insights={educationInsights}
-          topLenders={topLenders}
-          interestRates={interestRates}
+          topLenders={filteredTopLenders}
+          interestRates={filteredInterestRates}
           eligibilityDocs={eligibilityDocs}
           ctaIcon={GraduationCap}
           ctaTitle="Get Education Loan"
