@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 import { ApiUser, fetchAdminFunnel, getCachedUser } from "../../../api/credupe";
 import { CredupeLogo } from "../../../components/CredupeLogo";
 import { useTheme } from "../../../theme/ThemeProvider";
@@ -30,6 +31,7 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "primary"> 
 
 export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDocuments, onOpenUsers, onOpenLenders, onOpenProducts, onOpenLeads }) => {
   const { colors, mode, toggle } = useTheme();
+  const isFocused = useIsFocused();
   const [user, setUser] = useState<ApiUser | null>(null);
   const [total, setTotal] = useState(0);
   const [byStatus, setByStatus] = useState<Record<string, number>>({});
@@ -51,8 +53,10 @@ export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDoc
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (isFocused) {
+      load();
+    }
+  }, [isFocused, load]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
@@ -92,11 +96,15 @@ export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDoc
         ) : (
           <>
             {/* Total apps hero */}
-            <View style={[styles.heroCard, { backgroundColor: colors.cardElevated, borderColor: colors.primary }]}>
+            <Pressable
+              onPress={() => onOpenApplications(undefined)}
+              style={[styles.heroCard, { backgroundColor: colors.cardElevated, borderColor: colors.primary }]}
+              accessibilityLabel="admin-apps-hero"
+            >
               <Text style={[typography.micro, { color: colors.textMuted }]}>LOAN APPLICATIONS</Text>
               <Text style={{ color: colors.primary, fontSize: 44, fontWeight: "800", marginTop: 2 }}>{total}</Text>
               <Text style={{ color: colors.textMuted, fontSize: 13 }}>across every stage</Text>
-            </View>
+            </Pressable>
 
             {/* Total leads hero */}
             <Pressable

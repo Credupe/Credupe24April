@@ -51,6 +51,7 @@ export const AdminApplicationsScreen: React.FC<Props> = ({ initialStatus, onBack
   const [details, setDetails] = useState<any | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [statusPickerVisible, setStatusPickerVisible] = useState(false);
 
   const load = useCallback(async (status?: ApplicationStatus) => {
     setLoading(true);
@@ -62,6 +63,10 @@ export const AdminApplicationsScreen: React.FC<Props> = ({ initialStatus, onBack
   useEffect(() => {
     load(statusFilter);
   }, [load, statusFilter]);
+
+  useEffect(() => {
+    setStatusFilter(initialStatus);
+  }, [initialStatus]);
 
   const transition = useCallback(
     async (app: AdminApplication, to: ApplicationStatus) => {
@@ -90,20 +95,7 @@ export const AdminApplicationsScreen: React.FC<Props> = ({ initialStatus, onBack
     [load, statusFilter, selectedApp],
   );
 
-  const promptTransition = (app: AdminApplication) => {
-    Alert.alert(
-      app.referenceNo,
-      `Currently ${app.status}. Move to:`,
-      [
-        ...APPLICATION_STATUSES.filter((s) => s !== app.status).map((s) => ({
-          text: s,
-          onPress: () => transition(app, s),
-        })),
-        { text: "Cancel", style: "cancel" as const },
-      ],
-      { cancelable: true },
-    );
-  };
+
 
   const handleViewDetails = useCallback(async (app: AdminApplication) => {
     setSelectedApp(app);
@@ -286,14 +278,7 @@ export const AdminApplicationsScreen: React.FC<Props> = ({ initialStatus, onBack
 
                 {/* Transition Action Button */}
                 <Pressable
-                  onPress={() => {
-                    if (selectedApp) {
-                      promptTransition({
-                        ...selectedApp,
-                        status: details.status as any,
-                      });
-                    }
-                  }}
+                  onPress={() => setStatusPickerVisible(true)}
                   style={[styles.actionButton, { backgroundColor: colors.primary, marginTop: spacing.lg }]}
                 >
                   <Text style={{ color: colors.textInverted, fontWeight: "700", fontSize: 14 }}>
@@ -306,6 +291,41 @@ export const AdminApplicationsScreen: React.FC<Props> = ({ initialStatus, onBack
                 <Text style={{ color: colors.textMuted, textAlign: "center" }}>Failed to load details.</Text>
               </View>
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Custom Status Picker Modal */}
+      <Modal
+        visible={statusPickerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setStatusPickerVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.statusPickerContent, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Move status to:</Text>
+              <Pressable onPress={() => setStatusPickerVisible(false)} style={styles.closeButton}>
+                <Text style={{ color: colors.textMuted, fontSize: 18, fontWeight: "700" }}>✕</Text>
+              </Pressable>
+            </View>
+            <ScrollView contentContainerStyle={{ padding: spacing.md }} style={{ maxHeight: 300 }}>
+              {APPLICATION_STATUSES.filter((s) => selectedApp && s !== details?.status).map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => {
+                    setStatusPickerVisible(false);
+                    if (selectedApp) {
+                      transition({ ...selectedApp, status: details?.status as any }, s);
+                    }
+                  }}
+                  style={[styles.statusOptionItem, { borderBottomColor: colors.border }]}
+                >
+                  <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}>{s.replace(/_/g, " ")}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -388,6 +408,17 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "85%",
+  },
+  statusPickerContent: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "50%",
+  },
+  statusOptionItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
   },
   modalHeader: {
     flexDirection: "row",
