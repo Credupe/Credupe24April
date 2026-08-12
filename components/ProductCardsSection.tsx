@@ -1,21 +1,23 @@
 import { motion } from "framer-motion";
 import { ArrowRight, User, GraduationCap, Home, Building, Car, CarFront, Bike, Coins, Briefcase, CreditCard } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useUIConfigStore } from "@/stores/uiConfigStore";
 
 const products = [
-  { icon: GraduationCap, title: "Education Loan", desc: "Fund your dreams with education loans up to ₹75 lakhs at low rates", highlight: true },
-  { icon: User, title: "Personal Loan", desc: "Quick personal loans starting at 10.49% p.a. with minimal documentation", highlight: false },
-  { icon: Home, title: "Home Loan", desc: "Affordable home loans starting at 8.5% p.a. with quick approval", highlight: false },
-  { icon: Building, title: "Loan Against Property", desc: "Unlock your property's value with loans up to ₹10 crore", highlight: false },
-  { icon: Car, title: "Car Loan", desc: "Drive your dream car with loans at competitive rates from top lenders", highlight: false },
-  { icon: CarFront, title: "Used Car Loan", desc: "Affordable financing for pre-owned cars with flexible EMI options", highlight: true },
-  { icon: Bike, title: "Two Wheeler Loan", desc: "Easy two-wheeler financing starting at 8.5% p.a. with fast disbursal", highlight: false },
-  { icon: Coins, title: "Gold Loan", desc: "Instant gold loans at attractive rates with minimal paperwork", highlight: false },
-  { icon: Briefcase, title: "Business Loan", desc: "Grow your business with loans up to ₹50 lakhs, no collateral needed", highlight: false },
-  { icon: CreditCard, title: "Micro Loan", desc: "Small-ticket loans up to ₹1 lakh with instant approval & easy repayment", highlight: false },
+  { icon: GraduationCap, title: "Education Loan", desc: "Fund your dreams with education loans up to ₹75 lakhs at low rates", highlight: true, path: "/education-loan" },
+  { icon: User, title: "Personal Loan", desc: "Quick personal loans starting at 10.49% p.a. with minimal documentation", highlight: false, path: "/personal-loan" },
+  { icon: Home, title: "Home Loan", desc: "Affordable home loans starting at 8.5% p.a. with quick approval", highlight: false, path: "/home-loan" },
+  { icon: Building, title: "Loan Against Property", desc: "Unlock your property's value with loans up to ₹10 crore", highlight: false, path: "/loan-against-property" },
+  { icon: Car, title: "Car Loan", desc: "Drive your dream car with loans at competitive rates from top lenders", highlight: false, path: "/car-loan" },
+  { icon: CarFront, title: "Used Car Loan", desc: "Affordable financing for pre-owned cars with flexible EMI options", highlight: true, path: "/used-car-loan" },
+  { icon: Bike, title: "Two Wheeler Loan", desc: "Easy two-wheeler financing starting at 8.5% p.a. with fast disbursal", highlight: false, path: "/two-wheeler-loan" },
+  { icon: Coins, title: "Gold Loan", desc: "Instant gold loans at attractive rates with minimal paperwork", highlight: false, path: "/gold-loan" },
+  { icon: Briefcase, title: "Business Loan", desc: "Grow your business with loans up to ₹50 lakhs, no collateral needed", highlight: false, path: "/business-loan" },
+  { icon: CreditCard, title: "Micro Loan", desc: "Small-ticket loans up to ₹1 lakh with instant approval & easy repayment", highlight: false, path: "/micro-loan" },
 ];
 
 const ProductCardsSection = () => {
+  const navigate = useNavigate();
   const { config } = useUIConfigStore();
 
   const filteredProducts = products.filter((p) => {
@@ -49,6 +51,7 @@ const ProductCardsSection = () => {
           {filteredProducts.map((p, i) => (
             <motion.div
               key={p.title}
+              onClick={() => navigate(p.path)}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
