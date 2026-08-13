@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 import { ApiUser, fetchAdminFunnel, getCachedUser } from "../../../api/credupe";
 import { CredupeLogo } from "../../../components/CredupeLogo";
 import { useTheme } from "../../../theme/ThemeProvider";
@@ -30,6 +31,7 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "primary"> 
 
 export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDocuments, onOpenUsers, onOpenLenders, onOpenProducts, onOpenLeads }) => {
   const { colors, mode, toggle } = useTheme();
+  const isFocused = useIsFocused();
   const [user, setUser] = useState<ApiUser | null>(null);
   const [total, setTotal] = useState(0);
   const [byStatus, setByStatus] = useState<Record<string, number>>({});
@@ -51,8 +53,10 @@ export const AdminHomeScreen: React.FC<Props> = ({ onOpenApplications, onOpenDoc
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (isFocused) {
+      load();
+    }
+  }, [isFocused, load]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>

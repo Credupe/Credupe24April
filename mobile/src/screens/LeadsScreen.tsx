@@ -46,6 +46,10 @@ export const LeadsScreen: React.FC<Props> = ({ initialStatus, onBack, onOpenLead
     load(statusFilter);
   }, [load, statusFilter]);
 
+  useEffect(() => {
+    setStatusFilter(initialStatus);
+  }, [initialStatus]);
+
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const it of items) c[it.status] = (c[it.status] ?? 0) + 1;
