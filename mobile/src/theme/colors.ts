@@ -41,15 +41,15 @@ export const dark: ThemeColors = {
   border: "#232A33",
   text: "#FFFFFF",
   textMuted: "#A1A8B3",
-  textInverted: "#000000",
-  primary: "#D8FF85",       // neon lime
-  primaryMuted: "#1F2A14",
+  textInverted: "#FFFFFF",
+  primary: "#818CF8",       // premium indigo
+  primaryMuted: "#1E1B4B",
   success: "#7AE582",
   warning: "#FFB454",
   danger: "#FF6B6B",
   info: "#11CDEF",
   tabBg: "#0F1419",
-  tabActive: "#D8FF85",
+  tabActive: "#818CF8",
   tabInactive: "#6B7280",
 };
 

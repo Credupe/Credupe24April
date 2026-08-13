@@ -1,9 +1,10 @@
+import "react-native-gesture-handler";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer, DefaultTheme, DarkTheme, LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as Linking from "expo-linking";
@@ -64,6 +65,8 @@ import { UtilityToolScreen } from "./src/screens/dashboard/partner/home/UtilityT
 import { MoreScreen } from "./src/screens/dashboard/partner/home/More/MoreScreen";
 import { registerForPushNotifications } from "./src/lib/push";
 import { getCachedUser, fetchPartnerProfile, Lead, Lender, LoanProduct, Quote } from "./src/api/credupe";
+import { Header } from "./src/components/ui/Header";
+import { DrawerContent } from "./src/navigation/DrawerContent";
 
 // Inject global style on Web to disable the default orange/yellow focus outline/border on inputs
 if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -146,28 +149,7 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tabs = createBottomTabNavigator();
-
-const TabIcon: React.FC<{ icon: React.ComponentType<any>; focused: boolean }> = ({ icon: IconComponent, focused }) => {
-  return (
-    <View
-      style={{
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: focused ? "#7C3AED" : "transparent",
-      }}
-    >
-      <IconComponent
-        size={20}
-        color={focused ? "#FFFFFF" : "#6B7280"}
-        strokeWidth={2}
-      />
-    </View>
-  );
-};
+const Drawer = createDrawerNavigator();
 
 interface MainTabsProps {
   role: "CUSTOMER" | "PARTNER" | "ADMIN";
@@ -205,50 +187,19 @@ const MainTabs: React.FC<MainTabsProps> = ({
   onOpenNotifications,
 }) => {
   const { colors } = useTheme();
-  const tabBarStyle = {
-    position: "absolute" as const,
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 30,
-    height: 72,
-    paddingBottom: Platform.OS === "ios" ? 14 : 14,
-    paddingTop: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 4,
-    borderTopWidth: 0,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  };
 
+  const commonScreenOptions = {
+    header: ({ route }: any) => <Header title={route.name} />,
+    drawerStyle: { width: "80%" },
+  };
 
   if (role === "ADMIN") {
     return (
-      <Tabs.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarStyle,
-          tabBarActiveTintColor: "#7C3AED",
-          tabBarInactiveTintColor: "#6B7280",
-          tabBarLabelStyle: { fontWeight: "600", fontSize: 11, marginTop: 4 },
-          tabBarIcon: ({ focused }) => {
-            const icon =
-              route.name === "Console"
-                ? House
-                : route.name === "Apps"
-                  ? FileText
-                  : route.name === "KYC"
-                    ? ShieldCheck
-                    : User;
-            return <TabIcon icon={icon} focused={focused} />;
-          },
-        })}
+      <Drawer.Navigator
+        drawerContent={(props) => <DrawerContent {...props} role={role} onSignedOut={onSignedOut} />}
+        screenOptions={commonScreenOptions}
       >
-        <Tabs.Screen name="Console">
+        <Drawer.Screen name="Console">
           {() => (
             <AdminHomeScreen
               onOpenApplications={onOpenAdminApps}
@@ -259,45 +210,27 @@ const MainTabs: React.FC<MainTabsProps> = ({
               onOpenLeads={() => onOpenLeads(undefined)}
             />
           )}
-        </Tabs.Screen>
-        <Tabs.Screen name="Apps">
+        </Drawer.Screen>
+        <Drawer.Screen name="Apps">
           {() => <AdminApplicationsScreen />}
-        </Tabs.Screen>
-        <Tabs.Screen name="KYC">
+        </Drawer.Screen>
+        <Drawer.Screen name="KYC">
           {() => <AdminKycReviewScreen />}
-        </Tabs.Screen>
-        <Tabs.Screen name="Profile">
+        </Drawer.Screen>
+        <Drawer.Screen name="Profile">
           {() => <ProfileScreen onSignedOut={onSignedOut} onOpenKyc={onOpenKyc} onOpenNotifications={onOpenNotifications} />}
-        </Tabs.Screen>
-      </Tabs.Navigator>
+        </Drawer.Screen>
+      </Drawer.Navigator>
     );
   }
 
   if (role === "PARTNER") {
     return (
-      <Tabs.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarStyle,
-          tabBarActiveTintColor: "#7C3AED",
-          tabBarInactiveTintColor: "#6B7280",
-          tabBarLabelStyle: { fontWeight: "600", fontSize: 11, marginTop: 4 },
-          tabBarIcon: ({ focused }) => {
-            const icon =
-              route.name === "Home"
-                ? House
-                : route.name === "Profile"
-                  ? User
-                  : route.name === "Utility Tool"
-                    ? Link2
-                    : route.name === "More"
-                      ? Menu
-                      : User;
-            return <TabIcon icon={icon} focused={focused} />;
-          },
-        })}
+      <Drawer.Navigator
+        drawerContent={(props) => <DrawerContent {...props} role={role} onSignedOut={onSignedOut} />}
+        screenOptions={commonScreenOptions}
       >
-        <Tabs.Screen name="Home">
+        <Drawer.Screen name="Home">
           {() => (
             <PartnerHomeScreen
               onOpenLeads={onOpenLeads}
@@ -307,50 +240,34 @@ const MainTabs: React.FC<MainTabsProps> = ({
               onOpenKyc={onOpenKyc}
             />
           )}
-        </Tabs.Screen>
-        <Tabs.Screen name="Profile">
+        </Drawer.Screen>
+        <Drawer.Screen name="Profile">
           {() => <ProfileScreen onSignedOut={onSignedOut} onOpenKyc={onOpenKyc} onOpenNotifications={onOpenNotifications} />}
-        </Tabs.Screen>
-        <Tabs.Screen name="Utility Tool">
+        </Drawer.Screen>
+        <Drawer.Screen name="Utility Tool">
           {() => <UtilityToolScreen />}
-        </Tabs.Screen>
-        <Tabs.Screen name="More">
+        </Drawer.Screen>
+        <Drawer.Screen name="More">
           {() => <MoreScreen />}
-        </Tabs.Screen>
-      </Tabs.Navigator>
+        </Drawer.Screen>
+      </Drawer.Navigator>
     );
   }
 
   return (
-    <Tabs.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarStyle,
-        tabBarActiveTintColor: "#7C3AED",
-        tabBarInactiveTintColor: "#6B7280",
-        tabBarLabelStyle: { fontWeight: "600", fontSize: 11, marginTop: 4 },
-        tabBarIcon: ({ focused }) => {
-          const icon =
-            route.name === "Home"
-              ? House
-              : route.name === "Loans"
-                ? DollarSign
-                : route.name === "Applications"
-                  ? FileText
-                  : User;
-          return <TabIcon icon={icon} focused={focused} />;
-        },
-      })}
+    <Drawer.Navigator
+      drawerContent={(props) => <DrawerContent {...props} role={role} onSignedOut={onSignedOut} />}
+      screenOptions={commonScreenOptions}
     >
-      <Tabs.Screen name="Home">
+      <Drawer.Screen name="Home">
         {() => <HomeScreen onSelectCategory={onSelectCategory} />}
-      </Tabs.Screen>
-      <Tabs.Screen name="Loans" component={LoansScreen} />
-      <Tabs.Screen name="Applications" component={ApplicationsScreen} />
-      <Tabs.Screen name="Profile">
+      </Drawer.Screen>
+      <Drawer.Screen name="Loans" component={LoansScreen} />
+      <Drawer.Screen name="Applications" component={ApplicationsScreen} />
+      <Drawer.Screen name="Profile">
         {() => <ProfileScreen onSignedOut={onSignedOut} onOpenKyc={onOpenKyc} onOpenNotifications={onOpenNotifications} />}
-      </Tabs.Screen>
-    </Tabs.Navigator>
+      </Drawer.Screen>
+    </Drawer.Navigator>
   );
 };
 
