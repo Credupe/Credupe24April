@@ -68,11 +68,11 @@ import { getCachedUser, fetchPartnerProfile, Lead, Lender, LoanProduct, Quote } 
 import { Header } from "./src/components/ui/Header";
 import { DrawerContent } from "./src/navigation/DrawerContent";
 
-// Inject global style on Web to disable the default orange/yellow focus outline/border on inputs
+// Inject global style on Web to disable the default orange/yellow focus outline/border on inputs and interactive elements
 if (Platform.OS === "web" && typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
-    input, textarea, select {
+    *, input, textarea, select, button, div, a {
       outline: none !important;
       outline-width: 0 !important;
       box-shadow: none !important;

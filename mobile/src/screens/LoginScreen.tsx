@@ -112,7 +112,7 @@ export const LoginScreen: React.FC<{ onAuthed: () => void; onSignup?: () => void
                   <SlidingTabSelector tab={tab} setTab={setTab} />
                 ) : (
                   <View style={styles.resetHeaderContainer}>
-                    <Text style={styles.resetTitle}>Reset Password</Text>
+                    <Text style={[styles.resetTitle, { color: colors.text }]}>Reset Password</Text>
                   </View>
                 )}
 
@@ -164,20 +164,33 @@ export const LoginScreen: React.FC<{ onAuthed: () => void; onSignup?: () => void
    Helper UI Components
    ========================================== */
 
-// 1. Argon-style Discrete Tab Selector
+// 1. Theme-aware Discrete Tab Selector
 const SlidingTabSelector: React.FC<{
   tab: Mode;
   setTab: (t: Mode) => void;
 }> = ({ tab, setTab }) => {
+  const { colors } = useTheme();
   return (
-    <View style={styles.tabSelectorBg}>
-      <Pressable onPress={() => setTab("otp")} style={[styles.tabButton, tab === "otp" && styles.tabButtonActive]}>
-        <Text style={[styles.tabButtonText, { color: tab === "otp" ? "#FFFFFF" : "#8898AA" }]}>
+    <View style={[styles.tabSelectorBg, { backgroundColor: colors.bg, padding: 4, borderRadius: radii.md }]}>
+      <Pressable 
+        onPress={() => setTab("otp")} 
+        style={[
+          styles.tabButton, 
+          { backgroundColor: tab === "otp" ? colors.primary : "transparent", borderRadius: radii.sm }
+        ]}
+      >
+        <Text style={[styles.tabButtonText, { color: tab === "otp" ? colors.textInverted : colors.textMuted }]}>
           Mobile + OTP
         </Text>
       </Pressable>
-      <Pressable onPress={() => setTab("email")} style={[styles.tabButton, tab === "email" && styles.tabButtonActive]}>
-        <Text style={[styles.tabButtonText, { color: tab === "email" ? "#FFFFFF" : "#8898AA" }]}>
+      <Pressable 
+        onPress={() => setTab("email")} 
+        style={[
+          styles.tabButton, 
+          { backgroundColor: tab === "email" ? colors.primary : "transparent", borderRadius: radii.sm }
+        ]}
+      >
+        <Text style={[styles.tabButtonText, { color: tab === "email" ? colors.textInverted : colors.textMuted }]}>
           Email + Password
         </Text>
       </Pressable>

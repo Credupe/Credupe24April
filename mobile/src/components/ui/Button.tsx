@@ -92,10 +92,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.sm,
+    borderRadius: radii.md,
   },
-  sm: { height: 36, paddingHorizontal: 12 },
-  md: { height: 48, paddingHorizontal: 16 },
-  lg: { height: 56, paddingHorizontal: 24 },
-  disabled: { opacity: 0.6 }
+  sm: { height: 38, paddingHorizontal: 14 },
+  md: { height: 52, paddingHorizontal: 18 },
+  lg: { height: 58, paddingHorizontal: 26 },
+  disabled: { opacity: 0.5 }
 });

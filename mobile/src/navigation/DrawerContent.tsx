@@ -15,9 +15,9 @@ interface CustomDrawerProps {
 
 export const DrawerContent: React.FC<CustomDrawerProps> = (props) => {
   const { colors, mode, toggle } = useTheme();
-  
+
   const renderIcon = (name: string, focused: boolean) => {
-    const iconColor = focused ? colors.textInverted : colors.primary;
+    const iconColor = focused ? colors.primary : colors.textMuted;
     switch (name) {
       case "Console":
       case "Home":
@@ -45,23 +45,25 @@ export const DrawerContent: React.FC<CustomDrawerProps> = (props) => {
       <DrawerContentScrollView {...props}>
         <View style={[styles.profileSection, { borderBottomColor: colors.border }]}>
           <View style={styles.profileHeader}>
-            <Image 
-              source={require("../../assets/logo.png")} 
-              style={{ width: 160, height: 50, tintColor: mode === "dark" ? "#FFFFFF" : undefined, marginLeft: -8 }} 
-              resizeMode="contain" 
-            />
+            <View style={{ flex: 1, alignItems: "flex-start" }}>
+              <Image
+                source={require("../../assets/logo.png")}
+                style={{ width: 72, height: 72 }}
+                resizeMode="contain"
+              />
+            </View>
             <Pressable
               onPress={toggle}
-              style={[styles.themeChip, { borderColor: colors.border, backgroundColor: colors.bg }]}
+              style={[styles.themeChip, { borderColor: colors.border, backgroundColor: colors.card }]}
               accessibilityLabel="toggle-theme"
             >
-              <Text style={{ color: colors.text, fontWeight: "700" }}>{mode === "dark" ? "☾" : "☀"}</Text>
+              <Text style={{ color: colors.text, fontSize: 16 }}>{mode === "dark" ? "☾" : "☀"}</Text>
             </Pressable>
           </View>
-          <Text style={[typography.h3, { color: colors.text, marginTop: spacing.lg }]}>
+          <Text style={[typography.h2, { color: colors.text, marginTop: spacing.md, fontWeight: "600" }]}>
             CreduPe {props.role.charAt(0) + props.role.slice(1).toLowerCase()}
           </Text>
-          <Text style={[typography.micro, { color: colors.textMuted }]}>
+          <Text style={[typography.caption, { color: colors.textMuted, marginTop: 2 }]}>
             Manage your account
           </Text>
         </View>
@@ -69,18 +71,19 @@ export const DrawerContent: React.FC<CustomDrawerProps> = (props) => {
         <View style={styles.menuSection}>
           {props.state.routes.map((route: any, index: number) => {
             const focused = index === props.state.index;
+            const activeBg = mode === "dark" ? "rgba(99, 102, 241, 0.08)" : "rgba(79, 70, 229, 0.06)";
             return (
               <DrawerItem
                 key={route.key}
                 label={route.name}
                 icon={() => renderIcon(route.name, focused)}
                 focused={focused}
-                activeBackgroundColor={colors.primary}
+                activeBackgroundColor={activeBg}
                 inactiveBackgroundColor="transparent"
-                activeTintColor={colors.textInverted}
+                activeTintColor={colors.primary}
                 inactiveTintColor={colors.text}
-                labelStyle={[typography.body, { fontWeight: focused ? "700" : "500" }]}
-                style={{ borderRadius: radii.md, marginBottom: spacing.sm }}
+                labelStyle={[typography.body, { fontWeight: focused ? "600" : "400" }]}
+                style={{ borderRadius: radii.sm, marginBottom: spacing.xs }}
                 onPress={() => props.navigation.navigate(route.name)}
               />
             );

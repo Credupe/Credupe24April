@@ -43,7 +43,7 @@ export const AdminUsersScreen: React.FC<Props> = ({ onBack }) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={{ padding: spacing.lg }}>
         <Pressable onPress={onBack} accessibilityLabel="back-btn">
-          <Text style={{ color: colors.primary, fontWeight: "700" }}>‹ Back</Text>
+          <Text style={{ color: colors.primary, fontWeight: "600" }}>‹ Back</Text>
         </Pressable>
         <Text style={[typography.h1, { color: colors.text, marginTop: spacing.md }]}>Users</Text>
         <Text style={[typography.body, { color: colors.textMuted, marginTop: 2 }]}>
@@ -57,24 +57,28 @@ export const AdminUsersScreen: React.FC<Props> = ({ onBack }) => {
         contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: 8 }}
         style={{ flexGrow: 0, marginBottom: spacing.sm }}
       >
-        {ROLES.map((r) => (
-          <Pressable
-            key={r}
-            onPress={() => setRole(r)}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: role === r ? colors.primary : colors.card,
-                borderColor: role === r ? colors.primary : colors.border,
-              },
-            ]}
-            accessibilityLabel={`role-${r}`}
-          >
-            <Text style={{ color: role === r ? colors.textInverted : colors.text, fontWeight: "700", fontSize: 12 }}>
-              {r}{r !== "ALL" && counts[r] ? ` · ${counts[r]}` : ""}
-            </Text>
-          </Pressable>
-        ))}
+        {ROLES.map((r) => {
+          const isActive = role === r;
+          const activeBg = mode === "dark" ? "rgba(99, 102, 241, 0.12)" : "rgba(79, 70, 229, 0.08)";
+          return (
+            <Pressable
+              key={r}
+              onPress={() => setRole(r)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: isActive ? activeBg : colors.card,
+                  borderColor: isActive ? colors.primary : colors.border,
+                },
+              ]}
+              accessibilityLabel={`role-${r}`}
+            >
+              <Text style={{ color: isActive ? colors.primary : colors.textMuted, fontWeight: "600", fontSize: 12 }}>
+                {r}{r !== "ALL" && counts[r] ? ` · ${counts[r]}` : ""}
+              </Text>
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
       {loading ? (
@@ -87,13 +91,13 @@ export const AdminUsersScreen: React.FC<Props> = ({ onBack }) => {
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
           renderItem={({ item }) => (
             <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={[styles.avatar, { backgroundColor: colors.primaryMuted, borderColor: colors.primary }]}>
-                <Text style={{ color: colors.primary, fontWeight: "800", fontSize: 16 }}>
+              <View style={[styles.avatar, { backgroundColor: colors.primaryMuted, borderColor: "rgba(99, 102, 241, 0.1)" }]}>
+                <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 16 }}>
                   {(item.fullName?.[0] ?? item.email[0]).toUpperCase()}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontWeight: "800", fontSize: 15 }}>
+                <Text style={{ color: colors.text, fontWeight: "600", fontSize: 15 }}>
                   {item.fullName ?? item.email.split("@")[0]}
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12 }}>
@@ -103,8 +107,8 @@ export const AdminUsersScreen: React.FC<Props> = ({ onBack }) => {
                   joined {new Date(item.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
                 </Text>
               </View>
-              <View style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
-                <Text style={{ color: colors.textInverted, fontWeight: "800", fontSize: 11 }}>{item.role}</Text>
+              <View style={[styles.roleBadge, { backgroundColor: colors.primaryMuted }]}>
+                <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 11 }}>{item.role}</Text>
               </View>
             </View>
           )}
