@@ -180,17 +180,44 @@ const Login = () => {
             window.location.href = "/";
           }
           return;
-        } catch (e) {
-          if (e instanceof CredupeApiError && e.status === 401) {
-            const { error: supaErr } = await supabase.auth.signInWithPassword({ email, password });
-            if (supaErr) {
-              setError(e.messages[0] || supaErr.message);
+        } catch (d1Err) {
+          if (d1Err instanceof CredupeApiError && d1Err.status === 401) {
+            try {
+              const { data: supaData, error: supaErr } = await supabase.auth.signInWithPassword({ email, password });
+              if (supaErr) {
+                setError(d1Err.messages[0] || supaErr.message);
+              } else if (supaData?.user) {
+                const role = supaData.user.user_metadata?.role || "CUSTOMER";
+                if (role === "CUSTOMER") {
+                  window.location.href = "/customer-dashboard";
+                } else if (role === "PARTNER") {
+                  window.location.href = "/partner-dashboard";
+                } else if (role === "ADMIN") {
+                  window.location.href = "/admin-dashboard";
+                } else {
+                  window.location.href = "/";
+                }
+                return;
+              }
+            } catch (supaException) {
+              console.error("[supabase-login-exception]", supaException);
+              setError(d1Err.messages[0]);
             }
-          } else if (e instanceof CredupeApiError) {
-            setError(e.messages[0] || "Could not log in");
+          } else if (d1Err instanceof CredupeApiError) {
+            setError(d1Err.messages[0] || "Could not log in");
           } else {
-            const { error: supaErr } = await supabase.auth.signInWithPassword({ email, password });
-            if (supaErr) setError(supaErr.message);
+            try {
+              const { data: supaData, error: supaErr } = await supabase.auth.signInWithPassword({ email, password });
+              if (supaErr) {
+                setError(supaErr.message);
+              } else if (supaData?.user) {
+                const role = supaData.user.user_metadata?.role || "CUSTOMER";
+                window.location.href = role === "CUSTOMER" ? "/customer-dashboard" : "/";
+                return;
+              }
+            } catch (e) {
+              setError("Connection error. Please check your network.");
+            }
           }
         }
       }
@@ -224,12 +251,26 @@ const Login = () => {
     }
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) setError(error.message);
-    else setSuccessMsg("Password reset link sent to your email.");
-    setLoading(false);
+    setSuccessMsg(null);
+    try {
+      const res = await credupeApi.auth.forgotPassword(email);
+      const devMsg = res.devOtp ? ` (Dev Code: ${res.devOtp})` : "";
+      setSuccessMsg(`Verification code sent to your email${devMsg}. Redirecting...`);
+      setTimeout(() => {
+        navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+      }, 2000);
+    } catch (err) {
+      const { error: supaErr } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (supaErr) {
+        setError(supaErr.message);
+      } else {
+        setSuccessMsg("Password reset link sent to your email.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
