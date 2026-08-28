@@ -183,6 +183,16 @@ export const credupeApi = {
     },
     me() { return request<{ sub: string; email: string; role: string }>("GET", "/auth/me"); },
     isAuthenticated() { return Boolean(credupeTokens.getAccess()); },
+    async forgotPassword(email: string) {
+      return request<{ email: string; expiresInSec: number; devOtp?: string }>(
+        "POST", "/auth/forgot-password", { email }, { auth: false },
+      );
+    },
+    async resetPassword(input: { email: string; code: string; newPassword: string }) {
+      return request<{ success: boolean }>(
+        "POST", "/auth/reset-password", input, { auth: false },
+      );
+    },
   },
 
   customers: {
@@ -271,6 +281,16 @@ export const credupeApi = {
       partnerCode?: string;
     }) {
       return request<any>("POST", "/leads/public", input, { auth: false });
+    },
+  },
+
+  creditScore: {
+    check(input: { fullName: string; mobile: string; email?: string }) {
+      return request<{ score: number; status: string; id: string }>(
+        "POST",
+        "/credit-score",
+        input
+      );
     },
   },
 

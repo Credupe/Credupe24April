@@ -68,6 +68,19 @@ export default function EducationLoan() {
         .catch((err) => {
           console.warn("Failed to fetch partner name:", err);
         });
+    } else {
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("credupe_access") : null;
+      if (token) {
+        credupeApi.partner.me()
+          .then((res) => {
+            if (res && res.profile && res.profile.businessName) {
+              setPartnerName(res.profile.businessName);
+            }
+          })
+          .catch((err) => {
+            console.warn("Failed to fetch logged in partner details:", err);
+          });
+      }
     }
   }, [bankSlug, partnerCode]);
 
@@ -218,256 +231,313 @@ export default function EducationLoan() {
       </header>
 
       {/* Main content form */}
-      <main className="w-full max-w-2xl px-4 py-8 flex-grow">
-        <div className="bg-white rounded-2xl p-6 md:p-10 shadow-md border border-slate-100">
-          <div className="border-b border-slate-100 pb-5 mb-6">
-            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {lender ? `${lender.name} Education Loan Application` : "Education Loan Application"}
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Please fill in your details accurately to submit your loan application.
-            </p>
+      <main className="w-full max-w-6xl px-4 py-8 md:py-12 flex-grow flex flex-col justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start w-full">
+          
+          {/* Left Column (Highlights / Trusted Brand info) */}
+          <div className="lg:col-span-5 flex flex-col space-y-6 text-left order-2 lg:order-1 mt-6 lg:mt-0">
+            {/* Title - Desktop Only */}
+            <div className="hidden lg:block">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-50 text-violet-700 text-xs font-bold rounded-full mb-3 border border-violet-100">
+                <ShieldCheck className="w-3.5 h-3.5" /> Instant Student Loan Check
+              </span>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                {lender ? `${lender.name} Education Loan` : "Education Loan Application"}
+              </h1>
+              <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                Fund your higher education in India or abroad. Get pre-approved education loan offers with flexible moratorium options.
+              </p>
+            </div>
+            
+            {/* Highlights Card */}
+            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-slate-800">Why choose Credupe?</h3>
+              <div className="grid grid-cols-1 gap-3.5">
+                {[
+                  { title: "Cover 100% Tuition Fees", desc: "Includes hostel fee, travel expenses, library and exam fees." },
+                  { title: "Flexible Moratorium Period", desc: "No repayment stress — start paying after course completion." },
+                  { title: "Zero Collateral Options", desc: "Unsecured student loan offers for premier global institutes." },
+                  { title: "Special Concessions", desc: "Lower interest rate benefits tailored for female students." }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-3 items-start">
+                    <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5 text-emerald-500">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-700">{item.title}</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Security Notice */}
+            <div className="flex gap-3 px-4 py-3.5 bg-slate-100/50 border border-slate-200/20 rounded-2xl items-start">
+              <ShieldCheck className="w-5 h-5 text-violet-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-xs font-bold text-slate-700">100% Safe & Secure</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5 leading-normal">
+                  We use bank-grade 256-bit encryption. Your personal data is fully safe and will never be shared without your explicit permission.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Step label / personal details */}
-            <div className="flex items-center gap-3 bg-violet-50/50 border border-violet-100/30 p-3.5 rounded-xl">
-              <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold text-sm">
-                1
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">Personal Details</h3>
-                <span className="text-[11px] text-slate-400 block">Step 1 of 1</span>
-              </div>
-            </div>
-
-            {/* Name Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => { setFirstName(e.target.value); if (errors.firstName) setErrors({...errors, firstName: ""}); }}
-                  placeholder="Enter first name"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.firstName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.firstName && <p className="text-[11px] text-red-500 font-medium">{errors.firstName}</p>}
+          {/* Right Column (Form Card) */}
+          <div className="lg:col-span-7 w-full order-1 lg:order-2">
+            <div className="bg-white rounded-2xl p-6 md:p-10 shadow-md border border-slate-100">
+              <div className="border-b border-slate-100 pb-5 mb-6">
+                <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
+                  {lender ? `${lender.name} Education Loan Application` : "Education Loan Application"}
+                </h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  Please fill in your details accurately to submit your loan application.
+                </p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => { setLastName(e.target.value); if (errors.lastName) setErrors({...errors, lastName: ""}); }}
-                  placeholder="Enter last name"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.lastName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.lastName && <p className="text-[11px] text-red-500 font-medium">{errors.lastName}</p>}
-              </div>
-            </div>
-
-            {/* Mobile & DOB */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> Mobile No. <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  value={mobile}
-                  onChange={(e) => { setMobile(e.target.value.replace(/\D/g, "").slice(0, 10)); if (errors.mobile) setErrors({...errors, mobile: ""}); }}
-                  placeholder="Enter 10-digit mobile number"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.mobile ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.mobile && <p className="text-[11px] text-red-500 font-medium">{errors.mobile}</p>}
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" /> DOB (DD-MM-YYYY) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={dob}
-                  onChange={handleDobChange}
-                  placeholder="DD-MM-YYYY"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.dob ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.dob && <p className="text-[11px] text-red-500 font-medium">{errors.dob}</p>}
-              </div>
-            </div>
-
-            {/* PAN & Gender */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5 text-slate-400" /> PAN <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={pan}
-                  onChange={(e) => { setPan(e.target.value.toUpperCase().slice(0, 10)); if (errors.pan) setErrors({...errors, pan: ""}); }}
-                  placeholder="Enter 10-char PAN"
-                  className={`w-full uppercase px-4 py-2.5 bg-slate-50 border ${errors.pan ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.pan && <p className="text-[11px] text-red-500 font-medium">{errors.pan}</p>}
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-500 block mb-1">Gender <span className="text-red-500">*</span></span>
-                <div className="flex gap-4 pt-1">
-                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="Male"
-                      checked={gender === "Male"}
-                      onChange={() => { setGender("Male"); if (errors.gender) setErrors({...errors, gender: ""}); }}
-                      className="w-4 h-4 text-violet-600 border-slate-300 focus:ring-violet-500 focus:ring-2"
-                    />
-                    Male
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="Female"
-                      checked={gender === "Female"}
-                      onChange={() => { setGender("Female"); if (errors.gender) setErrors({...errors, gender: ""}); }}
-                      className="w-4 h-4 text-violet-600 border-slate-300 focus:ring-violet-500 focus:ring-2"
-                    />
-                    Female
-                  </label>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Step label / personal details */}
+                <div className="flex items-center gap-3 bg-violet-50/50 border border-violet-100/30 p-3.5 rounded-xl">
+                  <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold text-sm">
+                    1
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Personal Details</h3>
+                    <span className="text-[11px] text-slate-400 block">Step 1 of 1</span>
+                  </div>
                 </div>
-                {errors.gender && <p className="text-[11px] text-red-500 font-medium">{errors.gender}</p>}
-              </div>
-            </div>
 
-            {/* Father's Name Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> Father's First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={fathersFirstName}
-                  onChange={(e) => { setFathersFirstName(e.target.value); if (errors.fathersFirstName) setErrors({...errors, fathersFirstName: ""}); }}
-                  placeholder="Enter father's first name"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.fathersFirstName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.fathersFirstName && <p className="text-[11px] text-red-500 font-medium">{errors.fathersFirstName}</p>}
-              </div>
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-slate-400" /> First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => { setFirstName(e.target.value); if (errors.firstName) setErrors({...errors, firstName: ""}); }}
+                      placeholder="Enter first name"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.firstName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.firstName && <p className="text-[11px] text-red-500 font-medium">{errors.firstName}</p>}
+                  </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-slate-400" /> Father's Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={fathersLastName}
-                  onChange={(e) => { setFathersLastName(e.target.value); if (errors.fathersLastName) setErrors({...errors, fathersLastName: ""}); }}
-                  placeholder="Enter father's last name"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.fathersLastName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.fathersLastName && <p className="text-[11px] text-red-500 font-medium">{errors.fathersLastName}</p>}
-              </div>
-            </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-slate-400" /> Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => { setLastName(e.target.value); if (errors.lastName) setErrors({...errors, lastName: ""}); }}
+                      placeholder="Enter last name"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.lastName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.lastName && <p className="text-[11px] text-red-500 font-medium">{errors.lastName}</p>}
+                  </div>
+                </div>
 
-            {/* Address fields */}
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <Home className="w-3.5 h-3.5 text-slate-400" /> Address Line 1 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={addressLine1}
-                  onChange={(e) => { setAddressLine1(e.target.value); if (errors.addressLine1) setErrors({...errors, addressLine1: ""}); }}
-                  placeholder="Flat, House no., Building, Apartment"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.addressLine1 ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.addressLine1 && <p className="text-[11px] text-red-500 font-medium">{errors.addressLine1}</p>}
-              </div>
+                {/* Mobile & DOB */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-slate-400" /> Mobile No. <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={mobile}
+                      onChange={(e) => { setMobile(e.target.value.replace(/\D/g, "").slice(0, 10)); if (errors.mobile) setErrors({...errors, mobile: ""}); }}
+                      placeholder="Enter 10-digit mobile number"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.mobile ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.mobile && <p className="text-[11px] text-red-500 font-medium">{errors.mobile}</p>}
+                  </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <Home className="w-3.5 h-3.5 text-slate-400" /> Address Line 2 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={addressLine2}
-                  onChange={(e) => { setAddressLine2(e.target.value); if (errors.addressLine2) setErrors({...errors, addressLine2: ""}); }}
-                  placeholder="Area, Street, Sector, Village"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.addressLine2 ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.addressLine2 && <p className="text-[11px] text-red-500 font-medium">{errors.addressLine2}</p>}
-              </div>
-            </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" /> DOB (DD-MM-YYYY) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={dob}
+                      onChange={handleDobChange}
+                      placeholder="DD-MM-YYYY"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.dob ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.dob && <p className="text-[11px] text-red-500 font-medium">{errors.dob}</p>}
+                  </div>
+                </div>
 
-            {/* Pincode & Employment Type */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" /> Pincode <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={pincode}
-                  onChange={(e) => { setPincode(e.target.value.replace(/\D/g, "").slice(0, 6)); if (errors.pincode) setErrors({...errors, pincode: ""}); }}
-                  placeholder="6-digit pincode"
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.pincode ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
-                />
-                {errors.pincode && <p className="text-[11px] text-red-500 font-medium">{errors.pincode}</p>}
-              </div>
+                {/* PAN & Gender */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <FileText className="w-3.5 h-3.5 text-slate-400" /> PAN <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={pan}
+                      onChange={(e) => { setPan(e.target.value.toUpperCase().slice(0, 10)); if (errors.pan) setErrors({...errors, pan: ""}); }}
+                      placeholder="Enter 10-char PAN"
+                      className={`w-full uppercase px-4 py-2.5 bg-slate-50 border ${errors.pan ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.pan && <p className="text-[11px] text-red-500 font-medium">{errors.pan}</p>}
+                  </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                  <Briefcase className="w-3.5 h-3.5 text-slate-400" /> Employment Type <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={employmentType}
-                  onChange={(e) => { setEmploymentType(e.target.value); if (errors.employmentType) setErrors({...errors, employmentType: ""}); }}
-                  className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.employmentType ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-slate-500 block mb-1">Gender <span className="text-red-500">*</span></span>
+                    <div className="flex gap-4 pt-1">
+                      <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="Male"
+                          checked={gender === "Male"}
+                          onChange={() => { setGender("Male"); if (errors.gender) setErrors({...errors, gender: ""}); }}
+                          className="w-4 h-4 text-violet-600 border-slate-300 focus:ring-violet-500 focus:ring-2"
+                        />
+                        Male
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="Female"
+                          checked={gender === "Female"}
+                          onChange={() => { setGender("Female"); if (errors.gender) setErrors({...errors, gender: ""}); }}
+                          className="w-4 h-4 text-violet-600 border-slate-300 focus:ring-violet-500 focus:ring-2"
+                        />
+                        Female
+                      </label>
+                    </div>
+                    {errors.gender && <p className="text-[11px] text-red-500 font-medium">{errors.gender}</p>}
+                  </div>
+                </div>
+
+                {/* Father's Name Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-slate-400" /> Father's First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={fathersFirstName}
+                      onChange={(e) => { setFathersFirstName(e.target.value); if (errors.fathersFirstName) setErrors({...errors, fathersFirstName: ""}); }}
+                      placeholder="Enter father's first name"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.fathersFirstName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.fathersFirstName && <p className="text-[11px] text-red-500 font-medium">{errors.fathersFirstName}</p>}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-slate-400" /> Father's Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={fathersLastName}
+                      onChange={(e) => { setFathersLastName(e.target.value); if (errors.fathersLastName) setErrors({...errors, fathersLastName: ""}); }}
+                      placeholder="Enter father's last name"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.fathersLastName ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.fathersLastName && <p className="text-[11px] text-red-500 font-medium">{errors.fathersLastName}</p>}
+                  </div>
+                </div>
+
+                {/* Address fields */}
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <Home className="w-3.5 h-3.5 text-slate-400" /> Address Line 1 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={addressLine1}
+                      onChange={(e) => { setAddressLine1(e.target.value); if (errors.addressLine1) setErrors({...errors, addressLine1: ""}); }}
+                      placeholder="Flat, House no., Building, Apartment"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.addressLine1 ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.addressLine1 && <p className="text-[11px] text-red-500 font-medium">{errors.addressLine1}</p>}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <Home className="w-3.5 h-3.5 text-slate-400" /> Address Line 2 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={addressLine2}
+                      onChange={(e) => { setAddressLine2(e.target.value); if (errors.addressLine2) setErrors({...errors, addressLine2: ""}); }}
+                      placeholder="Area, Street, Sector, Village"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.addressLine2 ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.addressLine2 && <p className="text-[11px] text-red-500 font-medium">{errors.addressLine2}</p>}
+                  </div>
+                </div>
+
+                {/* Pincode & Employment Type */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> Pincode <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={pincode}
+                      onChange={(e) => { setPincode(e.target.value.replace(/\D/g, "").slice(0, 6)); if (errors.pincode) setErrors({...errors, pincode: ""}); }}
+                      placeholder="6-digit pincode"
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.pincode ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    />
+                    {errors.pincode && <p className="text-[11px] text-red-500 font-medium">{errors.pincode}</p>}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                      <Briefcase className="w-3.5 h-3.5 text-slate-400" /> Employment Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={employmentType}
+                      onChange={(e) => { setEmploymentType(e.target.value); if (errors.employmentType) setErrors({...errors, employmentType: ""}); }}
+                      className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.employmentType ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-violet-200 focus:border-violet-600'} rounded-xl text-sm focus:outline-none focus:ring-2 transition`}
+                    >
+                      <option value="">Select Employment Type</option>
+                      {EMPLOYMENT_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.employmentType && <p className="text-[11px] text-red-500 font-medium">{errors.employmentType}</p>}
+                  </div>
+                </div>
+
+                {generalError && (
+                  <div className="text-xs text-rose-500 bg-rose-50 border border-rose-100 rounded-lg p-2.5 text-center font-medium">
+                    {generalError}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-violet-500/10 flex items-center justify-center gap-2"
                 >
-                  <option value="">Select Employment Type</option>
-                  {EMPLOYMENT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.employmentType && <p className="text-[11px] text-red-500 font-medium">{errors.employmentType}</p>}
-              </div>
+                  {loading ? (
+                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Submit Application <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
+          </div>
 
-            {generalError && (
-              <div className="text-xs text-rose-500 bg-rose-50 border border-rose-100 rounded-lg p-2.5 text-center font-medium">
-                {generalError}
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-violet-500/10 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  Submit Application <ChevronRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
         </div>
       </main>
 

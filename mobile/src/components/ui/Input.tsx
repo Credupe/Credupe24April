@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, TextInput, TextInputProps, StyleSheet } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { radii, typography, shadows } from '../../theme/colors';
 
 export interface InputProps extends TextInputProps {
   icon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   shadowless?: boolean;
   error?: boolean;
   success?: boolean;
@@ -13,6 +14,7 @@ export interface InputProps extends TextInputProps {
 export const Input: React.FC<InputProps> = ({ 
   style, 
   icon,
+  rightIcon,
   shadowless = false,
   error,
   success,
@@ -43,6 +45,7 @@ export const Input: React.FC<InputProps> = ({
         placeholderTextColor={colors.textMuted}
         {...props}
       />
+      {rightIcon && <View style={styles.rightIconContainer}>{rightIcon}</View>}
     </View>
   );
 };
@@ -59,8 +62,16 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginRight: 12,
   },
+  rightIconContainer: {
+    marginLeft: 12,
+  },
   input: {
     flex: 1,
     height: '100%',
-  }
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      },
+    }),
+  } as any
 });

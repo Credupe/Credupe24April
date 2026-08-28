@@ -495,4 +495,22 @@ export const userFeedback = sqliteTable(
   })
 );
 
+export const creditScoreRequests = sqliteTable(
+  "credit_score_requests",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    fullName: text("full_name").notNull(),
+    mobile: text("mobile").notNull(),
+    email: text("email"),
+    score: integer("score").notNull(),
+    status: text("status").notNull().default("COMPLETED"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (t) => ({
+    userIdx: index("idx_credit_score_requests_user").on(t.userId),
+    mobileIdx: index("idx_credit_score_requests_mobile").on(t.mobile),
+  })
+);
+
 

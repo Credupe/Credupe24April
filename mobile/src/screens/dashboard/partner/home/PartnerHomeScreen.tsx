@@ -159,7 +159,11 @@ export const PartnerHomeScreen: React.FC<Props> = ({
     <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {/* Header component */}
-        <Header onNotificationPress={() => navigation.navigate("Notifications")} badgeCount={1} />
+        <Header 
+          onNotificationPress={() => navigation.navigate("Notifications")} 
+          badgeCount={1} 
+          businessName={partnerProfile?.businessName} 
+        />
 
         <ScrollView
           style={styles.scrollView}

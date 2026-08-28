@@ -15,6 +15,7 @@ import { DIMENSIONS } from "../constants/dimensions";
 import { COLORS } from "../constants/colors";
 import { THEME } from "../constants/theme";
 import { PaginationDots } from "./PaginationDots";
+import { fetchPartnerProfile } from "../../../../../api/credupe";
 
 interface SlideItem {
   title: string;
@@ -27,11 +28,11 @@ interface SlideItem {
 
 const BANNER_SLIDES: SlideItem[] = [
   {
-    title: "Earn More with Every Referral",
-    subtitle: "Refer friends and earn exciting rewards.",
-    buttonText: "Start Referring",
-    route: "ReferEarn",
-    imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80",
+    title: "Complete Your KYC Verification",
+    subtitle: "Submit documents to unlock all partner benefits and rewards.",
+    buttonText: "Verify Now",
+    route: "Kyc",
+    imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
     gradientColors: ["rgba(0, 0, 0, 0.15)", "rgba(0, 0, 0, 0.65)"],
   },
   {
@@ -105,10 +106,23 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
     index,
   }), []);
 
-  const handleSlidePress = useCallback((item: SlideItem) => {
+  const handleSlidePress = useCallback(async (item: SlideItem) => {
     try {
       if (item.route) {
-        navigation.navigate(item.route);
+        if (item.route === "Kyc") {
+          try {
+            const res = await fetchPartnerProfile();
+            if (res.success && res.data?.profile?.onboardingStep === "COMPLETE") {
+              navigation.navigate("PartnerKycStatus");
+            } else {
+              navigation.navigate("SignupSelection");
+            }
+          } catch {
+            navigation.navigate("SignupSelection");
+          }
+        } else {
+          navigation.navigate(item.route);
+        }
       }
     } catch (e) {
       console.warn("Failed to navigate from banner slide:", e);
@@ -135,7 +149,7 @@ export const BannerCarousel: React.FC<Props> = React.memo(({ onPress }) => {
             <View style={styles.textContainer}>
               <Text style={styles.title}>{item.title}</Text>
               <Text style={styles.subtitle}>{item.subtitle}</Text>
-              
+
               <View style={styles.buttonWrapper}>
                 <View style={styles.button}>
                   <Text style={styles.buttonText}>{item.buttonText}</Text>

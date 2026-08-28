@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight, Shield, TrendingUp, FileText, AlertTriangle, ThumbsUp, BarChart3, Clock, Users, Star, ChevronRight, Eye, Languages, Smartphone, Sparkles, Target } from "lucide-react";
+import { CheckCircle2, ArrowRight, Shield, TrendingUp, FileText, AlertTriangle, ThumbsUp, BarChart3, Clock, Users, Star, ChevronRight, Eye, Languages, Smartphone, Sparkles, Target, Loader2, XCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { credupeApi, CredupeApiError } from "@/lib/credupe-api";
 
 const tabItems = [
   "Credit Score FREE",
@@ -73,6 +74,43 @@ const faqs = [
 const CreditScore = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [resultScore, setResultScore] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCheckScore = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName || !mobile) {
+      setError("Please fill in Name and Mobile Number.");
+      return;
+    }
+    if (mobile.length !== 10 || !/^[6-9]\d{9}$/.test(mobile)) {
+      setError("Please enter a valid 10-digit mobile number starting with 6-9.");
+      return;
+    }
+    setChecking(true);
+    setError(null);
+    try {
+      const res = await credupeApi.creditScore.check({
+        fullName,
+        mobile,
+        email: email || undefined,
+      });
+      setResultScore(res.score);
+      // Clear inputs on success
+      setFullName("");
+      setMobile("");
+      setEmail("");
+    } catch (err) {
+      const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to fetch credit score. Please try again.";
+      setError(msg);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
@@ -150,20 +188,58 @@ const CreditScore = () => {
       {/* Get Your Free Score Form */}
       <section className="py-10">
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-xl mx-auto bg-card rounded-2xl shadow-lg border border-border p-8">
-          <h3 className="text-xl font-bold text-foreground mb-6">Get Your Free Score</h3>
-          <div className="space-y-4">
-            <input type="text" placeholder="Full Name" className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
-            <input type="tel" placeholder="Mobile Number" className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" maxLength={10} />
-            <input type="email" placeholder="Email Address" className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
+          <h3 className="text-xl font-bold text-foreground mb-6 font-semibold">Get Your Free Score</h3>
+          {error && (
+            <div className="mb-4 bg-destructive/10 text-destructive text-sm p-3 rounded-lg font-medium" data-testid="score-check-error">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleCheckScore} className="space-y-4" data-testid="score-check-form">
+            <input
+              type="text"
+              required
+              placeholder="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            />
+            <input
+              type="tel"
+              required
+              maxLength={10}
+              placeholder="Mobile Number"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            />
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-border bg-secondary/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            />
             <p className="text-xs text-muted-foreground">
               By proceeding, you agree to our{" "}
               <a href="#" className="text-primary hover:underline">Terms</a> &{" "}
               <a href="#" className="text-primary hover:underline">Privacy Policy</a>
             </p>
-            <button className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-              Get Free Credit Score <ArrowRight className="w-4 h-4" />
+            <button
+              type="submit"
+              disabled={checking}
+              className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            >
+              {checking ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Checking Bureau...
+                </>
+              ) : (
+                <>
+                  Get Free Credit Score <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
-          </div>
+          </form>
           <div className="mt-6 pt-5 border-t border-border">
             <p className="text-xs text-muted-foreground text-center mb-3">Powered by</p>
             <div className="flex items-center justify-center gap-3">
@@ -389,6 +465,91 @@ const CreditScore = () => {
       </section>
 
       <Footer />
+
+      {/* Credit Score Report Modal */}
+      {resultScore !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl relative text-center">
+            <button
+              onClick={() => setResultScore(null)}
+              className="absolute top-4 right-4 p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-colors cursor-pointer"
+            >
+              <XCircle className="w-5 h-5" />
+            </button>
+            <div className="mb-4">
+              <Sparkles className="w-8 h-8 text-primary mx-auto mb-2 animate-bounce" />
+              <h2 className="text-xl font-bold text-foreground">Your Credit Report</h2>
+              <p className="text-xs text-muted-foreground">Generated from multi-bureau D1 database request</p>
+            </div>
+
+            {/* Circular Gauge */}
+            <div className="relative w-44 h-44 mx-auto my-6 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="88"
+                  cy="88"
+                  r="74"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  className="text-border"
+                  fill="transparent"
+                />
+                <circle
+                  cx="88"
+                  cy="88"
+                  r="74"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  className={
+                    resultScore >= 750 ? "text-green-500" :
+                    resultScore >= 700 ? "text-emerald-400" :
+                    resultScore >= 650 ? "text-yellow-500" :
+                    "text-red-500"
+                  }
+                  strokeDasharray={`${2 * Math.PI * 74}`}
+                  strokeDashoffset={`${2 * Math.PI * 74 * (1 - (resultScore - 300) / 600)}`}
+                  strokeLinecap="round"
+                  fill="transparent"
+                />
+              </svg>
+              <div className="absolute text-center">
+                <p className="text-4xl font-extrabold text-foreground tabular-nums">{resultScore}</p>
+                <p className={`text-xs font-bold uppercase mt-0.5 ${
+                  resultScore >= 750 ? "text-green-500" :
+                  resultScore >= 700 ? "text-emerald-400" :
+                  resultScore >= 650 ? "text-yellow-500" :
+                  "text-red-500"
+                }`}>
+                  {resultScore >= 750 ? "Excellent" :
+                   resultScore >= 700 ? "Good" :
+                   resultScore >= 650 ? "Fair" :
+                   "Poor"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-secondary/40 rounded-xl p-4 mb-5 text-left text-xs md:text-sm">
+              <p className="font-semibold text-foreground mb-1">Bureau Summary:</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {resultScore >= 750
+                  ? "Excellent Credit Score! Lenders will offer you premium credit cards and the absolute lowest interest rates on retail loans."
+                  : resultScore >= 700
+                  ? "Good Credit Score. You qualify for competitive loan interest rates with simple verification loops."
+                  : resultScore >= 650
+                  ? "Fair Credit Score. You qualify for retail loans, but may face minor interest rate premiums or extra underwriting documentation."
+                  : "Poor Credit Score. Loan approvals are limited and you will face high interest charges. Focus on on-time EMI repayments to rebuild history."}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setResultScore(null)}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-95 cursor-pointer"
+            >
+              Close Report
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
