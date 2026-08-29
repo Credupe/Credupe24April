@@ -829,7 +829,7 @@ function ProfileTab({ home }: { home: any }) {
     (async () => {
       try {
         const m = await credupeApi.partner.me();
-        if (mounted) setMe(m);
+        if (mounted) setMe(m?.profile || null);
       } catch (err) {
         const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to load profile";
         toast({ title: "Error", description: msg, variant: "destructive" });
