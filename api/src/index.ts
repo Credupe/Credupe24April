@@ -41,13 +41,17 @@ import uiConfig from "./modules/ui-config";
 import partnerOnboarding from "./modules/partner-onboarding";
 import partnerDashboard from "./modules/partner-dashboard";
 import { feedback, adminFeedback } from "./modules/feedback";
+import creditScore from "./modules/credit-score";
 
 
 const app = new Hono<AppEnv>();
 
 // ── global middleware ────────────────────────────────────────────────────
 app.use("*", logger());
-app.use("*", secureHeaders());
+app.use("*", secureHeaders({
+  xFrameOptions: false,
+  crossOriginResourcePolicy: false,
+}));
 app.use("*", async (c, next) => {
   const origins = (c.env.CORS_ORIGINS || "*").split(",").map((s) => s.trim());
   return cors({
@@ -82,6 +86,7 @@ v1.route("/partner-onboarding", partnerOnboarding);
 v1.route("/partner-dashboard", partnerDashboard);
 v1.route("/feedback", feedback);
 v1.route("/admin/feedback", adminFeedback);
+v1.route("/credit-score", creditScore);
 
 app.route("/api/v1", v1);
 app.route("/api/feedback", feedback);

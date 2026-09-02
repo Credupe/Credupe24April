@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Building2, TrendingUp, Users, Banknote, Trophy, FileText, BadgeCheck,
   Crown, Copy, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, IndianRupee,
   Wallet, Hourglass, CheckCircle2, XCircle, ListChecks, Award, Mail, Phone, MapPin,
+  Upload,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -48,6 +49,9 @@ const STATUS_PILL: Record<string, string> = {
   CONVERTED: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
   APPLICATION_CREATED: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
   DROPPED: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+  UPLOADED: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+  VERIFIED: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  REJECTED: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
 function fmtINR(v: number | null | undefined): string {
@@ -73,27 +77,74 @@ export default function PartnerDashboard() {
   const [home, setHome] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [unauth, setUnauth] = useState(false);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadForm, setLeadForm] = useState({
+    customerName: "",
+    customerMobile: "",
+    customerEmail: "",
+    loanType: "PERSONAL_LOAN",
+    amountRequested: "",
+    city: "",
+    notes: "",
+  });
+
+  const fetchHomeData = async () => {
+    try {
+      const h = await credupeApi.partner.home();
+      setHome(h);
+    } catch (err) {
+      if (err instanceof CredupeApiError && (err.status === 401 || err.status === 403)) {
+        setUnauth(true);
+      } else {
+        const msg = err instanceof CredupeApiError ? err.messages[0] : "Could not load dashboard";
+        toast({ title: "Error", description: msg, variant: "destructive" });
+      }
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       setLoading(true);
-      try {
-        const h = await credupeApi.partner.home();
-        if (mounted) setHome(h);
-      } catch (err) {
-        if (err instanceof CredupeApiError && (err.status === 401 || err.status === 403)) {
-          if (mounted) setUnauth(true);
-        } else {
-          const msg = err instanceof CredupeApiError ? err.messages[0] : "Could not load dashboard";
-          toast({ title: "Error", description: msg, variant: "destructive" });
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      await fetchHomeData();
+      if (mounted) setLoading(false);
     })();
     return () => { mounted = false; };
   }, [toast]);
+
+  const handleCreateLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLeadSubmitting(true);
+    try {
+      await credupeApi.leads.create({
+        customerName: leadForm.customerName,
+        customerMobile: leadForm.customerMobile,
+        customerEmail: leadForm.customerEmail || undefined,
+        loanType: leadForm.loanType as any,
+        amountRequested: leadForm.amountRequested ? Number(leadForm.amountRequested) : undefined,
+        city: leadForm.city || undefined,
+        notes: leadForm.notes || undefined,
+      });
+      toast({ title: "Success", description: "Lead submitted successfully." });
+      setIsLeadModalOpen(false);
+      setLeadForm({
+        customerName: "",
+        customerMobile: "",
+        customerEmail: "",
+        loanType: "PERSONAL_LOAN",
+        amountRequested: "",
+        city: "",
+        notes: "",
+      });
+      await fetchHomeData();
+    } catch (err) {
+      const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to submit lead";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    } finally {
+      setLeadSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -203,13 +254,157 @@ export default function PartnerDashboard() {
         </div>
 
         {/* Content */}
-        {tab === "home" && <HomeTab home={home} />}
+        {tab === "home" && <HomeTab home={home} onNewLeadClick={() => setIsLeadModalOpen(true)} />}
         {tab === "earnings" && <EarningsTab />}
         {tab === "leaderboard" && <LeaderboardTab />}
         {tab === "documents" && <DocumentsTab />}
         {tab === "profile" && <ProfileTab home={home} />}
       </div>
       <Footer />
+
+      {/* Lead Submission Modal */}
+      {isLeadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl relative">
+            <button
+              onClick={() => setIsLeadModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-colors cursor-pointer"
+            >
+              <XCircle className="w-5 h-5" />
+            </button>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-foreground">Submit Customer Lead</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Fill in the customer information to register a new loan lead.
+              </p>
+            </div>
+
+            <form onSubmit={handleCreateLead} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                  Customer Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rajesh Kumar"
+                  value={leadForm.customerName}
+                  onChange={(e) => setLeadForm({ ...leadForm, customerName: e.target.value })}
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                    Mobile Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    maxLength={10}
+                    placeholder="10-digit number"
+                    value={leadForm.customerMobile}
+                    onChange={(e) => setLeadForm({ ...leadForm, customerMobile: e.target.value })}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={leadForm.customerEmail}
+                    onChange={(e) => setLeadForm({ ...leadForm, customerEmail: e.target.value })}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                    Loan Type *
+                  </label>
+                  <select
+                    value={leadForm.loanType}
+                    onChange={(e) => setLeadForm({ ...leadForm, loanType: e.target.value })}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                  >
+                    {Object.entries(LOAN_TYPE_LABEL).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                    Amount Requested (INR)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 500000"
+                    value={leadForm.amountRequested}
+                    onChange={(e) => setLeadForm({ ...leadForm, amountRequested: e.target.value })}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Mumbai"
+                    value={leadForm.city}
+                    onChange={(e) => setLeadForm({ ...leadForm, city: e.target.value })}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-1.5 font-medium">
+                  Notes / Remarks
+                </label>
+                <textarea
+                  placeholder="Any additional details..."
+                  value={leadForm.notes}
+                  onChange={(e) => setLeadForm({ ...leadForm, notes: e.target.value })}
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 h-20 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsLeadModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-muted cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={leadSubmitting}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-95 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {leadSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
+                    </>
+                  ) : (
+                    "Submit Lead"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -218,7 +413,7 @@ function KycBadge({ status }: { status: string }) {
   const map: Record<string, { text: string; cls: string; icon: any }> = {
     VERIFIED: { text: "KYC Verified", cls: "bg-green-500/10 text-green-600 ring-green-500/30", icon: CheckCircle2 },
     PENDING: { text: "KYC Pending", cls: "bg-amber-500/10 text-amber-600 ring-amber-500/30", icon: Hourglass },
-    REJECTED: { text: "KYC Rejected", cls: "bg-red-500/10 text-red-600 ring-red-500/30", icon: XCircle },
+    REJECTED: { text: "KYC Not Complete", cls: "bg-red-500/10 text-red-600 ring-red-500/30", icon: XCircle },
   };
   const m = map[status] || map.PENDING;
   const Icon = m.icon;
@@ -234,7 +429,7 @@ function KycBadge({ status }: { status: string }) {
 /*  Tab: Overview                                                              */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function HomeTab({ home }: { home: any }) {
+function HomeTab({ home, onNewLeadClick }: { home: any; onNewLeadClick: () => void }) {
   const kpis = home.kpis;
   return (
     <div className="space-y-6">
@@ -279,19 +474,27 @@ function HomeTab({ home }: { home: any }) {
         <p className="text-sm font-semibold text-foreground mb-4">Quick actions</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "New Lead", icon: Users, href: "#" },
+            { label: "New Lead", icon: Users, onClick: onNewLeadClick },
             { label: "Calculators", icon: ListChecks, href: "/calculators" },
             { label: "Loan Products", icon: FileText, href: "/loan-intelligence" },
             { label: "Credit Score", icon: BadgeCheck, href: "/credit-score" },
-          ].map((q) => (
-            <a key={q.label} href={q.href} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 transition-colors">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <q.icon className="w-4 h-4" />
-              </div>
-              <span className="text-sm font-medium text-foreground">{q.label}</span>
-              <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground ml-auto" />
-            </a>
-          ))}
+          ].map((q) => {
+            const Component = q.onClick ? "button" : "a";
+            const props = q.onClick ? { onClick: q.onClick, type: "button" as const } : { href: q.href };
+            return (
+              <Component
+                key={q.label}
+                {...(props as any)}
+                className="flex items-center text-left w-full gap-3 p-3 rounded-xl border border-border hover:border-primary/40 transition-colors cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <q.icon className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{q.label}</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground ml-auto" />
+              </Component>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -565,51 +768,172 @@ function LeaderboardTab() {
 function DocumentsTab() {
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reuploadingDocId, setReuploadingDocId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const loadDocuments = async () => {
+    try {
+      const d = await credupeApi.partner.documents();
+      setDocs(d || []);
+    } catch (err) {
+      const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to load documents";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      try {
-        const d = await credupeApi.partner.documents();
-        if (mounted) setDocs(d);
-      } catch (err) {
-        const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to load documents";
-        toast({ title: "Error", description: msg, variant: "destructive" });
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      setLoading(true);
+      await loadDocuments();
+      if (mounted) setLoading(false);
     })();
     return () => { mounted = false; };
-  }, [toast]);
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !reuploadingDocId) return;
+
+    // Reset input so re-selecting same file triggers onChange
+    e.target.value = "";
+
+    try {
+      setIsSubmitting(reuploadingDocId);
+      await credupeApi.partner.reuploadDocument(reuploadingDocId, file);
+      toast({
+        title: "Document Re-uploaded",
+        description: `${file.name} uploaded successfully. Admin will review it shortly.`,
+      });
+      await loadDocuments();
+    } catch (err: any) {
+      const msg = err instanceof CredupeApiError ? err.messages[0] : err?.message || "Failed to re-upload document";
+      toast({ title: "Re-upload failed", description: msg, variant: "destructive" });
+    } finally {
+      setIsSubmitting(null);
+      setReuploadingDocId(null);
+    }
+  };
+
+  const triggerReupload = (docId: string) => {
+    setReuploadingDocId(docId);
+    fileInputRef.current?.click();
+  };
 
   if (loading) return <SpinnerBlock />;
 
   return (
     <div className="bg-card border border-border rounded-2xl p-5">
-      <p className="text-sm font-semibold text-foreground mb-4">Uploaded documents</p>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground">Uploaded documents</p>
+          <p className="text-xs text-muted-foreground">Manage your KYC verification files</p>
+        </div>
+      </div>
       {docs.length === 0 ? (
         <p className="text-sm text-muted-foreground py-6 text-center">No documents on file.</p>
       ) : (
-        <div className="space-y-2">
-          {docs.map((d) => (
-            <div key={d.id} className="flex items-center justify-between rounded-lg border border-border px-4 py-3" data-testid={`doc-row-${d.id}`}>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  <FileText className="w-4 h-4" />
+        <div className="space-y-3">
+          {docs.map((d) => {
+            const isReuploaded = (d.version > 1 && d.status === "UPLOADED");
+            return (
+              <div
+                key={d.id}
+                className={`rounded-xl border p-4 transition-all ${
+                  d.status === "REJECTED"
+                    ? "border-red-200 dark:border-red-950/60 bg-red-50/20 dark:bg-red-950/10"
+                    : isReuploaded
+                    ? "border-amber-200 dark:border-amber-950/60 bg-amber-50/20 dark:bg-amber-950/10"
+                    : "border-border"
+                }`}
+                data-testid={`doc-row-${d.id}`}
+              >
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                      d.status === "REJECTED"
+                        ? "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                        : isReuploaded
+                        ? "bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
+                        : "bg-primary/10 text-primary"
+                    }`}>
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">{d.fileName}</p>
+                        {d.version > 1 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+                            v{d.version}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        {d.tag} · {new Date(d.createdAt).toLocaleDateString("en-IN")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[10px] px-2 py-1 rounded-full font-semibold ${
+                        isReuploaded
+                          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                          : STATUS_PILL[d.status] || "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {isReuploaded ? "RE-UPLOADED" : d.status || "PENDING"}
+                    </span>
+
+                    {d.status === "REJECTED" && (
+                      <button
+                        onClick={() => triggerReupload(d.id)}
+                        disabled={isSubmitting === d.id}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm disabled:opacity-50"
+                      >
+                        {isSubmitting === d.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" /> Re-upload
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{d.fileName}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {d.tag} · {new Date(d.createdAt).toLocaleDateString("en-IN")}
-                  </p>
-                </div>
+
+                {d.status === "REJECTED" && d.rejectionReason && (
+                  <div className="mt-2.5 pt-2.5 border-t border-red-200/60 dark:border-red-950/40 flex items-start gap-2 text-xs text-red-600 dark:text-red-400">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold">Rejection reason: </span>
+                      <span>"{d.rejectionReason}"</span>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Please re-upload a clear and valid document.</p>
+                    </div>
+                  </div>
+                )}
+
+                {isReuploaded && (
+                  <div className="mt-2.5 pt-2.5 border-t border-amber-200/60 dark:border-amber-950/40 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
+                    <Hourglass className="w-3.5 h-3.5 shrink-0" />
+                    <span>Your re-uploaded document has been submitted and is currently pending admin verification.</span>
+                  </div>
+                )}
               </div>
-              <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${STATUS_PILL[d.status] || "bg-muted text-muted-foreground"}`}>
-                {d.status || "PENDING"}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -630,7 +954,7 @@ function ProfileTab({ home }: { home: any }) {
     (async () => {
       try {
         const m = await credupeApi.partner.me();
-        if (mounted) setMe(m);
+        if (mounted) setMe(m?.profile || null);
       } catch (err) {
         const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to load profile";
         toast({ title: "Error", description: msg, variant: "destructive" });

@@ -5,7 +5,10 @@ import { useUIConfigStore } from "@/stores/uiConfigStore";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-const BACKEND_URL = (typeof process !== "undefined" && (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)) || "";
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  process.env.REACT_APP_BACKEND_URL ||
+  (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8787" : "");
 const CHAT_URL = `${BACKEND_URL}/api/v1/ai/chat`;
 
 const SUGGESTED_QUESTIONS = [
