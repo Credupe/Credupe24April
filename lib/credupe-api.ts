@@ -10,11 +10,19 @@
  * `credupe_refresh`). 401 responses trigger a one-time refresh-retry.
  */
 
-const BACKEND_URL =
-  (typeof process !== "undefined" && (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)) ||
-  "";
+function getBackendUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+  if (envUrl) return envUrl;
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:8787";
+  }
+  return "";
+}
 
-const API_BASE = BACKEND_URL ? `${BACKEND_URL.replace(/\/+$/, "")}/api/v1` : "/api/v1";
+function getApiBase(): string {
+  const backend = getBackendUrl();
+  return backend ? `${backend.replace(/\/+$/, "")}/api/v1` : "/api/v1";
+}
 
 const ACCESS_KEY = "credupe_access";
 const REFRESH_KEY = "credupe_refresh";
@@ -66,7 +74,7 @@ async function refreshAccessToken(): Promise<boolean> {
   const refreshToken = credupeTokens.getRefresh();
   if (!refreshToken) return false;
   try {
-    const resp = await fetch(`${API_BASE}/auth/refresh`, {
+    const resp = await fetch(`${getApiBase()}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
@@ -91,16 +99,20 @@ async function request<T>(
   opts: { auth?: boolean; retried?: boolean } = {},
 ): Promise<T> {
   const { auth = true, retried = false } = opts;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const headers: Record<string, string> = {};
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
   if (auth) {
     const tok = credupeTokens.getAccess();
     if (tok) headers["Authorization"] = `Bearer ${tok}`;
   }
 
-  const resp = await fetch(`${API_BASE}${path}`, {
+  const resp = await fetch(`${getApiBase()}${path}`, {
     method,
     headers,
-    body: body != null ? JSON.stringify(body) : undefined,
+    body: isFormData ? (body as FormData) : body != null ? JSON.stringify(body) : undefined,
   });
 
   // 401 → try refresh once
@@ -145,7 +157,7 @@ export interface Paged<T> {
 const USE_PORTFOLIO_MOCK = true;
 
 export const credupeApi = {
-  base: API_BASE,
+  get base() { return getApiBase(); },
   tokens: credupeTokens,
 
   auth: {
@@ -305,6 +317,21 @@ export const credupeApi = {
     },
     list(applicationId?: string) {
       return request<any[]>("GET", `/documents${applicationId ? `?applicationId=${encodeURIComponent(applicationId)}` : ""}`);
+    },
+    adminList(status?: string) {
+      return request<{ items: any[]; total: number }>("GET", `/documents${status ? `?status=${encodeURIComponent(status)}` : ""}`);
+    },
+    adminVerify(id: string, status: "VERIFIED" | "REJECTED", rejectionReason?: string) {
+      return request<{ id: string; status: string }>("POST", `/documents/${encodeURIComponent(id)}/verify`, { status, rejectionReason });
+    },
+    reupload(id: string, file: File) {
+      const fd = new FormData();
+      fd.append("file", file);
+      return request<{ id: string; fileName: string; version: number; status: string }>(
+        "POST",
+        `/documents/${encodeURIComponent(id)}/reupload`,
+        fd
+      );
     },
   },
 
@@ -642,6 +669,15 @@ export const credupeApi = {
     home() { return request<any>("GET", "/partner-dashboard/home"); },
     earnings() { return request<any>("GET", "/partner-dashboard/earnings"); },
     documents() { return request<any[]>("GET", "/partner-dashboard/documents"); },
+    reuploadDocument(id: string, file: File) {
+      const fd = new FormData();
+      fd.append("file", file);
+      return request<{ id: string; fileName: string; version: number; status: string }>(
+        "POST",
+        `/documents/${encodeURIComponent(id)}/reupload`,
+        fd
+      );
+    },
     leaderboard(metric: "disbursed" | "leads" | "commission" = "disbursed", limit = 25) {
       return request<any>("GET", `/partner-dashboard/leaderboard?metric=${metric}&limit=${limit}`);
     },

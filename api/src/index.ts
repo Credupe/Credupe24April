@@ -48,7 +48,10 @@ const app = new Hono<AppEnv>();
 
 // ── global middleware ────────────────────────────────────────────────────
 app.use("*", logger());
-app.use("*", secureHeaders());
+app.use("*", secureHeaders({
+  xFrameOptions: false,
+  crossOriginResourcePolicy: false,
+}));
 app.use("*", async (c, next) => {
   const origins = (c.env.CORS_ORIGINS || "*").split(",").map((s) => s.trim());
   return cors({

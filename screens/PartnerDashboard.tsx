@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Building2, TrendingUp, Users, Banknote, Trophy, FileText, BadgeCheck,
   Crown, Copy, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, IndianRupee,
   Wallet, Hourglass, CheckCircle2, XCircle, ListChecks, Award, Mail, Phone, MapPin,
+  Upload,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -48,6 +49,9 @@ const STATUS_PILL: Record<string, string> = {
   CONVERTED: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
   APPLICATION_CREATED: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
   DROPPED: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+  UPLOADED: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+  VERIFIED: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  REJECTED: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
 function fmtINR(v: number | null | undefined): string {
@@ -409,7 +413,7 @@ function KycBadge({ status }: { status: string }) {
   const map: Record<string, { text: string; cls: string; icon: any }> = {
     VERIFIED: { text: "KYC Verified", cls: "bg-green-500/10 text-green-600 ring-green-500/30", icon: CheckCircle2 },
     PENDING: { text: "KYC Pending", cls: "bg-amber-500/10 text-amber-600 ring-amber-500/30", icon: Hourglass },
-    REJECTED: { text: "KYC Rejected", cls: "bg-red-500/10 text-red-600 ring-red-500/30", icon: XCircle },
+    REJECTED: { text: "KYC Not Complete", cls: "bg-red-500/10 text-red-600 ring-red-500/30", icon: XCircle },
   };
   const m = map[status] || map.PENDING;
   const Icon = m.icon;
@@ -764,51 +768,172 @@ function LeaderboardTab() {
 function DocumentsTab() {
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reuploadingDocId, setReuploadingDocId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const loadDocuments = async () => {
+    try {
+      const d = await credupeApi.partner.documents();
+      setDocs(d || []);
+    } catch (err) {
+      const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to load documents";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      try {
-        const d = await credupeApi.partner.documents();
-        if (mounted) setDocs(d);
-      } catch (err) {
-        const msg = err instanceof CredupeApiError ? err.messages[0] : "Failed to load documents";
-        toast({ title: "Error", description: msg, variant: "destructive" });
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      setLoading(true);
+      await loadDocuments();
+      if (mounted) setLoading(false);
     })();
     return () => { mounted = false; };
-  }, [toast]);
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !reuploadingDocId) return;
+
+    // Reset input so re-selecting same file triggers onChange
+    e.target.value = "";
+
+    try {
+      setIsSubmitting(reuploadingDocId);
+      await credupeApi.partner.reuploadDocument(reuploadingDocId, file);
+      toast({
+        title: "Document Re-uploaded",
+        description: `${file.name} uploaded successfully. Admin will review it shortly.`,
+      });
+      await loadDocuments();
+    } catch (err: any) {
+      const msg = err instanceof CredupeApiError ? err.messages[0] : err?.message || "Failed to re-upload document";
+      toast({ title: "Re-upload failed", description: msg, variant: "destructive" });
+    } finally {
+      setIsSubmitting(null);
+      setReuploadingDocId(null);
+    }
+  };
+
+  const triggerReupload = (docId: string) => {
+    setReuploadingDocId(docId);
+    fileInputRef.current?.click();
+  };
 
   if (loading) return <SpinnerBlock />;
 
   return (
     <div className="bg-card border border-border rounded-2xl p-5">
-      <p className="text-sm font-semibold text-foreground mb-4">Uploaded documents</p>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground">Uploaded documents</p>
+          <p className="text-xs text-muted-foreground">Manage your KYC verification files</p>
+        </div>
+      </div>
       {docs.length === 0 ? (
         <p className="text-sm text-muted-foreground py-6 text-center">No documents on file.</p>
       ) : (
-        <div className="space-y-2">
-          {docs.map((d) => (
-            <div key={d.id} className="flex items-center justify-between rounded-lg border border-border px-4 py-3" data-testid={`doc-row-${d.id}`}>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  <FileText className="w-4 h-4" />
+        <div className="space-y-3">
+          {docs.map((d) => {
+            const isReuploaded = (d.version > 1 && d.status === "UPLOADED");
+            return (
+              <div
+                key={d.id}
+                className={`rounded-xl border p-4 transition-all ${
+                  d.status === "REJECTED"
+                    ? "border-red-200 dark:border-red-950/60 bg-red-50/20 dark:bg-red-950/10"
+                    : isReuploaded
+                    ? "border-amber-200 dark:border-amber-950/60 bg-amber-50/20 dark:bg-amber-950/10"
+                    : "border-border"
+                }`}
+                data-testid={`doc-row-${d.id}`}
+              >
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                      d.status === "REJECTED"
+                        ? "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                        : isReuploaded
+                        ? "bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
+                        : "bg-primary/10 text-primary"
+                    }`}>
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">{d.fileName}</p>
+                        {d.version > 1 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+                            v{d.version}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        {d.tag} · {new Date(d.createdAt).toLocaleDateString("en-IN")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[10px] px-2 py-1 rounded-full font-semibold ${
+                        isReuploaded
+                          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                          : STATUS_PILL[d.status] || "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {isReuploaded ? "RE-UPLOADED" : d.status || "PENDING"}
+                    </span>
+
+                    {d.status === "REJECTED" && (
+                      <button
+                        onClick={() => triggerReupload(d.id)}
+                        disabled={isSubmitting === d.id}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm disabled:opacity-50"
+                      >
+                        {isSubmitting === d.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" /> Re-upload
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{d.fileName}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {d.tag} · {new Date(d.createdAt).toLocaleDateString("en-IN")}
-                  </p>
-                </div>
+
+                {d.status === "REJECTED" && d.rejectionReason && (
+                  <div className="mt-2.5 pt-2.5 border-t border-red-200/60 dark:border-red-950/40 flex items-start gap-2 text-xs text-red-600 dark:text-red-400">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold">Rejection reason: </span>
+                      <span>"{d.rejectionReason}"</span>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Please re-upload a clear and valid document.</p>
+                    </div>
+                  </div>
+                )}
+
+                {isReuploaded && (
+                  <div className="mt-2.5 pt-2.5 border-t border-amber-200/60 dark:border-amber-950/40 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
+                    <Hourglass className="w-3.5 h-3.5 shrink-0" />
+                    <span>Your re-uploaded document has been submitted and is currently pending admin verification.</span>
+                  </div>
+                )}
               </div>
-              <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${STATUS_PILL[d.status] || "bg-muted text-muted-foreground"}`}>
-                {d.status || "PENDING"}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
